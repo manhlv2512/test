@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TPB APP</title>
+
+    <!-- Font Awesome 5 -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+
+    <style>
+      body {
+        margin: 0;
+        font-family: "Roboto", sans-serif;
+        font-weight: 300;
+        height: 100vh;
+        display: flex;
+      }
+
+      .sidebar {
+        width: 250px;
+        background-color: #4a148c;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        transition: width 0.3s ease;
+      }
+
+      .sidebar.collapsed {
+        width: 60px;
+      }
+
+      .sidebar.collapsed .menu-item span,
+      .sidebar.collapsed .footer,
+      .sidebar.collapsed .logo img {
+        display: none;
+      }
+
+      .sidebar.collapsed .menu-item {
+        justify-content: center;
+        position: relative;
+      }
+
+      .sidebar.collapsed .menu-item:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: 60px;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: #333;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 4px;
+        white-space: nowrap;
+        font-size: 13px;
+        z-index: 1000;
+        pointer-events: none;
+      }
+
+      /* Ẩn hoàn toàn submenu khi sidebar thu gọn */
+      .sidebar.collapsed .submenu {
+        display: none !important;
+      }
+
+      .logo {
+        align-items: center; /* căn giữa theo chiều dọc */
+        justify-content: center;
+        /* padding: 15px 0; */
+        display: flex;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .logo strong {
+        font-size: 28px;
+        margin-left: 10px;
+        color: white;
+      }
+
+      .logo img {
+        max-width: 45px;
+        height: auto;
+      }
+
+      #menu-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 5px;
+        box-sizing: border-box;
+      }
+
+      .footer {
+        padding: 10px;
+        font-size: 13px;
+        text-align: center;
+        background-color: #4a148c;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .menu-item {
+        position: relative;
+        cursor: pointer;
+        padding: 10px;
+        /* background-color: #4a148c; */
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: background-color 0.3s;
+        font-size: 14px;
+      }
+
+      .menu-item:hover {
+        background-color: #6a1b9a;
+      }
+
+      .menu-item i {
+        width: 20px;
+        text-align: center;
+      }
+
+      .toggle-icon {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        transition: transform 0.3s ease;
+      }
+
+      .submenu {
+        display: none;
+        padding-left: 25px;
+      }
+
+      .submenu a {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: white;
+        padding: 8px;
+        text-decoration: none;
+      }
+
+      .submenu a i {
+        width: 18px;
+        text-align: center;
+      }
+
+      .submenu a:hover {
+        background-color: #6a1b9a;
+      }
+
+      .submenu a.active {
+        background-color: #7b1fa2;
+        font-weight: bold;
+      }
+
+      .content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header-bar {
+        height: 50px;
+        background-color: #f3f3f3;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .header-bar .toggle-btn {
+        cursor: pointer;
+        font-size: 20px;
+        color: #4a148c;
+      }
+
+      .header-bar .author-info {
+        font-size: 14px;
+        color: #666;
+      }
+
+      iframe {
+        width: 100%;
+        height: calc(100vh - 50px);
+        border: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar" id="sidebar">
+      <div class="logo">
+        <img src="./logo.png" alt="TPB Logo" />
+        <strong>TPBank</strong>
+      </div>
+      <div id="menu-container"></div>
+      <div class="footer">TPB APP v1.0.0</div>
+    </div>
+
+    <div class="content">
+      <div class="header-bar">
+        <div class="toggle-btn" onclick="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </div>
+        <div class="author-info">by Le Manh</div>
+      </div>
+      <iframe name="contentFrame" src="https://example.com"></iframe>
+    </div>
+
+    <!-- Load menu data first -->
+    <script src="menu-data.js"></script>
+
+    <!-- Logic xử lý -->
+    <script src="gen-menu.js"></script>
+    <script>
+      // Gọi sau khi menu-data.js được load
+      generateMenu(menuItems, "menu-container");
+    </script>
+  </body>
+</html>

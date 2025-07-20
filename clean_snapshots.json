@@ -1,0 +1,338 @@
+[
+  {
+    "SNAPSHOT_NAME": "UICV129",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "UITKC"
+  },
+  {
+    "SNAPSHOT_NAME": "CMC_Toolkit_008",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "CMCESBT"
+  },
+  {
+    "SNAPSHOT_NAME": "CMC_Toolkit_010",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "CMCESBT"
+  },
+  {
+    "SNAPSHOT_NAME": "BPM_Common_User_Manager_v1.1.2",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "BPMUM"
+  },
+  {
+    "SNAPSHOT_NAME": "BPM_Common_User_Manager_v1.1.8",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "BPMUM"
+  },
+  {
+    "SNAPSHOT_NAME": "20210715_01",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "CEISE"
+  },
+  {
+    "SNAPSHOT_NAME": "20210727_03",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "CEISE"
+  },
+  {
+    "SNAPSHOT_NAME": "20210908_01",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "CEISE"
+  },
+  {
+    "SNAPSHOT_NAME": "20221219",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "CEISE"
+  },
+  {
+    "SNAPSHOT_NAME": "TTD_Ver01_20220330",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "CEISE"
+  },
+  {
+    "SNAPSHOT_NAME": "04062021_ver1",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "BAWFISC"
+  },
+  {
+    "SNAPSHOT_NAME": "07092021_ver_4",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "BAWFISC"
+  },
+  {
+    "SNAPSHOT_NAME": "15072021_ver3",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "BAWFISC"
+  },
+  {
+    "SNAPSHOT_NAME": "18112021_ver1",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "BAWFISC"
+  },
+  {
+    "SNAPSHOT_NAME": "25092021_ver2",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "BAWFISC"
+  },
+  {
+    "SNAPSHOT_NAME": "TPBCESB_v0.113",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "TPBCESB"
+  },
+  {
+    "SNAPSHOT_NAME": "TPBCESB_v0.114",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "TPBCESB"
+  },
+  {
+    "SNAPSHOT_NAME": "TPBCESB_v0.115",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "TPBCESB"
+  },
+  {
+    "SNAPSHOT_NAME": "TPBCESB_v0.12",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "TPBCESB"
+  },
+  {
+    "SNAPSHOT_NAME": "TPBCESB_v0.124",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "TPBCESB"
+  },
+  {
+    "SNAPSHOT_NAME": "TPBCESB_v0.126",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "TPBCESB"
+  },
+  {
+    "SNAPSHOT_NAME": "TPBCESB_v0.133",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "TPBCESB"
+  },
+  {
+    "SNAPSHOT_NAME": "TPBCESB_v0.63",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "TPBCESB"
+  },
+  {
+    "SNAPSHOT_NAME": "20210721_01",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "20210817_01",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "20211109_02",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "20220107_ver1",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "202202010_ver1",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "20220407_ver1",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "20220512_ver3",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "20220601_ver1",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "20221223",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "20221226_ver4",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "20221228_ver5",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "20230309_v1",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "20230413_v2",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "20230525_v1",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "20230913_v2",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "20231122_v1",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "20240729_v1",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "Jun 05 2021 001",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "Jun 11 004",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": null,
+    "SHORT_NAME": "CESBISI"
+  },
+  {
+    "SNAPSHOT_NAME": "8.6.0.0",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "SYSCT"
+  },
+  {
+    "SNAPSHOT_NAME": "DOCE003",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "FISDOCE"
+  },
+  {
+    "SNAPSHOT_NAME": "2021_08_12a",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "CD"
+  },
+  {
+    "SNAPSHOT_NAME": "2021_09_16a",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "CD"
+  },
+  {
+    "SNAPSHOT_NAME": "ATKQ_ESB_Toolkit_20221118_16H27",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "ATKQESB"
+  },
+  {
+    "SNAPSHOT_NAME": "ATKQ_Toolkit_ESB_20231226_11H46",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "ATKQESB"
+  },
+  {
+    "SNAPSHOT_NAME": "UICV124",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "UITKC"
+  },
+  {
+    "SNAPSHOT_NAME": "20221219",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "CESBIT"
+  },
+  {
+    "SNAPSHOT_NAME": "20221219",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "CESBI"
+  },
+  {
+    "SNAPSHOT_NAME": "FCC_Api_Services_Toolkit_V1.21",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "FCCAST"
+  },
+  {
+    "SNAPSHOT_NAME": "Desktop_Common_Version37",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "DCB"
+  },
+  {
+    "SNAPSHOT_NAME": "toolkitCard_221219_ver3",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "CESBICS"
+  },
+  {
+    "SNAPSHOT_NAME": "20231011_V1",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "BPMCAMC"
+  },
+  {
+    "SNAPSHOT_NAME": "BCTVer7_20210831 (BCTV621)",
+    "COUNT_WHERE_USE": "0",
+    "WHERE_TO_USE": "[]",
+    "SHORT_NAME": "TTK"
+  }
+]
