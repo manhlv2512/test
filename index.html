@@ -184,8 +184,70 @@
       }
 
       .header-bar .author-info {
+        position: relative;
+        display: inline-block;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
         font-size: 14px;
-        color: #666;
+        color: #4a148c;
+      }
+
+      .header-bar .author-info .dropdown-icon {
+        font-size: 12px;
+        margin-left: 4px;
+      }
+
+      .author-info:hover .dropdown-menu {
+        display: flex;
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .user-trigger {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 10px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+
+      .dropdown-menu {
+        position: absolute;
+        top: calc(100%);
+        right: 0;
+        background-color: #f3f3f3;
+        border: 1px solid #ddd;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        min-width: 100px;
+        display: none;
+        flex-direction: column;
+        border-radius: 8px;
+        overflow: hidden;
+        z-index: 1000;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        pointer-events: auto;
+      }
+
+      .dropdown-item {
+        padding: 10px;
+        font-size: 13px;
+        color: #333;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      .header-bar .author-info .dropdown-item:hover {
+        background-color: rgba(0, 0, 0, 0.12);
+      }
+
+      .flex-between-space {
+        display: flex;
+        justify-content: space-between;
       }
 
       iframe {
@@ -210,8 +272,21 @@
         <div class="toggle-btn" onclick="toggleSidebar()">
           <i class="fas fa-bars"></i>
         </div>
-        <div class="author-info">by Le Manh</div>
+        <div class="author-info">
+          <div class="user-trigger">
+            <i class="fas fa-user-circle"></i>
+            <span id="username">Unnamed</span>
+            <i class="fas fa-caret-down dropdown-icon"></i>
+          </div>
+
+          <div class="dropdown-menu" id="userMenu">
+            <div class="dropdown-item flex-between-space" onclick="logout()">
+              <i class="fas fa-sign-out-alt"></i>Logout
+            </div>
+          </div>
+        </div>
       </div>
+
       <iframe name="contentFrame" src="https://openai.com"></iframe>
     </div>
 
@@ -223,6 +298,9 @@
     <script>
       // Gọi sau khi menu-data.js được load
       generateMenu(menuItems, "menu-container");
+
+      // Set ussername
+      setAuth("Le Manh");
     </script>
   </body>
 </html>
