@@ -56,14 +56,20 @@ var menuItems = [
         "icon": "fas fa-sun"
       },
       {
-        "title": "Lịch thi đấu bóng đá",
-        "link": "https://www.24h.com.vn/lich-thi-dau-bong-da-c287.html",
-        "icon": "fas fa-futbol"
-      },
-      {
-        "title": "Bóng đá Ngoại hạng Anh",
-        "link": "https://www.24h.com.vn/bong-da-ngoai-hang-anh-c149.html",
-        "icon": "fas fa-futbol"
+        "title": "Bóng đá",
+        "icon": "fas fa-futbol",
+        "children": [
+          {
+            "title": "Lịch thi đấu bóng đá",
+            "link": "https://www.24h.com.vn/lich-thi-dau-bong-da-c287.html",
+            "icon": "fas fa-link"
+          },
+          {
+            "title": "Bóng đá Ngoại hạng Anh",
+            "link": "https://www.24h.com.vn/bong-da-ngoai-hang-anh-c149.html",
+            "icon": "fas fa-link"
+          },
+        ]
       },
       {
         "title": "Phim",
@@ -71,35 +77,68 @@ var menuItems = [
         "icon": "fas fa-film"
       },
       {
-        "title": "Giá vàng",
-        "icon": "fas fa-coins",
-        "link": "https://www.24h.com.vn/gia-vang-hom-nay-c425.html",
+        "title": "Kinh doanh",
+        "icon": "fas fa-briefcase",
+        "children": [
+          {
+            "title": "Giá vàng",
+            "icon": "fas fa-coins",
+            "link": "https://www.24h.com.vn/gia-vang-hom-nay-c425.html",
+          },
+          {
+            "title": "Tỷ giá ngoại tệ",
+            "link": "https://www.24h.com.vn/ty-gia-ngoai-te-ttcb-c426.html",
+            "icon": "fas fa-link"
+          },
+          {
+            "title": "Chứng khoán",
+            "link": "https://www.24h.com.vn/tin-chung-khoan-c566.html",
+            "icon": "fas fa-link"
+          },
+          {
+            "title": "Bất động sản",
+            "link": "https://www.24h.com.vn/bat-dong-san-c792.html",
+            "icon": "fas fa-link"
+          },
+        ]
       },
       {
-        "title": "Ngắm xe đẹp",
-        "link": "https://www.24h.com.vn/anh-nguoi-dep-va-xe-c199.html",
+        "title": "Oto - Xe máy",
         "icon": "fas fa-car",
+        "children": [
+          {
+            "title": "Ngắm xe đẹp",
+            "link": "https://www.24h.com.vn/anh-nguoi-dep-va-xe-c199.html",
+            "icon": "fas fa-link"
+          },
+          {
+            "title": "Bảng giá xe ô tô",
+            "link": "https://www.24h.com.vn/bang-gia-xe-o-to-c807.html",
+            "icon": "fas fa-link"
+          },
+          {
+            "title": "So sánh xe",
+            "link": "https://www.24h.com.vn/so-sanh-xe-c805.html",
+            "icon": "fas fa-link"
+          },
+        ]
       },
       {
-        "title": "Bảng giá xe ô tô",
-        "link": "https://www.24h.com.vn/bang-gia-xe-o-to-c807.html",
-        "icon": "fas fa-car"
+        "title": "Hitech",
+        "icon": "fas fa-microchip",
+        "children": [
+          {
+            "title": "Tin công nghệ",
+            "link": "https://www.24h.com.vn/tin-tuc-cong-nghe-c453.html",
+            "icon": "fas fa-microchip"
+          },
+          {
+            "title": "Laptop giá rẻ",
+            "link": "https://www.24h.com.vn/laptop-gia-re-c451.html",
+            "icon": "fas fa-laptop"
+          }
+        ]
       },
-      {
-        "title": "So sánh xe",
-        "link": "https://www.24h.com.vn/so-sanh-xe-c805.html",
-        "icon": "fas fa-car"
-      },
-      {
-        "title": "Tin tức công nghệ",
-        "link": "https://www.24h.com.vn/tin-tuc-cong-nghe-c453.html",
-        "icon": "fas fa-laptop"
-      },
-      {
-        "title": "Laptop giá rẻ",
-        "link": "https://www.24h.com.vn/laptop-gia-re-c451.html",
-        "icon": "fas fa-laptop"
-      }
     ]
   },
   {
