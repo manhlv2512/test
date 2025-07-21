@@ -60,7 +60,7 @@ function buildMenuTree(items, parentElement) {
 }
 
 function setActive(link) {
-  document.querySelectorAll('.submenu a').forEach(function (a) {
+  document.querySelectorAll('.menu-item.active').forEach(function (a) {
     a.classList.remove('active');
   });
   link.classList.add('active');
