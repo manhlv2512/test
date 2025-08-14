@@ -28,17 +28,42 @@ function buildMenuTree(items, parentElement) {
 
       var submenu = document.createElement("div");
       submenu.className = "submenu";
+      submenu.style.display = "none"; // Ẩn mặc định
 
       // Recursive call
       buildMenuTree(item.children, submenu);
 
-      menuItem.addEventListener("click", function (e) {
-        e.stopPropagation();
-        var isVisible = submenu.style.display === "block";
-        submenu.style.display = isVisible ? "none" : "block";
+      // Tính delay dựa trên số lượng node con
+      var delay = Math.min(1200, 400 + item.children.length * 100); // tối đa 1200ms
 
-        toggleIcon.classList.remove("fa-chevron-down", "fa-chevron-up");
-        toggleIcon.classList.add(isVisible ? "fa-chevron-down" : "fa-chevron-up");
+      $(menuItem).on("click", function (e) {
+        e.stopPropagation();
+        var $siblings = $(parentElement).children(".menu-item").not(menuItem);
+        $siblings.removeClass("open");
+        $siblings.each(function () {
+          var sibSubmenu = $(this).next(".submenu");
+          sibSubmenu.stop(true, true).slideUp(delay);
+          var sibIcon = $(this).find(".toggle-icon");
+          if (sibIcon.length) sibIcon.attr("class", "toggle-icon fas fa-chevron-down");
+        });
+
+        var isOpen = $(menuItem).hasClass("open");
+        if (!isOpen) {
+          $(menuItem).addClass("open");
+          $(submenu).stop(true, true).slideDown(delay, function () {
+            $(this).css("display", "block");
+          });
+          toggleIcon.className = "toggle-icon fas fa-chevron-up";
+        } else {
+          $(menuItem).removeClass("open");
+          // Đóng tất cả submenu con khi đóng parent
+          $(submenu).find('.menu-item.open').removeClass('open');
+          $(submenu).find('.submenu').stop(true, true).slideUp(delay).css("display", "none");
+          $(submenu).stop(true, true).slideUp(delay, function () {
+            $(this).css("display", "none");
+          });
+          toggleIcon.className = "toggle-icon fas fa-chevron-down";
+        }
       });
 
       parentElement.appendChild(menuItem);
@@ -70,9 +95,17 @@ function toggleSidebar() {
   document.getElementById("sidebar").classList.toggle("collapsed");
 }
 
+var iframe = document.querySelector("iframe[name='contentFrame']");
+var loadingOverlay = document.getElementById("loadingOverlay");
+
+iframe.addEventListener("load", function () {
+  loadingOverlay.style.display = "none"; // Hide when done loading
+});
+
 function updateIframeLink(url) {
   var iframe = document.querySelector('iframe[name="contentFrame"]');
   if (iframe) {
+    loadingOverlay.style.display = "flex"; // Show loading
     iframe.src = url;
   }
 }

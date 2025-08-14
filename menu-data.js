@@ -37,6 +37,17 @@ var menuItems = [
     ]
   },
   {
+    "title": "Bất động sản",
+    "icon": "fas fa-building",
+    "children": [
+      {
+        "title": "batdongsan.com.vn",
+        "icon": "fas fa-home",
+        "link": "https://batdongsan.com.vn/",
+      },
+    ]
+  },
+  {
     "title": "Tin tức 24h",
     "icon": "fas fa-newspaper",
     "children": [

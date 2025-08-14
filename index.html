@@ -9,6 +9,8 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     />
+    <!-- Thêm link jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <style>
       body {
@@ -20,7 +22,7 @@
       }
 
       .sidebar {
-        width: 250px;
+        width: 230px;
         background-color: #4a148c;
         color: white;
         display: flex;
@@ -29,7 +31,7 @@
       }
 
       .sidebar.collapsed {
-        width: 60px;
+        width: 50px;
       }
 
       .sidebar.collapsed .menu-item span,
@@ -93,13 +95,18 @@
         overflow-y: auto;
         padding: 5px;
         box-sizing: border-box;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* Internet Explorer and Edge */
+      }
+
+      #menu-container::-webkit-scrollbar {
+        display: none;
       }
 
       .footer {
         padding: 10px;
         font-size: 13px;
         text-align: center;
-        background-color: #4a148c;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
       }
 
@@ -107,16 +114,23 @@
         position: relative;
         cursor: pointer;
         padding: 10px;
-        /* background-color: #4a148c; */
         display: flex;
         align-items: center;
         gap: 10px;
         transition: background-color 0.3s;
-        font-size: 14px;
+        font-size: 13px;
       }
 
       .menu-item:hover {
-        background-color: #6a1b9a;
+        background-color: #7c43bd; /* tím nhạt hơn sidebar, nổi bật khi hover */
+        border-radius: 3px;
+      }
+
+      .menu-item.active {
+        background-color: #b39ddb; /* tím pastel, nổi bật trạng thái active */
+        color: #4a148c;
+        font-weight: bold;
+        border-radius: 3px;
       }
 
       .menu-item i {
@@ -130,16 +144,28 @@
         top: 50%;
         transform: translateY(-50%);
         transition: transform 0.3s ease;
+        font-size: 11px;
       }
 
       .submenu {
         display: none;
-        padding-left: 25px;
+        padding-left: 15px;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+          opacity 0.8s;
+        opacity: 0;
+        background: #370772;
+        border-radius: 6px;
+        margin: 2px 0 2px 0;
+        box-shadow: 0 2px 8px rgba(74, 20, 140, 0.13);
       }
 
-      .menu-item.active {
-        background-color: #7b1fa2;
-        font-weight: bold;
+      .menu-item.open + .submenu {
+        display: block;
+        max-height: 500px;
+        opacity: 1;
+        background: #370772;
       }
 
       .content {
@@ -209,7 +235,7 @@
         z-index: 1000;
         opacity: 0;
         transform: translateY(-10px);
-        transition: opacity 0.2s ease, transform 0.2s ease;
+        transition: opacity 0.5s ease, transform 0.5s ease;
         pointer-events: auto;
       }
 
@@ -235,6 +261,37 @@
         width: 100%;
         height: calc(100vh - 50px);
         border: none;
+      }
+
+      #loadingOverlay {
+        position: absolute;
+        top: 50px; /* dưới header */
+        left: 230px; /* bên phải sidebar */
+        width: calc(100% - 230px);
+        height: calc(100vh - 50px);
+        background: rgba(255, 255, 255, 0.7);
+        z-index: 9999;
+        display: none;
+        display: flex;
+        /* align-items: center; */
+        justify-content: center;
+        pointer-events: none; /* không chặn thao tác với iframe */
+      }
+
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #ccc;
+        border-top: 4px solid #4a148c;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-top: 20%;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
       }
     </style>
   </head>
@@ -266,6 +323,10 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <div id="loadingOverlay">
+        <div class="spinner"></div>
       </div>
 
       <iframe name="contentFrame" src="https://openai.com"></iframe>
