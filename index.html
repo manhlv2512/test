@@ -169,12 +169,17 @@
 
       #menu-container > .menu-item {
         padding: 10px 5px;
-        gap: 7px
+        gap: 7px;
       }
 
       .submenu > .menu-item {
         padding: 10px 5px 10px 0;
         gap: 5px;
+      }
+
+      .sidebar.force-open {
+        width: 230px !important;
+        transition: none !important;
       }
 
       .content {
@@ -224,19 +229,20 @@
         display: flex;
         align-items: center;
         gap: 6px;
-        padding: 8px 10px;
+        padding: 8px 0;
         cursor: pointer;
         border-radius: 4px;
       }
 
       .dropdown-menu {
         position: absolute;
-        top: calc(100%);
-        right: 0;
+        top: 100%;
+        left: 10px;
+        width: calc(100% - 10px);
         background-color: #f3f3f3;
         border: 1px solid #ddd;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        min-width: 100px;
+        box-sizing: border-box;
         display: none;
         flex-direction: column;
         border-radius: 8px;
@@ -327,6 +333,9 @@
           </div>
 
           <div class="dropdown-menu" id="userMenu">
+            <!-- <div class="dropdown-item flex-between-space">
+              <i class="fas fa-info"></i><span id="username">Unnamed</span>
+            </div> -->
             <div class="dropdown-item flex-between-space" onclick="logout()">
               <i class="fas fa-sign-out-alt"></i>Logout
             </div>
@@ -352,7 +361,7 @@
       // Gọi sau khi menu-data.js được load
       generateMenu(menuItems, "menu-container");
       // Set ussername
-      setAuth("Le Manh");
+      setAuth("Le Van Manh");
     </script>
   </body>
 </html>

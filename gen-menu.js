@@ -39,6 +39,12 @@ function buildMenuTree(items, parentElement) {
 
       $(menuItem).on("click", function (e) {
         e.stopPropagation();
+        // Khi click menu, sidebar sẽ mở nếu đang đóng
+        var sidebar = document.getElementById("sidebar");
+        if (sidebar.classList.contains("collapsed")) {
+          sidebar.classList.remove("collapsed");
+          // sidebar.classList.add("force-open");
+        }
         var $siblings = $(parentElement).children(".menu-item").not(menuItem);
         $siblings.removeClass("open");
         $siblings.each(function () {
@@ -81,6 +87,14 @@ function buildMenuTree(items, parentElement) {
       menuItem.classList.add("has-link");
       menuItem.addEventListener("click", function (e) {
         e.stopPropagation();
+        // Khi click menu, sidebar sẽ mở nếu đang đóng
+        var sidebar = document.getElementById("sidebar");
+        if (sidebar.classList.contains("collapsed")) {
+          sidebar.classList.remove("collapsed");
+        }
+        if (sidebar.classList.contains("force-open")) {
+          sidebar.classList.remove("force-open");
+        }
         setActive(menuItem);
         updateIframeLink(item.linkUrl || item.link);
       });
@@ -133,3 +147,20 @@ function logout() {
   // sessionStorage.clear();
   window.location.href = loginUrl; // redirect to login
 }
+
+// Thêm sự kiện hover cho menu-item khi sidebar đang đóng
+$(document).on("mouseenter", ".menu-item", function () {
+  var sidebar = document.getElementById("sidebar");
+  if (sidebar.classList.contains("collapsed")) {
+    sidebar.classList.remove("collapsed");
+    sidebar.classList.add("force-open");
+  }
+});
+
+$(document).on("mouseleave", ".menu-item", function () {
+  var sidebar = document.getElementById("sidebar");
+  if (sidebar.classList.contains("force-open")) {
+    sidebar.classList.remove("force-open");
+    sidebar.classList.add("collapsed");
+  }
+});
