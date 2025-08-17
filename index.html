@@ -93,7 +93,7 @@
       #menu-container {
         flex: 1;
         overflow-y: auto;
-        padding: 5px;
+        /* padding: 5px; */
         box-sizing: border-box;
         scrollbar-width: none; /* Firefox */
         -ms-overflow-style: none; /* Internet Explorer and Edge */
@@ -105,7 +105,7 @@
 
       .footer {
         padding: 10px;
-        font-size: 13px;
+        font-size: 12px;
         text-align: center;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
       }
@@ -113,10 +113,9 @@
       .menu-item {
         position: relative;
         cursor: pointer;
-        padding: 10px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        /* gap: 10px; */
         transition: background-color 0.3s;
         font-size: 13px;
       }
@@ -149,11 +148,10 @@
 
       .submenu {
         display: none;
-        padding-left: 15px;
+        padding-left: 10px;
         max-height: 0;
         overflow: hidden;
-        transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-          opacity 0.8s;
+        transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s;
         opacity: 0;
         background: #370772;
         border-radius: 6px;
@@ -161,11 +159,22 @@
         box-shadow: 0 2px 8px rgba(74, 20, 140, 0.13);
       }
 
+      /* Sử dụng max-height lớn để submenu tự động fit nội dung */
       .menu-item.open + .submenu {
         display: block;
-        max-height: 500px;
+        max-height: 2000px; /* đủ lớn để fit mọi nội dung */
         opacity: 1;
         background: #370772;
+      }
+
+      #menu-container > .menu-item {
+        padding: 10px 5px;
+        gap: 7px
+      }
+
+      .submenu > .menu-item {
+        padding: 10px 5px 10px 0;
+        gap: 5px;
       }
 
       .content {
@@ -333,14 +342,15 @@
     </div>
 
     <!-- Load menu data first -->
-    <script src="menu-data.js"></script>
+    <!-- <script src="menu-data.js"></script> -->
+    <script src="../gncn.js"></script>
 
     <!-- Logic xử lý -->
     <script src="gen-menu.js"></script>
     <script>
+      onloadRootComponent("https://google.com");
       // Gọi sau khi menu-data.js được load
       generateMenu(menuItems, "menu-container");
-
       // Set ussername
       setAuth("Le Manh");
     </script>

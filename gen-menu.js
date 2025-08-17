@@ -6,35 +6,36 @@ function generateMenu(menuList, containerId) {
 
 function buildMenuTree(items, parentElement) {
   items.forEach(function (item) {
-    var hasChildren = item.children && Array.isArray(item.children) && item.children.length > 0;
+    // Chỉ render nếu có quyền
+    if (item.hasPermission !== 1) return;
 
+    var hasNodes = item.nodes && Array.isArray(item.nodes) && item.nodes.length > 0;
     var menuItem = document.createElement("div");
+    var menuName = item.menuName || item.title;
     menuItem.className = "menu-item";
-    menuItem.setAttribute("data-tooltip", item.title);
+    menuItem.setAttribute("data-tooltip", menuName);
 
     var icon = document.createElement("i");
     icon.className = item.icon || "fas fa-folder";
 
     var label = document.createElement("span");
-    label.textContent = item.title;
+    label.textContent = menuName;
 
     menuItem.appendChild(icon);
     menuItem.appendChild(label);
 
-    if (hasChildren) {
+    if (hasNodes) {
       var toggleIcon = document.createElement("span");
       toggleIcon.className = "toggle-icon fas fa-chevron-down";
       menuItem.appendChild(toggleIcon);
 
       var submenu = document.createElement("div");
       submenu.className = "submenu";
-      submenu.style.display = "none"; // Ẩn mặc định
+      submenu.style.display = "none";
 
-      // Recursive call
-      buildMenuTree(item.children, submenu);
+      buildMenuTree(item.nodes, submenu);
 
-      // Tính delay dựa trên số lượng node con
-      var delay = Math.min(1200, 400 + item.children.length * 100); // tối đa 1200ms
+      var delay = Math.min(1200, 400 + item.nodes.length * 100);
 
       $(menuItem).on("click", function (e) {
         e.stopPropagation();
@@ -50,13 +51,21 @@ function buildMenuTree(items, parentElement) {
         var isOpen = $(menuItem).hasClass("open");
         if (!isOpen) {
           $(menuItem).addClass("open");
+          // Khi mở submenu, bỏ class active của menu cha
+          $(menuItem).removeClass("active");
           $(submenu).stop(true, true).slideDown(delay, function () {
             $(this).css("display", "block");
           });
           toggleIcon.className = "toggle-icon fas fa-chevron-up";
         } else {
           $(menuItem).removeClass("open");
-          // Đóng tất cả submenu con khi đóng parent
+          // Nếu submenu có child đang active, set parent active
+          var hasActiveChild = $(submenu).find('.menu-item.active').length > 0;
+          if (hasActiveChild) {
+            menuItem.classList.add("active");
+          } else {
+            menuItem.classList.remove("active");
+          }
           $(submenu).find('.menu-item.open').removeClass('open');
           $(submenu).find('.submenu').stop(true, true).slideUp(delay).css("display", "none");
           $(submenu).stop(true, true).slideUp(delay, function () {
@@ -68,15 +77,13 @@ function buildMenuTree(items, parentElement) {
 
       parentElement.appendChild(menuItem);
       parentElement.appendChild(submenu);
-    } else if (item.link) {
+    } else if (item.linkUrl) {
       menuItem.classList.add("has-link");
-
       menuItem.addEventListener("click", function (e) {
         e.stopPropagation();
-        updateIframeLink(item.link);
         setActive(menuItem);
+        updateIframeLink(item.linkUrl);
       });
-
       parentElement.appendChild(menuItem);
     } else {
       parentElement.appendChild(menuItem);
@@ -84,30 +91,34 @@ function buildMenuTree(items, parentElement) {
   });
 }
 
-function setActive(link) {
-  document.querySelectorAll('.menu-item.active').forEach(function (a) {
-    a.classList.remove('active');
-  });
-  link.classList.add('active');
+// Hàm set active cho menu item
+function setActive(element) {
+  $(".menu-item").removeClass("active");
+  element.classList.add("active");
 }
 
-function toggleSidebar() {
-  document.getElementById("sidebar").classList.toggle("collapsed");
-}
-
-var iframe = document.querySelector("iframe[name='contentFrame']");
-var loadingOverlay = document.getElementById("loadingOverlay");
-
-iframe.addEventListener("load", function () {
-  loadingOverlay.style.display = "none"; // Hide when done loading
-});
-
+// Hàm cập nhật link cho iframe
 function updateIframeLink(url) {
-  var iframe = document.querySelector('iframe[name="contentFrame"]');
   if (iframe) {
     loadingOverlay.style.display = "flex"; // Show loading
     iframe.src = url;
   }
+}
+
+// Toggle sidebar function
+function toggleSidebar() {
+  document.getElementById("sidebar").classList.toggle("collapsed");
+}
+
+var iframe, loadingOverlay, loginUrl;
+function onloadRootComponent(logoutUrl) {
+  iframe = document.querySelector("iframe[name='contentFrame']");
+  loadingOverlay = document.getElementById("loadingOverlay");
+  loginUrl = logoutUrl;
+
+  iframe.addEventListener("load", function () {
+    loadingOverlay.style.display = "none"; // Hide when done loading
+  });
 }
 
 // Set username
@@ -120,5 +131,5 @@ function logout() {
   alert("Logging out...");
   // Optional: clear tokens, sessionStorage, etc.
   // sessionStorage.clear();
-  // window.location.href = "login.html"; // redirect to login
+  window.location.href = loginUrl; // redirect to login
 }
