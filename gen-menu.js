@@ -77,12 +77,12 @@ function buildMenuTree(items, parentElement) {
 
       parentElement.appendChild(menuItem);
       parentElement.appendChild(submenu);
-    } else if (item.linkUrl) {
+    } else if (item.linkUrl || item.link) {
       menuItem.classList.add("has-link");
       menuItem.addEventListener("click", function (e) {
         e.stopPropagation();
         setActive(menuItem);
-        updateIframeLink(item.linkUrl);
+        updateIframeLink(item.linkUrl || item.link);
       });
       parentElement.appendChild(menuItem);
     } else {
