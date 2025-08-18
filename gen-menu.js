@@ -106,9 +106,8 @@ function buildMenuTree(items, parentElement) {
         menuItem.addEventListener("click", function (e) {
           e.stopPropagation();
           setActive(menuItem);
-          updateIframeLink(item.linkUrl || item.link);
-
           // ĐÓNG tất cả submenu đang mở
+          var sibDelay = 0;
           $(".submenu:visible").each(function () {
             var hasActive = $(this).find('.menu-item.active').length > 0;
             // Nếu submenu không chứa menu-item.active và không phải submenu của menuItem vừa click thì đóng
@@ -118,10 +117,13 @@ function buildMenuTree(items, parentElement) {
               var icon = parentMenu.find(".toggle-icon");
               if (icon.length) icon.attr("class", "toggle-icon fas fa-chevron-down");
               // TODO tính toán lại delay theo submenu đang open
-              var sibDelay = Math.min(1200, 400 + $(this).children(".menu-item").length * 100);
+              sibDelay = Math.min(1200, 400 + $(this).children(".menu-item").length * 100);
               $(this).stop(true, true).slideUp(sibDelay);
             }
           });
+          setTimeout(function () {
+            updateIframeLink(item.linkUrl || item.link);
+          }, 100);
         });
       }
       parentElement.appendChild(menuItem);
