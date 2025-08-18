@@ -1,3 +1,15 @@
+var iframe, loadingOverlay, loginUrl, baseUrl;
+function onloadRootComponent(hostname, logoutUrl) {
+  baseUrl = hostname;
+  loginUrl = logoutUrl;
+  iframe = document.querySelector("iframe[name='contentFrame']");
+  loadingOverlay = document.getElementById("iframe-loading");
+
+  iframe.addEventListener("load", function () {
+    loadingOverlay.style.display = "none"; // Hide when done loading
+  });
+}
+
 function generateMenu(menuList, containerId) {
   var container = document.getElementById(containerId);
   container.innerHTML = "";
@@ -124,17 +136,6 @@ function toggleSidebar() {
   document.getElementById("sidebar").classList.toggle("collapsed");
 }
 
-var iframe, loadingOverlay, loginUrl;
-function onloadRootComponent(logoutUrl) {
-  iframe = document.querySelector("iframe[name='contentFrame']");
-  loadingOverlay = document.getElementById("loadingOverlay");
-  loginUrl = logoutUrl;
-
-  iframe.addEventListener("load", function () {
-    loadingOverlay.style.display = "none"; // Hide when done loading
-  });
-}
-
 // Set username
 function setAuth(username) {
   document.getElementById("username").textContent = username;
@@ -142,7 +143,7 @@ function setAuth(username) {
 
 // Logout function
 function logout() {
-  alert("Logging out...");
+  // alert("Logging out...");
   // Optional: clear tokens, sessionStorage, etc.
   // sessionStorage.clear();
   window.location.href = loginUrl; // redirect to login
