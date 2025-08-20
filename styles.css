@@ -163,7 +163,7 @@ body {
 /* Sử dụng max-height lớn để submenu tự động fit nội dung */
 .menu-item.open+.submenu {
   display: block;
-  max-height: 2000px;
+  max-height: 5000px;
   /* đủ lớn để fit mọi nội dung */
   opacity: 1;
   background: rgba(255, 255, 255, 0.05);
