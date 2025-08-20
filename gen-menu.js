@@ -58,20 +58,16 @@ function buildMenuTree(items, parentElement) {
         }
 
         // ĐÓNG tất cả submenu khác, nhưng giữ nguyên các submenu cha của menuItem
-        $(".menu-item.open").not(menuItem).each(function () {
-          var isAncestor = $.contains(this, menuItem);
-          if (!isAncestor) {
-            $(this).removeClass("open");
-            var otherSubmenu = $(this).next(".submenu");
-            if (otherSubmenu.length) {
-              var sibDelay = Math.min(300, otherSubmenu.children(".menu-item").length * 100);
-              otherSubmenu.stop(true, true).slideUp(sibDelay, function() {
-                $(this).css("display", "none");
-              });
-              var otherIcon = $(this).find(".toggle-icon");
-              if (otherIcon.length) otherIcon.attr("class", "toggle-icon fas fa-chevron-down");
-            }
-          }
+        var $siblings = $(parentElement).children(".menu-item.open").not(menuItem);
+        $siblings.removeClass("open");
+        $siblings.each(function () {
+          var sibSubmenu = $(this).next(".submenu");
+          var sibDelay = Math.min(300, sibSubmenu.children(".menu-item").length * 100);
+          sibSubmenu.stop(true, true).slideUp(sibDelay, function () {
+            $(this).css("display", "none");
+          });
+          var sibIcon = $(this).find(".toggle-icon");
+          if (sibIcon.length) sibIcon.attr("class", "toggle-icon fas fa-chevron-down");
         });
 
         var isOpen = $(menuItem).hasClass("open");
@@ -118,7 +114,7 @@ function buildMenuTree(items, parentElement) {
               if (icon.length) icon.attr("class", "toggle-icon fas fa-chevron-down");
               // TODO tính toán lại delay theo submenu đang open
               sibDelay = Math.min(300, $(this).children(".menu-item").length * 100);
-              $(this).stop(true, true).slideUp(sibDelay, function() {
+              $(this).stop(true, true).slideUp(sibDelay, function () {
                 $(this).css("display", "none");
               });
             }

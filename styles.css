@@ -24,7 +24,7 @@ body {
 
 .sidebar {
   width: var(--sidebar-width);
-  font-family: "Roboto", system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   background: linear-gradient(180deg, #4b2c88 0%, #2a1c54 100%);
   color: white;
   display: flex;
@@ -156,7 +156,7 @@ body {
   opacity: 0;
   background: #370772;
   border-radius: 6px;
-  margin: 2px 0 2px 0;
+  /* margin: 2px 0; */
   box-shadow: 0 2px 8px rgba(74, 20, 140, 0.13);
 }
 
