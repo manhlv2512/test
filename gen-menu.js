@@ -47,30 +47,14 @@ function buildMenuTree(items, parentElement) {
 
       buildMenuTree(item.nodes, submenu);
 
-      var delay = Math.min(300, item.nodes.length * 100);
-
       $(menuItem).on("click", function (e) {
         e.stopPropagation();
-        var sidebar = document.getElementById("sidebar");
-        if (sidebar.classList.contains("collapsed")) {
-          sidebar.classList.remove("collapsed");
-          sidebar.classList.add("force-open");
-        }
-
+        openSidebar();
         // ĐÓNG tất cả submenu khác, nhưng giữ nguyên các submenu cha của menuItem
-        var $siblings = $(parentElement).children(".menu-item.open").not(menuItem);
-        $siblings.removeClass("open");
-        $siblings.each(function () {
-          var sibSubmenu = $(this).next(".submenu");
-          var sibDelay = Math.min(300, sibSubmenu.children(".menu-item").length * 100);
-          sibSubmenu.stop(true, true).slideUp(sibDelay, function () {
-            $(this).css("display", "none");
-          });
-          var sibIcon = $(this).find(".toggle-icon");
-          if (sibIcon.length) sibIcon.attr("class", "toggle-icon fas fa-chevron-down");
-        });
+        _slideUp(parentElement, menuItem);
 
         var isOpen = $(menuItem).hasClass("open");
+        var delay = Math.min(300, item.nodes.length * 100);
         if (!isOpen) {
           $(menuItem).addClass("open");
           $(menuItem).removeClass("active");
@@ -103,28 +87,52 @@ function buildMenuTree(items, parentElement) {
           e.stopPropagation();
           setActive(menuItem);
           // ĐÓNG tất cả submenu đang mở
-          var sibDelay = 0;
-          $(".submenu:visible").each(function () {
-            var hasActive = $(this).find('.menu-item.active').length > 0;
-            // Nếu submenu không chứa menu-item.active và không phải submenu của menuItem vừa click thì đóng
-            if (!hasActive && this !== submenu) {
-              var parentMenu = $(this).prev(".menu-item");
-              parentMenu.removeClass("open");
-              var icon = parentMenu.find(".toggle-icon");
-              if (icon.length) icon.attr("class", "toggle-icon fas fa-chevron-down");
-              // TODO tính toán lại delay theo submenu đang open
-              sibDelay = Math.min(300, $(this).children(".menu-item").length * 100);
-              $(this).stop(true, true).slideUp(sibDelay, function () {
-                $(this).css("display", "none");
-              });
-            }
-          });
-          setTimeout(function () {
-            updateIframeLink(item.linkUrl || item.link);
-          }, 100);
+          _slideUp(parentElement, menuItem);
+          // _slideUp(submenu);
+          updateIframeLink(item.linkUrl || item.link);
         });
       }
       parentElement.appendChild(menuItem);
+    }
+  });
+}
+
+function openSidebar() {
+  var sidebar = document.getElementById("sidebar");
+  if (sidebar.classList.contains("collapsed")) {
+    sidebar.classList.remove("collapsed");
+    sidebar.classList.add("force-open");
+  }
+}
+
+function _slideUp($parent, menuItem) {
+  var $siblings = $($parent).children(".menu-item.open").not(menuItem);
+  $siblings.removeClass("open");
+  $siblings.each(function () {
+    var sibSubmenu = $(this).next(".submenu");
+    var sibDelay = Math.min(300, sibSubmenu.children(".menu-item").length * 100);
+    sibSubmenu.stop(true, true).slideUp(sibDelay, function () {
+      $(this).css("display", "none");
+    });
+    var sibIcon = $(this).find(".toggle-icon");
+    if (sibIcon.length) sibIcon.attr("class", "toggle-icon fas fa-chevron-down");
+  });
+}
+
+function _slideUpAll(submenu) {
+  $(".submenu:visible").each(function () {
+    var hasActive = $(this).find('.menu-item.active').length > 0;
+    // Nếu submenu không chứa menu-item.active và không phải submenu của menuItem vừa click thì đóng
+    if (!hasActive && this !== submenu) {
+      var parentMenu = $(this).prev(".menu-item");
+      parentMenu.removeClass("open");
+      var icon = parentMenu.find(".toggle-icon");
+      if (icon.length) icon.attr("class", "toggle-icon fas fa-chevron-down");
+      // TODO tính toán lại delay theo submenu đang open
+      var sibDelay = Math.min(300, $(this).children(".menu-item").length * 100);
+      $(this).stop(true, true).slideUp(sibDelay, function () {
+        $(this).css("display", "none");
+      });
     }
   });
 }
