@@ -47,34 +47,34 @@ function buildMenuTree(items, parentElement) {
 
       buildMenuTree(item.nodes, submenu);
 
-      var delay = Math.min(1200, 400 + item.nodes.length * 100);
+      var delay = Math.min(300, item.nodes.length * 100);
 
       $(menuItem).on("click", function (e) {
         e.stopPropagation();
-        // Khi click menu, sidebar sẽ mở nếu đang đóng
         var sidebar = document.getElementById("sidebar");
         if (sidebar.classList.contains("collapsed")) {
           sidebar.classList.remove("collapsed");
+          sidebar.classList.add("force-open");
         }
-        if (sidebar.classList.contains("force-open")) {
-          sidebar.classList.remove("force-open");
-        }
-        // ĐÓNG tất cả submenu khác trong toàn bộ menu (không chỉ cùng layer)
-        var $siblings = $(parentElement).children(".menu-item").not(menuItem);
-        $siblings.removeClass("open");
-        $siblings.each(function () {
-          var sibSubmenu = $(this).next(".submenu");
-          // TODO tính toán lại delay theo submenu đang open
-          var sibDelay = Math.min(1200, 400 + sibSubmenu.children(".menu-item").length * 100);
-          sibSubmenu.stop(true, true).slideUp(sibDelay);
-          var sibIcon = $(this).find(".toggle-icon");
-          if (sibIcon.length) sibIcon.attr("class", "toggle-icon fas fa-chevron-down");
+
+        // ĐÓNG tất cả submenu khác, nhưng giữ nguyên các submenu cha của menuItem
+        $(".menu-item.open").not(menuItem).each(function () {
+          var isAncestor = $.contains(this, menuItem);
+          if (!isAncestor) {
+            $(this).removeClass("open");
+            var otherSubmenu = $(this).next(".submenu");
+            if (otherSubmenu.length) {
+              var sibDelay = Math.min(300, otherSubmenu.children(".menu-item").length * 100);
+              otherSubmenu.stop(true, true).slideUp(sibDelay).css("display", "none");
+              var otherIcon = $(this).find(".toggle-icon");
+              if (otherIcon.length) otherIcon.attr("class", "toggle-icon fas fa-chevron-down");
+            }
+          }
         });
 
         var isOpen = $(menuItem).hasClass("open");
         if (!isOpen) {
           $(menuItem).addClass("open");
-          // Khi mở submenu, bỏ class active của menu cha
           $(menuItem).removeClass("active");
           $(submenu).stop(true, true).slideDown(delay, function () {
             $(this).css("display", "block");
@@ -82,7 +82,6 @@ function buildMenuTree(items, parentElement) {
           toggleIcon.className = "toggle-icon fas fa-chevron-up";
         } else {
           $(menuItem).removeClass("open");
-          // Nếu submenu có child đang active, set parent active
           var hasActiveChild = $(submenu).find('.menu-item.active').length > 0;
           if (hasActiveChild) {
             menuItem.classList.add("active");
@@ -117,7 +116,7 @@ function buildMenuTree(items, parentElement) {
               var icon = parentMenu.find(".toggle-icon");
               if (icon.length) icon.attr("class", "toggle-icon fas fa-chevron-down");
               // TODO tính toán lại delay theo submenu đang open
-              sibDelay = Math.min(1200, 400 + $(this).children(".menu-item").length * 100);
+              sibDelay = Math.min(300, $(this).children(".menu-item").length * 100);
               $(this).stop(true, true).slideUp(sibDelay);
             }
           });

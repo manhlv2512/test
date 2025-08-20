@@ -3,6 +3,7 @@
   --sidebar-width: 230px;
   --active-menu: #b39ddb;
   --hover-menu: #7c43bd;
+  --font-size-menu-item: 13px;
 }
 
 body {
@@ -115,7 +116,7 @@ body {
   align-items: center;
   /* gap: 10px; */
   transition: background-color 0.3s;
-  font-size: 12px;
+  font-size: var(--font-size-menu-item);
 }
 
 .menu-item:hover {
@@ -278,7 +279,7 @@ body {
 
 iframe {
   width: 100%;
-  height: calc(100vh - 45px);
+  height: calc(100vh - var(--header-bar-height) - 5px);
   border: none;
 }
 
