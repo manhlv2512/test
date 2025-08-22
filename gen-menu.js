@@ -190,6 +190,11 @@ function escapeHtml(text) {
   return $("<div>").text(text).html();
 }
 
+function hideNotify() {
+  var el = $(".notifications");
+  if (el) el.hide();
+}
+
 function renderNotifications(lists) {
   var notifMenu = $(".tpb-header-info #notifMenu");
   notifMenu.empty();
@@ -203,15 +208,21 @@ function renderNotifications(lists) {
   lists.forEach(function (n) {
     // class cho item theo active
     var itemClass = n.active == 1 ? "notif-item unread" : "notif-item read";
-
+    var userId = n.fullName || n.userId || "";
+    if (userId) userId = escapeHtml(userId);
+    var text = n.content || "";
+    if (text) text = escapeHtml(text);
+    var link = n.linkUrl || "";
+    if (link) text = escapeHtml(link);
+    
     notifMenu.append(
-      '<div class="' + itemClass + '" data-url="' + n.url + '">' +
+      '<div class="' + itemClass + '" data-url="' + link + '">' +
       '<div class="notif-row">' +
-      '<span class="notif-time">' + n.time + "</span>" +
-      '<span class="notif-code">' + n.transCode + "</span>" +
+      '<span class="notif-time">' + n.pushTime + "</span>" +
+      '<span class="notif-code">' + n.transactionCode + "</span>" +
       "</div>" +
       '<div class="notif-text">' +
-      '<span class="notif-user">' + n.userId + ":</span> " + n.text +
+      '<span class="notif-user">' + userId + ":</span> " + text +
       "</div>" +
       "</div>"
     );
