@@ -5,8 +5,12 @@
     <title>TPB APP</title>
 
     <!-- Font Awesome 5 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
-    <link rel="stylesheet" href="./styles.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./notification.css" />
     <!-- Thêm link jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   </head>
@@ -26,19 +30,31 @@
         <div class="toggle-btn" onclick="toggleSidebar()">
           <i class="fas fa-bars"></i>
         </div>
-        <div class="author-info">
-          <div class="user-trigger">
-            <i class="fas fa-user-circle"></i>
-            <span id="username">Unnamed</span>
-            <i class="fas fa-caret-down dropdown-icon"></i>
+        <div class="tpb-header-info">
+          <div class="notifications">
+            <div class="notif-trigger">
+              <i class="fas fa-bell"></i>
+              <span class="notif-badge" id="notif-count">0</span>
+            </div>
+            <div class="notif-dropdown" id="notifMenu">
+              <!-- JS sẽ thêm tin nhắn vào đây -->
+            </div>
           </div>
 
-          <div class="dropdown-menu" id="userMenu">
-            <!-- <div class="dropdown-item flex-between-space">
+          <div class="author-info">
+            <div class="user-trigger">
+              <i class="fas fa-user-circle"></i>
+              <span id="username">Unnamed</span>
+              <i class="fas fa-caret-down dropdown-icon"></i>
+            </div>
+
+            <div class="dropdown-menu" id="userMenu">
+              <!-- <div class="dropdown-item flex-between-space">
               <i class="fas fa-info"></i><span id="username">Unnamed</span>
             </div> -->
-            <div class="dropdown-item flex-between-space" onclick="logout()">
-              <i class="fas fa-sign-out-alt"></i>Logout
+              <div class="dropdown-item flex-between-space" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>Logout
+              </div>
             </div>
           </div>
         </div>
@@ -63,6 +79,122 @@
       generateMenu(menuItems, "menu-container");
       // Set ussername
       setAuth("Le Van Manh");
+
+      // Notifications data
+      const notifications = [
+        {
+          active: 1,
+          time: "15:24, 21-08-2025",
+          userId: "it1",
+          text: "đã đăng một ý kiến trao đổi ở giao dịch",
+          url: "https://www.google.com",
+          transCode: "GNCN077250710005"
+        },
+        {
+          active: 1,
+          time: "15:24, 21-08-2025",
+          userId: "it1",
+          text: "đã đăng một ý kiến trao đổi ở giao dịch",
+          url: "https://www.openai.com",
+          transCode: "GNCN077250710006"
+        },
+        {
+          active: 1,
+          time: "15:24, 21-08-2025",
+          userId: "it1",
+          text: "đã đăng một ý kiến trao đổi ở giao dịch",
+          url: "https://vnexpress.net",
+          transCode: "GNCN077250710007"
+        },
+        {
+          active: 1,
+          time: "15:24, 21-08-2025",
+          userId: "it1",
+          text: "đã đăng một ý kiến trao đổi ở giao dịch",
+          url: "https://24h.com.vn",
+          transCode: "GNCN077250710008"
+        },
+        {
+          active: 1,
+          time: "15:24, 21-08-2025",
+          userId: "it1",
+          text: "đã đăng một ý kiến trao đổi ở giao dịch",
+          url: "https://24h.com.vn",
+          transCode: "GNCN077250710009"
+        },
+        {
+          time: "15:24, 21-08-2025",
+          userId: "it1",
+          text: "đã đăng một ý kiến trao đổi ở giao dịch",
+          url: "https://www.google.com",
+          transCode: "GNCN077250710005"
+        },
+        {
+          time: "15:24, 21-08-2025",
+          userId: "it1",
+          text: "đã đăng một ý kiến trao đổi ở giao dịch",
+          url: "https://www.openai.com",
+          transCode: "GNCN077250710006"
+        },
+        {
+          time: "15:24, 21-08-2025",
+          userId: "it1",
+          text: "đã đăng một ý kiến trao đổi ở giao dịch",
+          url: "https://vnexpress.net",
+          transCode: "GNCN077250710007"
+        },
+        {
+          time: "15:24, 21-08-2025",
+          userId: "it1",
+          text: "đã đăng một ý kiến trao đổi ở giao dịch",
+          url: "https://24h.com.vn",
+          transCode: "GNCN077250710008"
+        },
+        {
+          time: "15:24, 21-08-2025",
+          userId: "it1",
+          text: "đã đăng một ý kiến trao đổi ở giao dịch",
+          url: "https://24h.com.vn",
+          transCode: "GNCN077250710009"
+        },
+        {
+          time: "15:24, 21-08-2025",
+          userId: "it1",
+          text: "đã đăng một ý kiến trao đổi ở giao dịch",
+          url: "https://www.google.com",
+          transCode: "GNCN077250710005"
+        },
+        {
+          time: "15:24, 21-08-2025",
+          userId: "it1",
+          text: "đã đăng một ý kiến trao đổi ở giao dịch",
+          url: "https://www.openai.com",
+          transCode: "GNCN077250710006"
+        },
+        {
+          time: "15:24, 21-08-2025",
+          userId: "it1",
+          text: "đã đăng một ý kiến trao đổi ở giao dịch",
+          url: "https://vnexpress.net",
+          transCode: "GNCN077250710007"
+        },
+        {
+          time: "15:24, 21-08-2025",
+          userId: "it1",
+          text: "đã đăng một ý kiến trao đổi ở giao dịch",
+          url: "https://24h.com.vn",
+          transCode: "GNCN077250710008"
+        },
+        {
+          time: "15:24, 21-08-2025",
+          userId: "it1",
+          text: "đã đăng một ý kiến trao đổi ở giao dịch",
+          url: "https://24h.com.vn",
+          transCode: "GNCN077250710009"
+        },
+      ];
+
+      renderNotifications(notifications);
     </script>
   </body>
 </html>

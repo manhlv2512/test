@@ -1,0 +1,209 @@
+/* Css for notifications */
+.tpb-header-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  /* ====== Notifications wrapper ====== */
+  .notifications {
+    position: relative;
+    display: inline-block;
+  }
+
+  /* Icon chuông trigger */
+  .notif-trigger {
+    position: relative;
+    cursor: pointer;
+    font-size: 18px;
+    color: #555;
+    padding: 8px;
+    transition: all 0.2s ease;
+  }
+
+  /* Badge số lượng */
+  .notif-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: #dc3545;
+    /* đỏ */
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 50%;
+    line-height: 1;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+  }
+
+  /* Dropdown mặc định ẩn */
+  .notif-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 0;
+    /* bỏ gap */
+    width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+
+  /* Hover vào toàn khối notification */
+  .notifications:hover {
+
+    /* Badge nổi bật hơn khi hover */
+    .notif-badge {
+      background: #ff4757;
+      /* đỏ sáng hơn */
+    }
+
+    /* Hover vào notifications -> show dropdown */
+    .notif-dropdown {
+      display: block;
+      animation: fadeIn 0.2s ease;
+    }
+
+    /* Hover vào toàn khối chuông */
+    .notif-trigger {
+      color: #6f42c1;
+      /* tím */
+      transform: scale(1.1);
+    }
+  }
+
+  /* Icon chuông rung khi hover */
+  .notif-trigger:hover i {
+    animation: ring 0.4s ease;
+  }
+
+  .notifications.open .notif-dropdown {
+    display: block;
+    animation: fadeIn 0.2s ease;
+  }
+
+  /* ====== Item thông báo ====== */
+  .notif-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f1f1;
+    transition: background 0.2s;
+  }
+
+  .notif-item:hover {
+    background: #f0e6ff;
+    /* tím nhạt */
+  }
+
+  .notif-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .notif-time {
+    font-size: 12px;
+    color: #888;
+  }
+
+  /* TransCode tím đậm, không nền/viền */
+  .notif-code {
+    font-size: 12px;
+    color: #6f42c1;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .notif-text {
+    font-size: 14px;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .notif-text .notif-user {
+    font-weight: 700;
+    color: #000;
+    margin-right: 4px;
+  }
+
+  .notif-empty {
+    padding: 12px 14px;
+    font-size: 14px;
+    color: #888;
+    text-align: center;
+  }
+
+  /* Đã đọc */
+  .notif-item.read {
+    background: #fff;
+    color: #555;
+  }
+
+  .notif-item.read:hover {
+    background: #f5f5f5;
+    /* hover màu xám nhạt */
+  }
+
+  /* Chưa đọc */
+  .notif-item.unread {
+    background: #f9f5ff;
+    /* tím nhạt */
+  }
+
+  .notif-item.unread:hover {
+    background: #e9d8fd;
+    /* hover tím đậm hơn */
+  }
+
+  /* Nội dung chưa đọc nổi bật */
+  .notif-item.unread .notif-time,
+  .notif-item.unread .notif-text,
+  .notif-item.unread .notif-user {
+    font-weight: 600;
+    color: #000;
+  }
+
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes ring {
+    0% {
+      transform: rotate(0);
+    }
+
+    25% {
+      transform: rotate(15deg);
+    }
+
+    50% {
+      transform: rotate(-15deg);
+    }
+
+    75% {
+      transform: rotate(10deg);
+    }
+
+    100% {
+      transform: rotate(0);
+    }
+  }
+
+}

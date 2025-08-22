@@ -185,3 +185,45 @@ $(document).on("mouseleave", ".menu-item", function () {
     sidebar.classList.add("collapsed");
   }
 });
+
+function escapeHtml(text) {
+  return $("<div>").text(text).html();
+}
+
+function renderNotifications(lists) {
+  var notifMenu = $(".tpb-header-info #notifMenu");
+  notifMenu.empty();
+
+  if (!lists.length) {
+    notifMenu.append('<div class="notif-empty">Không có thông báo</div>');
+    $("#notif-count").text(0);
+    return;
+  }
+
+  lists.forEach(function (n) {
+    // class cho item theo active
+    var itemClass = n.active == 1 ? "notif-item unread" : "notif-item read";
+
+    notifMenu.append(
+      '<div class="' + itemClass + '" data-url="' + n.url + '">' +
+      '<div class="notif-row">' +
+      '<span class="notif-time">' + n.time + "</span>" +
+      '<span class="notif-code">' + n.transCode + "</span>" +
+      "</div>" +
+      '<div class="notif-text">' +
+      '<span class="notif-user">' + n.userId + ":</span> " + n.text +
+      "</div>" +
+      "</div>"
+    );
+  });
+
+  // update counter (chỉ tính chưa đọc)
+  var unreadCount = lists.filter(function (n) { return n.active == 1; }).length;
+  $("#notif-count").text(unreadCount);
+
+  // bind click events
+  notifMenu.off("click", ".notif-item").on("click", ".notif-item", function () {
+    var url = $(this).data("url");
+    if (url) window.open(url, url);
+  });
+}

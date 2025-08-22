@@ -4,6 +4,7 @@
   --active-menu: #b39ddb;
   --hover-menu: #7c43bd;
   --font-size-menu-item: 13px;
+  --font-size-submenu: 12px;
 }
 
 body {
@@ -175,8 +176,9 @@ body {
 }
 
 .submenu>.menu-item {
-  padding: 10px 5px 10px 0;
+  padding: 8px 5px 8px 0;
   gap: 5px;
+  font-size: var(--font-size-submenu);
 }
 
 .sidebar.force-open {
