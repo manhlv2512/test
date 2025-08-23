@@ -171,6 +171,10 @@
     color: #000;
   }
 
+  #notif-count:empty,
+  #notif-count[data-count="0"] {
+    display: none;
+  }
 
   @keyframes fadeIn {
     from {

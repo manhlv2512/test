@@ -201,7 +201,7 @@ function renderNotifications(lists) {
 
   if (!lists.length) {
     notifMenu.append('<div class="notif-empty">Không có thông báo</div>');
-    $("#notif-count").text(0);
+    $("#notif-count").text("");
     return;
   }
 
@@ -213,15 +213,19 @@ function renderNotifications(lists) {
     var text = n.content || "";
     if (text) text = escapeHtml(text);
     var link = n.linkUrl || "";
-    if (link) text = escapeHtml(link);
-    
+    if (link) link = escapeHtml(link);
+
+    var tooltip = userId + ": " + text;
+    var time = n.pushTime || "";
+    var transCode = n.transactionCode || "";
+
     notifMenu.append(
-      '<div class="' + itemClass + '" data-url="' + link + '">' +
+      '<div class="' + itemClass + '" data-url="' + link + '" title="' + tooltip + '">' +
       '<div class="notif-row">' +
-      '<span class="notif-time">' + n.pushTime + "</span>" +
-      '<span class="notif-code">' + n.transactionCode + "</span>" +
+      '<span class="notif-time">' + time + "</span>" +
+      '<span class="notif-code">' + transCode + "</span>" +
       "</div>" +
-      '<div class="notif-text">' +
+      '<div class="notif-text"' +
       '<span class="notif-user">' + userId + ":</span> " + text +
       "</div>" +
       "</div>"
@@ -230,6 +234,7 @@ function renderNotifications(lists) {
 
   // update counter (chỉ tính chưa đọc)
   var unreadCount = lists.filter(function (n) { return n.active == 1; }).length;
+  unreadCount = unreadCount || "";
   $("#notif-count").text(unreadCount);
 
   // bind click events
