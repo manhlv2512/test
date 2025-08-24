@@ -242,7 +242,7 @@ function createNotifyItem(n) {
     .on("click", function () {
       if (n.active == 1) {
         $(this).removeClass("unread").addClass("read");
-        alert(info); // TODO bpm push event mark read notify
+        console.log("notify-item", info);// TODO bpm push event mark read notify
       }
       window.open(link, transCode);
     });
