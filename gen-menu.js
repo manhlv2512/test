@@ -54,7 +54,7 @@ function buildMenuTree(items, parentElement) {
         _slideUp(parentElement, menuItem);
 
         var isOpen = $(menuItem).hasClass("open");
-        var delay = Math.min(300, item.nodes.length * 100);
+        var delay = getDelay(item.nodes);
         if (!isOpen) {
           $(menuItem).addClass("open");
           $(menuItem).removeClass("active");
@@ -88,7 +88,6 @@ function buildMenuTree(items, parentElement) {
           setActive(menuItem);
           // ĐÓNG tất cả submenu đang mở
           _slideUp(parentElement, menuItem);
-          // _slideUp(submenu);
           updateIframeLink(item.linkUrl || item.link);
         });
       }
@@ -105,12 +104,17 @@ function openSidebar() {
   }
 }
 
+function getDelay(nodes) {
+  return Math.min(600, nodes.length * 100)
+}
+
 function _slideUp($parent, menuItem) {
   var $siblings = $($parent).children(".menu-item.open").not(menuItem);
   $siblings.removeClass("open");
   $siblings.each(function () {
     var sibSubmenu = $(this).next(".submenu");
-    var sibDelay = Math.min(300, sibSubmenu.children(".menu-item").length * 100);
+    var childs = sibSubmenu.children(".menu-item");
+    var sibDelay = getDelay(childs);
     sibSubmenu.stop(true, true).slideUp(sibDelay, function () {
       $(this).css("display", "none");
     });
@@ -129,7 +133,8 @@ function _slideUpAll(submenu) {
       var icon = parentMenu.find(".toggle-icon");
       if (icon.length) icon.attr("class", "toggle-icon fas fa-chevron-down");
       // TODO tính toán lại delay theo submenu đang open
-      var sibDelay = Math.min(300, $(this).children(".menu-item").length * 100);
+      var childs = $(this).children(".menu-item");
+      var sibDelay = getDelay(childs);
       $(this).stop(true, true).slideUp(sibDelay, function () {
         $(this).css("display", "none");
       });
@@ -206,40 +211,50 @@ function renderNotifications(lists) {
   }
 
   lists.forEach(function (n) {
-    // class cho item theo active
-    var itemClass = n.active == 1 ? "notif-item unread" : "notif-item read";
-    var userId = n.fullName || n.userId || "";
-    if (userId) userId = escapeHtml(userId);
-    var text = n.content || "";
-    if (text) text = escapeHtml(text);
-    var link = n.linkUrl || "";
-    if (link) link = escapeHtml(link);
-
-    var tooltip = userId + ": " + text;
-    var time = n.pushTime || "";
-    var transCode = n.transactionCode || "";
-
-    notifMenu.append(
-      '<div class="' + itemClass + '" data-url="' + link + '" title="' + tooltip + '">' +
-      '<div class="notif-row">' +
-      '<span class="notif-time">' + time + "</span>" +
-      '<span class="notif-code">' + transCode + "</span>" +
-      "</div>" +
-      '<div class="notif-text"' +
-      '<span class="notif-user">' + userId + ":</span> " + text +
-      "</div>" +
-      "</div>"
-    );
+    // create row item
+    notifMenu.append(createNotifyItem(n));
   });
 
   // update counter (chỉ tính chưa đọc)
   var unreadCount = lists.filter(function (n) { return n.active == 1; }).length;
   unreadCount = unreadCount || "";
   $("#notif-count").text(unreadCount);
+}
 
-  // bind click events
-  notifMenu.off("click", ".notif-item").on("click", ".notif-item", function () {
-    var url = $(this).data("url");
-    if (url) window.open(url, url);
-  });
+function createNotifyItem(n) {
+  // class cho item theo active
+  var itemClass = n.active == 1 ? "notif-item unread" : "notif-item read";
+  var userId = n.fullName || n.userId || "";
+  if (userId) userId = escapeHtml(userId);
+  var text = n.content || "";
+  if (text) text = escapeHtml(text);
+  var tooltip = userId + ": " + text;
+  var link = n.linkUrl || "";
+  if (link) link = escapeHtml(link);
+  var time = n.pushTime || "";
+  var transCode = n.transactionCode || "";
+  var info = JSON.stringify(n);
+
+  var item = $("<div>")
+    .addClass(itemClass)
+    .attr("title", tooltip)
+    .attr("data-url", link)
+    .on("click", function () {
+      if (n.active == 1) {
+        $(this).removeClass("unread").addClass("read");
+        alert(info); // TODO bpm push event mark read notify
+      }
+      window.open(link, transCode);
+    });
+
+  item.append(
+    '<div class="notif-row">' +
+    '<span class="notif-time">' + time + "</span>" +
+    '<span class="notif-code">' + transCode + "</span>" +
+    "</div>",
+    '<div class="notif-text"' +
+    '<span class="notif-user">' + userId + ":</span> " + text +
+    "</div>"
+  );
+  return item
 }
