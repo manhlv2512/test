@@ -221,6 +221,14 @@ function renderNotifications(lists) {
   $("#notif-count").text(unreadCount);
 }
 
+function updateNotiCount() {
+  var unreadCount = $("#notif-count").text() || "1";
+  unreadCount = Number(unreadCount);
+  var newCount = unreadCount - 1;
+  unreadCount = newCount || "";
+  $("#notif-count").text(unreadCount);
+}
+
 function createNotifyItem(n) {
   // class cho item theo active
   var itemClass = n.active == 1 ? "notif-item unread" : "notif-item read";
@@ -230,7 +238,8 @@ function createNotifyItem(n) {
   if (text) text = escapeHtml(text);
   var tooltip = userId + ": " + text;
   var link = n.linkUrl || "";
-  if (link) link = escapeHtml(link);
+  var dataUrl = "";
+  if (link) dataUrl = escapeHtml(link);
   var time = n.pushTime || "";
   var transCode = n.transactionCode || "";
   var info = JSON.stringify(n);
@@ -238,13 +247,14 @@ function createNotifyItem(n) {
   var item = $("<div>")
     .addClass(itemClass)
     .attr("title", tooltip)
-    .attr("data-url", link)
+    .attr("data-url", dataUrl)
     .on("click", function () {
       if (n.active == 1) {
         $(this).removeClass("unread").addClass("read");
         bpmext.ui.publishEvent("eventReloadNotify", { action: "markRead", data: info, _id: n.id });
+        updateNotiCount();
       }
-      window.open(link, transCode);
+      if (link) window.open(link, transCode);
     });
 
   item.append(
