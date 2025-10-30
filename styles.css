@@ -249,7 +249,7 @@ body {
   width: calc(100% - 10px);
   min-width: unset;
   padding: 0;
-  margin : 0;
+  margin: 0;
   background-color: #f3f3f3;
   border: 1px solid #ddd;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
@@ -321,4 +321,21 @@ iframe {
   to {
     transform: rotate(360deg);
   }
+}
+
+.loader-container {
+  text-align: center;
+  margin-top: 20%;
+}
+
+.loader-gif {
+  width: 150px;
+  height: 150px;
+}
+
+.loading-text {
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
+  font-style: italic;
 }
