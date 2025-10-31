@@ -7,6 +7,7 @@ function onloadRootComponent(hostname, logoutUrl) {
 
   iframe.addEventListener("load", function () {
     loadingOverlay.style.display = "none"; // Hide when done loading
+    hideUserMenu();
   });
 }
 
@@ -173,6 +174,53 @@ function logout() {
   // sessionStorage.clear();
   window.location.href = loginUrl; // redirect to login
 }
+
+function logout() {
+  // Hiển thị hộp thoại xác nhận
+  var confirmed = confirm("Bạn có chắc chắn muốn đăng xuất không?");
+  if (!confirmed) return; // Nếu bấm 'Hủy' thì dừng lại
+
+  // Xóa dữ liệu người dùng trong sessionStorage và localStorage
+  sessionStorage.clear();
+  localStorage.clear();
+
+  // Xóa cookie (nếu có)
+  /* document.cookie.split(";").forEach(cookie => {
+    var name = cookie.split("=")[0].trim();
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+  }); */
+
+  // Chuyển hướng sang trang đăng nhập
+  window.location.href = loginUrl;
+}
+
+// Toggle dropdown when clicking the user info area
+function toggleUserMenu() {
+  var userMenu = document.getElementById("userMenu");
+  userMenu.classList.toggle("show");
+}
+
+function hideUserMenu(userMenu) {
+  if (!userMenu) userMenu = document.getElementById("userMenu");
+  userMenu.classList.remove("show");
+}
+
+// Listen for click on the trigger
+document.querySelector(".user-trigger").addEventListener("click", (e) => {
+  e.stopPropagation(); // Prevent the click from bubbling up (so it won’t close immediately)
+  toggleUserMenu();
+});
+
+// Close the dropdown when clicking anywhere outside of the user info and the dropdown menu
+document.addEventListener("click", (e) => {
+  var userMenu = document.getElementById("userMenu");
+  var trigger = document.querySelector(".user-trigger");
+
+  // If the click is outside of both the user-trigger and the dropdown-menu, close the dropdown
+  if (!userMenu.contains(e.target) && !trigger.contains(e.target)) {
+    hideUserMenu(userMenu);
+  }
+});
 
 // Thêm sự kiện hover cho menu-item khi sidebar đang đóng
 $(document).on("mouseenter", ".menu-item", function () {

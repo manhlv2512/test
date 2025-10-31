@@ -226,8 +226,16 @@ body {
   margin-left: 4px;
 }
 
+/*
 .author-info:hover .dropdown-menu {
   display: flex;
+  opacity: 1;
+  transform: translateY(0);
+} */
+
+/* Show the dropdown when the 'show' class is added */
+.dropdown-menu.show {
+  display: block;
   opacity: 1;
   transform: translateY(0);
 }
