@@ -1,8 +1,16 @@
 :root {
   --header-bar-height: 40px;
   --sidebar-width: 230px;
-  --active-menu: #b39ddb;
-  --hover-menu: #7c43bd;
+  --bg-active-menu: #b39ddb;
+  /* --color-active-menu: #4a148c; */
+  --color-active-menu: black;
+  --hover-menu: #f3f3f3;
+  --bg-header: #7c43bd;
+  /* --bg-sidebar: linear-gradient(180deg, #4b2c88 0%, #2a1c54 100%); */
+  --bg-sidebar: #f3f3f3;
+  /* --color-sidebar: white; */
+  --bg-menu-container: white;
+  --color-sidebar: black;
   --font-size-menu-item: 13px;
   --font-size-submenu: 12px;
 }
@@ -26,8 +34,8 @@ body {
 .sidebar {
   width: var(--sidebar-width);
   /* font-family: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif; */
-  background: linear-gradient(180deg, #4b2c88 0%, #2a1c54 100%);
-  color: white;
+  background: var(--bg-sidebar);
+  color: var(--color-sidebar);
   display: flex;
   flex-direction: column;
   transition: width 0.3s ease;
@@ -72,6 +80,7 @@ body {
 
 .logo {
   align-items: center;
+  background: var(--bg-header);
   /* căn giữa theo chiều dọc */
   justify-content: center;
   display: flex;
@@ -97,6 +106,9 @@ body {
   /* Firefox */
   -ms-overflow-style: none;
   /* Internet Explorer and Edge */
+  background-color: var(--bg-menu-container);
+  border-radius: 6px;
+  margin: 5px;
 }
 
 #menu-container::-webkit-scrollbar {
@@ -127,9 +139,9 @@ body {
 }
 
 .menu-item.active {
-  background-color: var(--active-menu);
+  background-color: var(--bg-active-menu);
   /* tím pastel, nổi bật trạng thái active */
-  color: #4a148c;
+  color: var(--color-active-menu);
   font-weight: bold;
   border-radius: 3px;
 }
@@ -155,7 +167,6 @@ body {
   overflow: hidden;
   transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s;
   opacity: 0;
-  background: #370772;
   border-radius: 6px;
   /* margin: 2px 0; */
   box-shadow: 0 2px 8px rgba(74, 20, 140, 0.13);
@@ -167,7 +178,6 @@ body {
   max-height: 5000px;
   /* đủ lớn để fit mọi nội dung */
   opacity: 1;
-  background: rgba(255, 255, 255, 0.05);
 }
 
 #menu-container>.menu-item {
