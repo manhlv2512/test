@@ -27,14 +27,18 @@ function buildMenuTree(items, parentElement) {
     var menuName = item.menuName || item.title;
     menuItem.className = "menu-item";
     menuItem.setAttribute("data-tooltip", menuName);
+    if (item.className) {
+      menuItem.className = "menu-item " + item.className;
+    }
 
-    var icon = document.createElement("i");
-    icon.className = item.icon || "fas fa-folder";
+    if (item.icon) {
+      var icon = document.createElement("i");
+      icon.className = item.icon || "fas fa-folder";
+      menuItem.appendChild(icon);
+    }
 
     var label = document.createElement("span");
     label.textContent = menuName;
-
-    menuItem.appendChild(icon);
     menuItem.appendChild(label);
 
     if (hasNodes) {
@@ -206,13 +210,13 @@ function hideUserMenu(userMenu) {
 }
 
 // Listen for click on the trigger
-document.querySelector(".user-trigger").addEventListener("click", (e) => {
+$(document).on("click", ".user-trigger", function () {
   e.stopPropagation(); // Prevent the click from bubbling up (so it won’t close immediately)
   toggleUserMenu();
 });
 
 // Close the dropdown when clicking anywhere outside of the user info and the dropdown menu
-document.addEventListener("click", (e) => {
+document.addEventListener("click", function (e) {
   var userMenu = document.getElementById("userMenu");
   var trigger = document.querySelector(".user-trigger");
 

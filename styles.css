@@ -357,3 +357,19 @@ iframe {
   font-weight: 600;
   font-style: italic;
 }
+
+.menu-group {
+  font-weight: 700;
+  text-transform: uppercase;
+  /* padding: 5px 10px !important; */
+}
+
+.menu-group:not(:first-of-type)::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--bg-sidebar);
+}
