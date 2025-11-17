@@ -8,6 +8,12 @@ function onloadRootComponent(hostname, logoutUrl) {
   iframe.addEventListener("load", function () {
     loadingOverlay.style.display = "none"; // Hide when done loading
     hideUserMenu();
+
+    // const doc = iframe.contentDocument || iframe.contentWindow.document;
+    // console.log("-------------11111", doc);
+    // doc.addEventListener("click", function() {
+    //   console.log("Clicked inside the iframe!");
+    // });
   });
 }
 
@@ -210,7 +216,7 @@ function hideUserMenu(userMenu) {
 }
 
 // Listen for click on the trigger
-$(document).on("click", ".user-trigger", function () {
+$(document).on("click", ".user-trigger", function (e) {
   e.stopPropagation(); // Prevent the click from bubbling up (so it won’t close immediately)
   toggleUserMenu();
 });
