@@ -63,19 +63,19 @@ var menuItems = [
       {
         "title": "Tin nóng",
         "link": "https://www.24h.com.vn/tin-tuc-trong-ngay-c46.html",
-        "icon": "fas fa-fire",
+        // "icon": "fas fa-fire",
         "hasPermission": 1
       },
       {
         "title": "Điểm nóng",
         "link": "https://www.24h.com.vn/diem-nong-c704.html",
-        "icon": "fas fa-fire",
+        // "icon": "fas fa-fire",
         "hasPermission": 1
       },
       {
         "title": "Dự báo thời tiết",
         "link": "https://www.24h.com.vn/du-bao-thoi-tiet-c568.html",
-        "icon": "fas fa-sun",
+        // "icon": "fas fa-sun",
         "hasPermission": 1
       }
     ]
@@ -88,26 +88,23 @@ var menuItems = [
       {
         "title": "Lịch thi đấu bóng đá",
         "link": "https://www.24h.com.vn/lich-thi-dau-bong-da-c287.html",
-        "icon": "fas fa-link",
+        // "icon": "fas fa-link",
         "hasPermission": 1
       },
       {
         "title": "Bóng đá Ngoại hạng Anh",
         "link": "https://www.24h.com.vn/bong-da-ngoai-hang-anh-c149.html",
-        "icon": "fas fa-link",
+        // "icon": "fas fa-link",
         "hasPermission": 1
       },
     ]
   },
-
   {
     "title": "Phim",
     "link": "https://www.24h.com.vn/phim-c74.html",
     "icon": "fas fa-film",
     "hasPermission": 1
   },
-
-
   {
     "title": "Kinh doanh",
     "icon": "fas fa-briefcase",
@@ -147,19 +144,19 @@ var menuItems = [
       {
         "title": "Ngắm xe đẹp",
         "link": "https://www.24h.com.vn/anh-nguoi-dep-va-xe-c199.html",
-        "icon": "fas fa-link",
+        // "icon": "fas fa-link",
         "hasPermission": 1
       },
       {
         "title": "Bảng giá xe ô tô",
         "link": "https://www.24h.com.vn/bang-gia-xe-o-to-c807.html",
-        "icon": "fas fa-link",
+        // "icon": "fas fa-link",
         "hasPermission": 1
       },
       {
         "title": "So sánh xe",
         "link": "https://www.24h.com.vn/so-sanh-xe-c805.html",
-        "icon": "fas fa-link",
+        // "icon": "fas fa-link",
         "hasPermission": 1
       },
     ]
@@ -172,14 +169,14 @@ var menuItems = [
       {
         "title": "Tin công nghệ",
         "link": "https://www.24h.com.vn/tin-tuc-cong-nghe-c453.html",
-        "icon": "fas fa-microchip",
+        // "icon": "fas fa-microchip",
         "hasPermission": 1
       },
       {
         "title": "Laptop giá rẻ",
         "link": "https://www.24h.com.vn/laptop-gia-re-c451.html",
-        "icon": "fas fa-laptop",
-        "hasPermission": 0
+        // "icon": "fas fa-laptop",
+        "hasPermission": 1
       }
     ]
   },
