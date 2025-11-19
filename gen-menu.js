@@ -8,12 +8,6 @@ function onloadRootComponent(hostname, logoutUrl) {
   iframe.addEventListener("load", function () {
     loadingOverlay.style.display = "none"; // Hide when done loading
     hideUserMenu();
-
-    // const doc = iframe.contentDocument || iframe.contentWindow.document;
-    // console.log("-------------11111", doc);
-    // doc.addEventListener("click", function() {
-    //   console.log("Clicked inside the iframe!");
-    // });
   });
 }
 
@@ -71,6 +65,12 @@ function buildMenuTree(items, parentElement) {
           $(menuItem).removeClass("active");
           $(submenu).stop(true, true).slideDown(delay, function () {
             $(this).css("display", "block");
+            // 🔥 AUTO CLICK FIRST CHILD WHEN ONLY ONE CHILD AND IT IS A LINK
+            const childItems = submenu.querySelectorAll('.menu-item');
+            // nếu muốn auto click when only child -> childItems.length == 1
+            if (childItems.length > 0 && childItems[0].classList.contains('has-link') && !submenu.querySelector('.menu-item.active')) {
+              childItems[0].click();
+            }
           });
           toggleIcon.className = "toggle-icon fas fa-chevron-up";
         } else {

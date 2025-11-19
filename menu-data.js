@@ -115,26 +115,26 @@ var menuItems = [
     "nodes": [
       {
         "title": "Giá vàng",
-        "icon": "fas fa-coins",
+        // "icon": "fas fa-coins",
         "link": "https://www.24h.com.vn/gia-vang-hom-nay-c425.html",
         "hasPermission": 1
       },
       {
         "title": "Tỷ giá ngoại tệ",
         "link": "https://www.24h.com.vn/ty-gia-ngoai-te-ttcb-c426.html",
-        "icon": "fas fa-link",
+        // "icon": "fas fa-link",
         "hasPermission": 1
       },
       {
         "title": "Chứng khoán",
         "link": "https://www.24h.com.vn/tin-chung-khoan-c566.html",
-        "icon": "fas fa-link",
+        // "icon": "fas fa-link",
         "hasPermission": 1
       },
       {
         "title": "Bất động sản",
         "link": "https://www.24h.com.vn/bat-dong-san-c792.html",
-        "icon": "fas fa-link",
+        // "icon": "fas fa-link",
         "hasPermission": 1
       },
     ]
@@ -179,7 +179,7 @@ var menuItems = [
         "title": "Laptop giá rẻ",
         "link": "https://www.24h.com.vn/laptop-gia-re-c451.html",
         "icon": "fas fa-laptop",
-        "hasPermission": 1
+        "hasPermission": 0
       }
     ]
   },
