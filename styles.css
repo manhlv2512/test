@@ -241,12 +241,14 @@ body {
 }
 
 .user-trigger {
-  display: flex;
+  display: inline-block;
   align-items: center;
   gap: 6px;
   padding: 8px 0;
   cursor: pointer;
   border-radius: 4px;
+  min-width: 100px;
+  text-align: right;
 }
 
 .dropdown-menu {

@@ -203,7 +203,7 @@ function hideUserMenu(userMenu) {
 }
 
 // Listen for click on the trigger
-document.querySelector(".user-trigger").addEventListener("click", (e) => {
+$(document).on("click", ".user-trigger", function (e) {
   e.stopPropagation(); // Prevent the click from bubbling up (so it won’t close immediately)
   toggleUserMenu();
 });
