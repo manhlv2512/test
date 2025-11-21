@@ -253,9 +253,8 @@ body {
   position: absolute;
   display: none;
   top: 100%;
-  left: 10px;
-  width: calc(100% - 10px);
-  min-width: unset;
+  right: 0px;
+  min-width: 100px;
   padding: 0;
   margin: 0;
   background-color: #f3f3f3;
@@ -273,7 +272,7 @@ body {
 }
 
 .dropdown-item {
-  padding: 2px 8px;
+  padding: 6px 8px;
   font-size: 13px;
   color: #333;
   font-weight: 500;

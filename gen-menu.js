@@ -167,31 +167,28 @@ function setAuth(username) {
   document.getElementById("username").textContent = username;
 }
 
-// Logout function
-function logout() {
-  // alert("Logging out...");
-  // Optional: clear tokens, sessionStorage, etc.
-  // sessionStorage.clear();
-  window.location.href = loginUrl; // redirect to login
-}
-
 function logout() {
   // Hiển thị hộp thoại xác nhận
-  var confirmed = confirm("Bạn có chắc chắn muốn đăng xuất không?");
-  if (!confirmed) return; // Nếu bấm 'Hủy' thì dừng lại
-
-  // Xóa dữ liệu người dùng trong sessionStorage và localStorage
-  sessionStorage.clear();
-  localStorage.clear();
-
-  // Xóa cookie (nếu có)
-  /* document.cookie.split(";").forEach(cookie => {
-    var name = cookie.split("=")[0].trim();
-    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-  }); */
-
-  // Chuyển hướng sang trang đăng nhập
-  window.location.href = loginUrl;
+  Swal.fire({
+    // title: "Bạn có chắc chắn muốn đăng xuất không?",
+    text: "Bạn có chắc chắn muốn đăng xuất không?",
+    // icon: "question",
+    icon: "warning",
+    // showCancelButton: true,
+    showCloseButton: true,
+    confirmButtonColor: "#863ACC",
+    // cancelButtonColor: "red",
+    confirmButtonText: "Đồng ý",
+    cancelButtonText: "Không đồng ý",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Xóa dữ liệu người dùng trong sessionStorage và localStorage
+      sessionStorage.clear();
+      localStorage.clear();
+      // Chuyển hướng sang trang đăng nhập
+      window.location.href = loginUrl;
+    }
+  });
 }
 
 // Toggle dropdown when clicking the user info area
