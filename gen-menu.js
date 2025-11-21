@@ -176,7 +176,7 @@ function logout() {
     icon: "warning",
     // showCancelButton: true,
     showCloseButton: true,
-    confirmButtonColor: "#863ACC",
+    confirmButtonColor: "#7b35ba", // primary button
     // cancelButtonColor: "red",
     confirmButtonText: "Đồng ý",
     cancelButtonText: "Không đồng ý",
