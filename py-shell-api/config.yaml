@@ -1,0 +1,50 @@
+# Shell Script Execution API configuration
+
+app:
+  name: "Shell Script Execution API"
+  version: "1.0.0"
+  host: "0.0.0.0"
+  port: 8000
+
+# Directory (relative to project root or absolute) where .sh scripts live
+scripts_dir: "scripts"
+
+# Default timeout (seconds) applied to a script execution when none is given
+default_timeout: 60
+
+# Maximum timeout (seconds) a caller may request
+max_timeout: 600
+
+# Optional API key. When set, callers must send it via the X-API-Key header.
+# Leave empty/null to disable auth.
+api_key: null
+
+logging:
+  level: "INFO"
+  # Path for the rotating log file. Set to null to log to stdout only.
+  file: "logs/shell-api.log"
+  rotation: "10 MB"
+  retention: "10 days"
+
+# Whitelist of scripts that are allowed to be executed through the API.
+# Each entry maps a public "name" to a file inside scripts_dir.
+# File paths can be overridden without editing YAML by setting
+# SHELL_API_SCRIPT_<UPPERCASE_NAME>, e.g. SHELL_API_SCRIPT_DEPLOY.
+# Only actions listed here can be run.
+scripts:
+  - name: "deploy"
+    file: "deploy.sh"
+    description: "Deploy the application"
+    allow_args: true
+  - name: "undeploy"
+    file: "undeploy.sh"
+    description: "Undeploy / tear down the application"
+    allow_args: true
+  - name: "restart"
+    file: "restart.sh"
+    description: "Restart the running service"
+    allow_args: false
+  - name: "backup"
+    file: "backup.sh"
+    description: "Back up application data"
+    allow_args: true

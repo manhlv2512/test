@@ -1,0 +1,90 @@
+# Shell API - curl examples
+#
+# Run these commands from a terminal.
+# Change the values below when the API uses another URL or key.
+
+export BASE_URL="http://localhost:8000"
+export API_KEY="change-me"
+
+
+# 1. Service information
+curl -sS "${BASE_URL}/"
+
+
+# 2. Health check
+curl -sS "${BASE_URL}/health"
+
+
+# 3. List configured actions
+curl -sS "${BASE_URL}/scripts"
+
+
+# 4. Get one configured action
+curl -sS "${BASE_URL}/scripts/deploy"
+
+
+# 5. Run the configured deploy action
+curl -sS -X POST "${BASE_URL}/scripts/deploy" \
+  -H "X-API-Key: ${API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "args": ["staging"],
+    "timeout": 120
+  }'
+
+
+# 6. Run the configured undeploy action
+curl -sS -X POST "${BASE_URL}/scripts/undeploy" \
+  -H "X-API-Key: ${API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "args": ["staging"],
+    "timeout": 120
+  }'
+
+
+# 7. Run the configured restart action
+# Body is optional because restart does not accept arguments by default.
+curl -sS -X POST "${BASE_URL}/scripts/restart" \
+  -H "X-API-Key: ${API_KEY}"
+
+
+# 8. Execute a request-supplied path relative to scripts_dir
+# name and payload are only used for logging.
+# args are passed to the executable process.
+curl -sS -X POST "${BASE_URL}/scripts/execute" \
+  -H "X-API-Key: ${API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "path": "backup.sh",
+    "name": "manual-backup",
+    "payload": {
+      "requested_by": "deployment-service",
+      "environment": "staging"
+    },
+    "args": ["database"],
+    "timeout": 120
+  }'
+
+
+# 9. Execute an absolute path
+# The resolved path must remain inside SHELL_API_SCRIPTS_DIR.
+curl -sS -X POST "${BASE_URL}/scripts/execute" \
+  -H "X-API-Key: ${API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "path": "/opt/actions/custom-action",
+    "name": "custom-action",
+    "payload": {
+      "source": "manual"
+    },
+    "args": ["--force"],
+    "timeout": 60
+  }'
+
+
+# 10. Verify authentication failure (expected HTTP 401)
+curl -sS -i -X POST "${BASE_URL}/scripts/execute" \
+  -H "X-API-Key: wrong-key" \
+  -H "Content-Type: application/json" \
+  -d '{"path":"backup.sh"}'

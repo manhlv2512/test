@@ -1,0 +1,21 @@
+{
+  "name": "node-shell-api",
+  "version": "1.0.0",
+  "description": "Express API to execute a local .sh script (which SSHes to another server and runs Python). Bundled to a single JS file and run via Docker.",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit",
+    "dev": "node build.mjs --watch"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.9",
+    "esbuild": "^0.23.0",
+    "typescript": "^5.5.3"
+  }
+}

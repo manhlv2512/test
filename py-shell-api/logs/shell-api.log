@@ -1,0 +1,90 @@
+2026-09-28 14:53:39.614 | INFO     | app.main:lifespan:21 - Starting Shell Script Execution API v1.0.0 (scripts_dir=/Users/manhlv/www/src/docker/py-shell-api/scripts)
+2026-09-28 14:53:39.615 | INFO     | app.main:lifespan:27 - Registered scripts: ['deploy', 'undeploy', 'restart', 'backup']
+2026-09-28 15:20:17.907 | INFO     | app.services.executor:_execute_file:91 - Executing action 'deploy' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/deploy.sh, args=['staging'], timeout=120s, payload={})
+2026-09-28 15:20:19.956 | INFO     | app.services.executor:_execute_file:137 - Action 'deploy' finished: success=True, exit_code=0, duration=2.048s
+2026-09-28 15:45:33.243 | INFO     | app.services.executor:_execute_file:91 - Executing action 'deploy' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/deploy.sh, args=['staging'], timeout=120s, payload={})
+2026-09-28 15:45:35.287 | INFO     | app.services.executor:_execute_file:137 - Action 'deploy' finished: success=True, exit_code=0, duration=2.039s
+2026-09-28 16:45:50.378 | INFO     | app.services.executor:_execute_file:91 - Executing action 'restart' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/restart.sh, args=[], timeout=60s, payload={})
+2026-09-28 16:45:55.461 | INFO     | app.services.executor:_execute_file:137 - Action 'restart' finished: success=True, exit_code=0, duration=5.076s
+2026-09-28 16:46:24.972 | INFO     | app.services.executor:_execute_file:91 - Executing action 'restart' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/restart.sh, args=[], timeout=60s, payload={})
+2026-09-28 16:46:27.011 | INFO     | app.services.executor:_execute_file:137 - Action 'restart' finished: success=True, exit_code=0, duration=2.038s
+2026-09-28 16:49:52.798 | INFO     | app.services.executor:_execute_file:91 - Executing action 'manual-backup' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/backup.sh, args=['database'], timeout=120s, payload={'requested_by': 'deployment-service', 'environment': 'staging'})
+2026-09-28 16:49:54.008 | INFO     | app.services.executor:_execute_file:137 - Action 'manual-backup' finished: success=True, exit_code=0, duration=1.209s
+2026-09-28 17:02:25.108 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=['UAT'], timeout=120s, payload={'requested_by': 'deployment-service', 'environment': 'staging'})
+2026-09-28 17:02:25.115 | ERROR    | app.services.executor:_execute_file:129 - Could not start action 'test-remote': [Errno 8] Exec format error: '/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh'
+2026-09-28 17:02:25.116 | WARNING  | app.routes.scripts:execute_path:176 - Path action 'test-remote' failed for 'remote69.sh': Could not start executable 'test-remote': [Errno 8] Exec format error: '/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh'
+2026-09-28 17:03:13.596 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=['database'], timeout=120s, payload={'requested_by': 'deployment-service', 'environment': 'staging'})
+2026-09-28 17:03:13.601 | ERROR    | app.services.executor:_execute_file:129 - Could not start action 'test-remote': [Errno 8] Exec format error: '/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh'
+2026-09-28 17:03:13.602 | WARNING  | app.routes.scripts:execute_path:176 - Path action 'test-remote' failed for 'remote69.sh': Could not start executable 'test-remote': [Errno 8] Exec format error: '/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh'
+2026-09-28 17:03:19.521 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=['database'], timeout=120s, payload={'requested_by': 'deployment-service', 'environment': 'staging'})
+2026-09-28 17:03:19.527 | ERROR    | app.services.executor:_execute_file:129 - Could not start action 'test-remote': [Errno 8] Exec format error: '/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh'
+2026-09-28 17:03:19.528 | WARNING  | app.routes.scripts:execute_path:176 - Path action 'test-remote' failed for 'remote69.sh': Could not start executable 'test-remote': [Errno 8] Exec format error: '/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh'
+2026-09-28 17:03:56.199 | INFO     | app.main:lifespan:29 - Shutting down Shell Script Execution API
+2026-09-28 17:03:58.205 | INFO     | app.main:lifespan:21 - Starting Shell Script Execution API v1.0.0 (scripts_dir=/Users/manhlv/www/src/docker/py-shell-api/scripts)
+2026-09-28 17:03:58.205 | INFO     | app.main:lifespan:27 - Registered scripts: ['deploy', 'undeploy', 'restart', 'backup']
+2026-09-28 17:04:14.026 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=['UAT'], timeout=120s, payload={'requested_by': 'deployment-service', 'environment': 'staging'})
+2026-09-28 17:04:14.031 | ERROR    | app.services.executor:_execute_file:129 - Could not start action 'test-remote': [Errno 8] Exec format error: '/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh'
+2026-09-28 17:04:14.032 | WARNING  | app.routes.scripts:execute_path:176 - Path action 'test-remote' failed for 'remote69.sh': Could not start executable 'test-remote': [Errno 8] Exec format error: '/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh'
+2026-09-28 17:04:49.486 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=['database'], timeout=120s, payload={'requested_by': 'deployment-service', 'environment': 'staging'})
+2026-09-28 17:04:49.490 | ERROR    | app.services.executor:_execute_file:129 - Could not start action 'test-remote': [Errno 8] Exec format error: '/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh'
+2026-09-28 17:04:49.490 | WARNING  | app.routes.scripts:execute_path:176 - Path action 'test-remote' failed for 'remote69.sh': Could not start executable 'test-remote': [Errno 8] Exec format error: '/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh'
+2026-09-28 17:05:44.131 | INFO     | app.main:lifespan:29 - Shutting down Shell Script Execution API
+2026-09-28 17:05:45.267 | INFO     | app.main:lifespan:21 - Starting Shell Script Execution API v1.0.0 (scripts_dir=/Users/manhlv/www/src/docker/py-shell-api/scripts)
+2026-09-28 17:05:45.268 | INFO     | app.main:lifespan:27 - Registered scripts: ['deploy', 'undeploy', 'restart', 'backup']
+2026-09-28 17:05:49.791 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=['database'], timeout=120s, payload={'requested_by': 'deployment-service', 'environment': 'staging'})
+2026-09-28 17:05:54.152 | INFO     | app.services.executor:_execute_file:137 - Action 'test-remote' finished: success=True, exit_code=0, duration=4.361s
+2026-09-28 17:07:34.632 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=['database'], timeout=120s, payload={'requested_by': 'deployment-service', 'environment': 'staging'})
+2026-09-28 17:07:35.965 | INFO     | app.services.executor:_execute_file:137 - Action 'test-remote' finished: success=True, exit_code=0, duration=1.332s
+2026-09-28 17:08:40.490 | INFO     | app.main:lifespan:29 - Shutting down Shell Script Execution API
+2026-09-28 17:08:41.826 | INFO     | app.main:lifespan:21 - Starting Shell Script Execution API v1.0.0 (scripts_dir=/Users/manhlv/www/src/docker/py-shell-api/scripts)
+2026-09-28 17:08:41.826 | INFO     | app.main:lifespan:27 - Registered scripts: ['deploy', 'undeploy', 'restart', 'backup']
+2026-09-28 17:08:44.931 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=['database'], timeout=120s, payload={'requested_by': 'deployment-service', 'environment': 'staging'})
+2026-09-28 17:08:44.934 | ERROR    | app.services.executor:_execute_file:129 - Could not start action 'test-remote': [Errno 8] Exec format error: '/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh'
+2026-09-28 17:08:44.934 | WARNING  | app.routes.scripts:execute_path:176 - Path action 'test-remote' failed for 'remote69.sh': Could not start executable 'test-remote': [Errno 8] Exec format error: '/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh'
+2026-09-28 17:09:01.555 | INFO     | app.main:lifespan:29 - Shutting down Shell Script Execution API
+2026-09-28 17:09:02.789 | INFO     | app.main:lifespan:21 - Starting Shell Script Execution API v1.0.0 (scripts_dir=/Users/manhlv/www/src/docker/py-shell-api/scripts)
+2026-09-28 17:09:02.790 | INFO     | app.main:lifespan:27 - Registered scripts: ['deploy', 'undeploy', 'restart', 'backup']
+2026-09-28 17:09:11.924 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=['database'], timeout=120s, payload={'requested_by': 'deployment-service', 'environment': 'staging'})
+2026-09-28 17:09:11.926 | ERROR    | app.services.executor:_execute_file:129 - Could not start action 'test-remote': [Errno 8] Exec format error: '/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh'
+2026-09-28 17:09:11.927 | WARNING  | app.routes.scripts:execute_path:176 - Path action 'test-remote' failed for 'remote69.sh': Could not start executable 'test-remote': [Errno 8] Exec format error: '/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh'
+2026-09-28 17:09:17.767 | INFO     | app.main:lifespan:29 - Shutting down Shell Script Execution API
+2026-09-28 17:09:50.938 | INFO     | app.main:lifespan:21 - Starting Shell Script Execution API v1.0.0 (scripts_dir=/Users/manhlv/www/src/docker/py-shell-api/scripts)
+2026-09-28 17:09:50.938 | INFO     | app.main:lifespan:27 - Registered scripts: ['deploy', 'undeploy', 'restart', 'backup']
+2026-09-28 17:10:06.390 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=['database'], timeout=120s, payload={'requested_by': 'deployment-service', 'environment': 'staging'})
+2026-09-28 17:10:07.720 | INFO     | app.services.executor:_execute_file:137 - Action 'test-remote' finished: success=True, exit_code=0, duration=1.33s
+2026-09-28 17:10:29.064 | INFO     | app.main:lifespan:29 - Shutting down Shell Script Execution API
+2026-09-28 17:10:30.161 | INFO     | app.main:lifespan:21 - Starting Shell Script Execution API v1.0.0 (scripts_dir=/Users/manhlv/www/src/docker/py-shell-api/scripts)
+2026-09-28 17:10:30.161 | INFO     | app.main:lifespan:27 - Registered scripts: ['deploy', 'undeploy', 'restart', 'backup']
+2026-09-28 17:10:33.285 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=['database'], timeout=120s, payload={'requested_by': 'deployment-service', 'environment': 'staging'})
+2026-09-28 17:10:34.615 | INFO     | app.services.executor:_execute_file:137 - Action 'test-remote' finished: success=True, exit_code=0, duration=1.33s
+2026-09-28 17:10:59.184 | INFO     | app.main:lifespan:29 - Shutting down Shell Script Execution API
+2026-09-28 17:11:00.357 | INFO     | app.main:lifespan:21 - Starting Shell Script Execution API v1.0.0 (scripts_dir=/Users/manhlv/www/src/docker/py-shell-api/scripts)
+2026-09-28 17:11:00.357 | INFO     | app.main:lifespan:27 - Registered scripts: ['deploy', 'undeploy', 'restart', 'backup']
+2026-09-28 17:11:07.036 | INFO     | app.main:lifespan:29 - Shutting down Shell Script Execution API
+2026-09-28 17:11:08.249 | INFO     | app.main:lifespan:21 - Starting Shell Script Execution API v1.0.0 (scripts_dir=/Users/manhlv/www/src/docker/py-shell-api/scripts)
+2026-09-28 17:11:08.250 | INFO     | app.main:lifespan:27 - Registered scripts: ['deploy', 'undeploy', 'restart', 'backup']
+2026-09-28 17:11:15.509 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=['database'], timeout=120s, payload={'requested_by': 'deployment-service', 'environment': 'staging'})
+2026-09-28 17:11:16.824 | INFO     | app.services.executor:_execute_file:137 - Action 'test-remote' finished: success=True, exit_code=0, duration=1.314s
+2026-09-28 17:14:39.569 | INFO     | app.main:lifespan:29 - Shutting down Shell Script Execution API
+2026-09-28 17:14:41.548 | INFO     | app.main:lifespan:21 - Starting Shell Script Execution API v1.0.0 (scripts_dir=/Users/manhlv/www/src/docker/py-shell-api/scripts)
+2026-09-28 17:14:41.549 | INFO     | app.main:lifespan:27 - Registered scripts: ['deploy', 'undeploy', 'restart', 'backup']
+2026-09-28 17:14:47.873 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=['database'], timeout=120s, payload={'requested_by': 'deployment-service', 'environment': 'staging'})
+2026-09-28 17:14:49.211 | INFO     | app.services.executor:_execute_file:137 - Action 'test-remote' finished: success=True, exit_code=0, duration=1.338s
+2026-09-28 17:15:02.285 | INFO     | app.main:lifespan:29 - Shutting down Shell Script Execution API
+2026-09-28 17:15:03.812 | INFO     | app.main:lifespan:21 - Starting Shell Script Execution API v1.0.0 (scripts_dir=/Users/manhlv/www/src/docker/py-shell-api/scripts)
+2026-09-28 17:15:03.813 | INFO     | app.main:lifespan:27 - Registered scripts: ['deploy', 'undeploy', 'restart', 'backup']
+2026-09-28 17:15:08.016 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=['database'], timeout=120s, payload={'requested_by': 'deployment-service', 'environment': 'staging'})
+2026-09-28 17:15:08.018 | ERROR    | app.services.executor:_execute_file:129 - Could not start action 'test-remote': [Errno 8] Exec format error: '/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh'
+2026-09-28 17:15:08.019 | WARNING  | app.routes.scripts:execute_path:176 - Path action 'test-remote' failed for 'remote69.sh': Could not start executable 'test-remote': [Errno 8] Exec format error: '/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh'
+2026-09-28 17:15:30.212 | INFO     | app.main:lifespan:29 - Shutting down Shell Script Execution API
+2026-09-28 17:15:31.235 | INFO     | app.main:lifespan:21 - Starting Shell Script Execution API v1.0.0 (scripts_dir=/Users/manhlv/www/src/docker/py-shell-api/scripts)
+2026-09-28 17:15:31.235 | INFO     | app.main:lifespan:27 - Registered scripts: ['deploy', 'undeploy', 'restart', 'backup']
+2026-09-28 17:15:35.546 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=['database'], timeout=120s, payload={'requested_by': 'deployment-service', 'environment': 'staging'})
+2026-09-28 17:15:36.870 | INFO     | app.services.executor:_execute_file:137 - Action 'test-remote' finished: success=True, exit_code=0, duration=1.324s
+2026-09-28 17:15:56.044 | INFO     | app.main:lifespan:29 - Shutting down Shell Script Execution API
+2026-09-28 17:15:57.005 | INFO     | app.main:lifespan:21 - Starting Shell Script Execution API v1.0.0 (scripts_dir=/Users/manhlv/www/src/docker/py-shell-api/scripts)
+2026-09-28 17:15:57.005 | INFO     | app.main:lifespan:27 - Registered scripts: ['deploy', 'undeploy', 'restart', 'backup']
+2026-09-28 17:16:03.529 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=['database'], timeout=120s, payload={})
+2026-09-28 17:16:04.855 | INFO     | app.services.executor:_execute_file:137 - Action 'test-remote' finished: success=True, exit_code=0, duration=1.325s
+2026-09-28 17:16:12.261 | INFO     | app.services.executor:_execute_file:91 - Executing action 'test-remote' (path=/Users/manhlv/www/src/docker/py-shell-api/scripts/remote69.sh, args=[], timeout=120s, payload={})
+2026-09-28 17:16:13.599 | INFO     | app.services.executor:_execute_file:137 - Action 'test-remote' finished: success=True, exit_code=0, duration=1.337s

@@ -1,0 +1,46 @@
+# Runs the single-file bundle (dist/server.js) on the official node image.
+# No custom image build, no Node/Python installed on the host.
+#
+#   1) Build the bundle first:   yarn build      (produces dist/server.js)
+#   2) Copy .env.example -> .env and fill in values for your environment
+#   3) docker compose up -d
+#
+# UAT/PROD: set EXEC_MODE=ssh in .env. The container SSHes to the target
+# RedHat host (via a bastion when SSH_JUMP is set) and runs admin.sh/install.py
+# there. DEV (macOS): EXEC_MODE=local runs scripts/execute.sh inside the
+# container so you can test without a real host.
+
+services:
+  node-shell-api:
+    image: node:20
+    container_name: node-shell-api
+    working_dir: /app
+    command: ["node", "/app/server.js"]
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    volumes:
+      # The single-file bundle (read-only).
+      - ./dist/server.js:/app/server.js:ro
+      # Local-mode script (used when EXEC_MODE=local).
+      - ${HOST_SCRIPTS_DIR:-./scripts}:/scripts:ro
+      # Shared data + logs (writable).
+      - ${HOST_DATA_DIR:-./data}:/data
+      - ${HOST_LOGS_DIR:-./logs}:/logs
+      # SSH key + known_hosts for EXEC_MODE=ssh (read-only). Point HOST_SSH_DIR
+      # at a folder containing the private key referenced by SSH_KEY.
+      - ${HOST_SSH_DIR:-./ssh}:/root/.ssh:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://127.0.0.1:'+(process.env.PORT||3000)+'/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s

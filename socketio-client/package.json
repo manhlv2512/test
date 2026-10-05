@@ -1,0 +1,16 @@
+{
+  "name": "socketio-dynamic-events-client",
+  "version": "1.0.0",
+  "description": "Client mẫu cho Socket.IO dynamic events server: đăng ký event động, dùng thử và liệt kê event.",
+  "private": true,
+  "type": "commonjs",
+  "main": "src/client.js",
+  "scripts": {
+    "start": "node src/cli.js",
+    "cli": "node src/cli.js",
+    "demo": "node src/demo.js"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.8.3"
+  }
+}
