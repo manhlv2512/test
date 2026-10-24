@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TableRenderer Demo</title>
+    <link rel="stylesheet" href="libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="libs/jquery-ui/jquery-ui.min.css">
+    <link rel="stylesheet" href="libs/select2/select2.min.css">
+    <link rel="stylesheet" href="libs/sweetalerts/sweetalert2.min.css">
+    <link rel="stylesheet" href="dist/table.min.css">
+    <!-- <link rel="stylesheet" href="table.css"> -->
+    <style>
+        body {
+            font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            margin: 15px;
+            background: #fafbfc;
+            color: #222;
+        }
+        .page-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .page-log {
+            margin-top: 16px;
+            padding: 10px 12px;
+            background: #272c33;
+            color: #9fe6a0;
+            border-radius: 6px;
+            font-family: Menlo, Consolas, monospace;
+            font-size: 12px;
+            max-height: 140px;
+            overflow: auto;
+            white-space: pre-wrap;
+        }
+        .controls { margin-bottom: 16px; }
+        .controls button {
+            display: inline-flex;
+            height: 32px;
+            padding: 0 14px;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            margin-right: 8px;
+            border: 1px solid #ccd1d8;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+        }
+        .controls button:hover { background: #f0f2f5; }
+        .controls .fa { margin-right: 6px; }
+    </style>
+</head>
+<body>
+    <h1 class="page-title">TableRenderer Demo (ES5 + Select2)</h1>
+
+    <div class="controls">
+        <button id="btnModel"><i class="fa fa-code" aria-hidden="true"></i> Log model</button>
+        <button id="btnSuccess"><i class="fa fa-check-circle" aria-hidden="true"></i> Success toast</button>
+        <button id="btnError"><i class="fa fa-times-circle" aria-hidden="true"></i> Error toast</button>
+    </div>
+
+    <div id="tableContainer"></div>
+    <input
+        type="file"
+        id="importExcelFile"
+        accept=".xls,.xlsx,.csv"
+        style="display:none"
+    >
+
+    <div class="page-log" id="log"></div>
+
+    <script src="libs/jquery-3.6.0.min.js"></script>
+    <script src="libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="libs/select2/select2.min.js"></script>
+    <script src="libs/sweetalerts/sweetalert2.all.min.js"></script>
+    <script src="dist/table.min.js"></script>
+    <!-- <script src="table.js"></script> -->
+    <script>
+        /* ---------------- Logging helper ---------------- */
+        var logEl = document.getElementById("log");
+        function log(msg) {
+            var time = new Date().toLocaleTimeString();
+            logEl.innerHTML = "[" + time + "] " + msg + "\n" + logEl.innerHTML;
+        }
+
+        /* ---------------- Mock dataset ---------------- */
+        var STATUSES = ["OPEN", "CLOSED", "PENDING"];
+        var OWNERS = ["Alice", "Bob", "Charlie", "Diana", "Evan"];
+        var DATASET = (function () {
+            var rows = [];
+            var i;
+            for (i = 1; i <= 1543; i++) {
+                var status = STATUSES[i % STATUSES.length];
+                var owner = OWNERS[i % OWNERS.length];
+                /* Deterministic-ish date spread. */
+                var day = (i % 28) + 1;
+                var month = (i % 12) + 1;
+                var dateStr =
+                    "2026-" +
+                    (month < 10 ? "0" + month : month) +
+                    "-" +
+                    (day < 10 ? "0" + day : day);
+                rows.push({
+                    id: i,
+                    transactionCode: "TXN-" + ("000000" + i).slice(-6),
+                    name: "Document " + i,
+                    owner: owner,
+                    status: status,
+                    amount: (i * 37) % 10000,
+                    createdDate: dateStr
+                });
+            }
+            return rows;
+        })();
+
+        /* ---------------- Mock Backend API ---------------- */
+        var BackendAPI = {
+            search: function (request, callback) {
+                /* Simulate network latency so the loading overlay is visible. */
+                setTimeout(function () {
+                    var filtered = DATASET.slice();
+                    var f = request.filters || {};
+
+                    /* keyword -> matches transaction code, name or owner */
+                    if (f.keyword) {
+                        var kw = String(f.keyword).toLowerCase();
+                        filtered = filterArray(filtered, function (row) {
+                            return (
+                                row.transactionCode.toLowerCase().indexOf(kw) !== -1 ||
+                                row.name.toLowerCase().indexOf(kw) !== -1 ||
+                                row.owner.toLowerCase().indexOf(kw) !== -1
+                            );
+                        });
+                    }
+
+                    if (f.status) {
+                        filtered = filterArray(filtered, function (row) {
+                            return row.status === f.status;
+                        });
+                    }
+
+                    if (f.owner) {
+                        filtered = filterArray(filtered, function (row) {
+                            return row.owner === f.owner;
+                        });
+                    }
+
+                    if (f.createdDate_from) {
+                        filtered = filterArray(filtered, function (row) {
+                            return row.createdDate >= f.createdDate_from;
+                        });
+                    }
+                    if (f.createdDate_to) {
+                        filtered = filterArray(filtered, function (row) {
+                            return row.createdDate <= f.createdDate_to;
+                        });
+                    }
+
+                    /* Server-side sort */
+                    if (request.sort && request.sort.field && request.sort.type) {
+                        var field = request.sort.field;
+                        var dir = request.sort.type === "DESC" ? -1 : 1;
+                        filtered.sort(function (a, b) {
+                            var av = a[field];
+                            var bv = b[field];
+                            if (av < bv) { return -1 * dir; }
+                            if (av > bv) { return 1 * dir; }
+                            return 0;
+                        });
+                    }
+
+                    var total = filtered.length;
+                    var start = (request.page - 1) * request.pageSize;
+                    var pageData = filtered.slice(start, start + request.pageSize);
+
+                    callback({
+                        total: total,
+                        page: request.page,
+                        pageSize: request.pageSize,
+                        data: pageData
+                    });
+                }, 450);
+            }
+        };
+
+        /* ES5-safe array filter helper (avoids relying on Array.prototype.filter typing). */
+        function filterArray(arr, predicate) {
+            var out = [];
+            var i;
+            for (i = 0; i < arr.length; i++) {
+                if (predicate(arr[i])) {
+                    out.push(arr[i]);
+                }
+            }
+            return out;
+        }
+
+        /* Replace this function with the project's existing Excel exporter. */
+        function exportExcel(data) {
+            log("exportExcel called with " + data.length + " filtered/sorted rows");
+        }
+
+        function openTransactionDetail(row) {
+            log("Open transaction detail: " + row.transactionCode);
+            Swal.fire({
+                title: row.transactionCode,
+                text:
+                    "Document: " + row.name +
+                    " | Owner: " + row.owner +
+                    " | Amount: $" + Number(row.amount).toLocaleString() +
+                    " | Status: " + row.status,
+                icon: "info",
+                showCloseButton: true,
+                showConfirmButton: false
+            });
+        }
+
+        function deleteAllData(tableInstance) {
+            if (!window.confirm("Delete all mock data?")) {
+                return;
+            }
+            DATASET.length = 0;
+            var model = tableInstance.getSearchModel();
+            model.page = 1;
+            tableInstance.setSearchModel(model);
+            log("Delete all: mock dataset cleared");
+            tableInstance.toast.success("All mock rows were deleted.", "Delete successful");
+        }
+
+        /* ---------------- Load external JSON config ---------------- */
+        var TableConfigAPI = {
+            load: function (url, callback) {
+                var request = new XMLHttpRequest();
+                request.open("GET", url, true);
+                request.onreadystatechange = function () {
+                    if (request.readyState !== 4) {
+                        return;
+                    }
+                    if (request.status < 200 || request.status >= 300) {
+                        callback(
+                            new Error(
+                                "Cannot load table config (HTTP " + request.status + "): " + url
+                            )
+                        );
+                        return;
+                    }
+                    try {
+                        callback(null, JSON.parse(request.responseText));
+                    } catch (parseError) {
+                        callback(new Error("Invalid table config JSON: " + parseError.message));
+                    }
+                };
+                request.onerror = function () {
+                    callback(new Error("Network error while loading table config: " + url));
+                };
+                request.send(null);
+            }
+        };
+
+        var table = null;
+        TableConfigAPI.load("table-config.json", function (error, config) {
+            if (error) {
+                TableRenderer.toast.error(error.message, "Load config failed");
+                return;
+            }
+
+            try {
+                table = TableRenderer.fromConfig(config, {
+                containerId: "tableContainer",
+                searchFunction: function (request, callback) {
+                    BackendAPI.search(request, callback);
+                },
+                renderers: {
+                    currency: function (value) {
+                        return "$" + Number(value).toLocaleString();
+                    },
+                    statusBadge: function (value) {
+                        var cls = "badge badge-" + String(value).toLowerCase();
+                        return "<span class='" + cls + "'>" + value + "</span>";
+                    }
+                },
+                handlers: {
+                    openTransactionDetail: function (row) {
+                        openTransactionDetail(row);
+                    },
+                    viewDocumentDetail: function (row, index) {
+                        log(
+                            "View detail: index=" + index +
+                            " id=" + row.id +
+                            " name=" + row.name
+                        );
+                        Swal.fire({
+                            title: row.name,
+                            text:
+                                "ID: " + row.id +
+                                " | Owner: " + row.owner +
+                                " | Status: " + row.status,
+                            icon: "info",
+                            showCloseButton: true,
+                            showConfirmButton: false
+                        });
+                    },
+                    exportExcel: function (tableInstance, menuItem) {
+                        menuItem.disabled = true;
+                        tableInstance.getAllData(function (data) {
+                            menuItem.disabled = false;
+                            exportExcel(data);
+                            tableInstance.toast.success(
+                                data.length + " rows are ready to export.",
+                                "Export successful"
+                            );
+                        });
+                    },
+                    importExcel: function () {
+                        document.getElementById("importExcelFile").click();
+                    },
+                    deleteAll: function (tableInstance) {
+                        deleteAllData(tableInstance);
+                    },
+                    onRowClick: function (row, index) {
+                        log(
+                            "onRowClick: index=" + index +
+                            " id=" + row.id +
+                            " name=" + row.name
+                        );
+                    },
+                    onDataLoaded: function (response) {
+                        log(
+                            "onDataLoaded: " + response.data.length +
+                            " rows of " + response.total
+                        );
+                    },
+                    onSearchChanged: function (filters) {
+                        log("onSearchChanged: " + JSON.stringify(filters));
+                    }
+                }
+                });
+                table.toast.success("Table configuration loaded from DB.", "Table ready");
+            } catch (initError) {
+                TableRenderer.toast.error(initError.message, "Initialize table failed");
+            }
+        });
+
+        document.getElementById("importExcelFile").onchange = function () {
+            if (this.files && this.files.length) {
+                log("Import selected: " + this.files[0].name);
+                TableRenderer.toast.success(this.files[0].name, "Import file selected");
+            }
+            this.value = "";
+        };
+
+        function withLoadedTable(callback) {
+            if (!table) {
+                TableRenderer.toast.warning("Table configuration is still loading.");
+                return;
+            }
+            callback(table);
+        }
+
+        /* ---------------- Control buttons ---------------- */
+        document.getElementById("btnModel").onclick = function () {
+            withLoadedTable(function (tableInstance) {
+                log("getSearchModel: " + JSON.stringify(tableInstance.getSearchModel()));
+                tableInstance.toast.info(
+                    "Current search model was written to the log.",
+                    "Table model"
+                );
+            });
+        };
+        document.getElementById("btnSuccess").onclick = function () {
+            TableRenderer.toast.success("The operation completed successfully.", "Success");
+        };
+        document.getElementById("btnError").onclick = function () {
+            TableRenderer.toast.error("The operation could not be completed.", "Error", {
+                duration: 5000
+            });
+        };
+    </script>
+</body>
+</html>
