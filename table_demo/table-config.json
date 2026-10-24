@@ -132,24 +132,24 @@
   "buttons": [
     {
       "type": "dropdown",
-      "iconClass": "fa fa-ellipsis-h",
+      "iconClass": "fas fa-ellipsis-h",
       "title": "Table actions",
       "actions": [
         {
           "text": "Export Excel",
-          "iconClass": "fa fa-download",
+          "iconClass": "fas fa-file-export",
           "className": "tr-toolbar-menu-export",
           "handler": "exportExcel"
         },
         {
           "text": "Import",
-          "iconClass": "fa fa-upload",
+          "iconClass": "fas fa-file-import",
           "className": "tr-toolbar-menu-import",
           "handler": "importExcel"
         },
         {
           "text": "Delete all",
-          "iconClass": "fa fa-trash",
+          "iconClass": "fas fa-trash-alt",
           "className": "tr-toolbar-menu-danger",
           "handler": "deleteAll"
         }

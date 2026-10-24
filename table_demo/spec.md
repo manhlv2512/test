@@ -74,7 +74,7 @@ qua registry lúc load.
     ],
     "buttons":[{
         "type":"dropdown",
-        "iconClass":"fa fa-ellipsis-h",
+        "iconClass":"fas fa-ellipsis-h",
         "title":"Table actions",
         "actions":[
             { "text":"Export Excel", "handler":"exportExcel" },
@@ -218,24 +218,24 @@ Ngoài ra hỗ trợ `text`, `iconClass`, `className`, `disabled` và `visibleHa
 buttons:[
     {
         type:"dropdown",
-        iconClass:"fa fa-ellipsis-h",
+        iconClass:"fas fa-ellipsis-h",
         title:"Table actions",
         actions:[
             {
                 text:"Export Excel",
-                iconClass:"fa fa-download",
+                iconClass:"fas fa-file-export",
                 className:"tr-toolbar-menu-export",
                 handler:"exportExcel"
             },
             {
                 text:"Import",
-                iconClass:"fa fa-upload",
+                iconClass:"fas fa-file-import",
                 className:"tr-toolbar-menu-import",
                 handler:"importExcel"
             },
             {
                 text:"Delete all",
-                iconClass:"fa fa-trash",
+                iconClass:"fas fa-trash-alt",
                 className:"tr-toolbar-menu-danger",
                 handler:"deleteAll"
             }
@@ -583,7 +583,7 @@ Bắt buộc ES5. Hỗ trợ các phiên bản hiện đại của Chrome, Edge,
 
 jQuery UI Datepicker và Select2 là progressive enhancement. Demo sử dụng:
 
-- Font Awesome 4.7.0
+- Font Awesome 5.15.4
 - jQuery 3.6.0
 - jQuery UI 1.13.3
 - Select2 (local build trong `libs/select2`)

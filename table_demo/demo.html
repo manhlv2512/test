@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TableRenderer Demo</title>
-    <link rel="stylesheet" href="libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="libs/font-awesome-5/css/all.min.css">
     <link rel="stylesheet" href="libs/jquery-ui/jquery-ui.min.css">
     <link rel="stylesheet" href="libs/select2/select2.min.css">
     <link rel="stylesheet" href="libs/sweetalerts/sweetalert2.min.css">
@@ -22,7 +22,7 @@
             font-weight: 700;
         }
         .page-log {
-            margin-top: 16px;
+            margin-top: 15px;
             padding: 10px 12px;
             background: #272c33;
             color: #9fe6a0;
@@ -33,7 +33,7 @@
             overflow: auto;
             white-space: pre-wrap;
         }
-        .controls { margin-bottom: 16px; }
+        .controls { margin-top: 15px; }
         .controls button {
             display: inline-flex;
             height: 32px;
@@ -54,12 +54,6 @@
 <body>
     <h1 class="page-title">TableRenderer Demo (ES5 + Select2)</h1>
 
-    <div class="controls">
-        <button id="btnModel"><i class="fa fa-code" aria-hidden="true"></i> Log model</button>
-        <button id="btnSuccess"><i class="fa fa-check-circle" aria-hidden="true"></i> Success toast</button>
-        <button id="btnError"><i class="fa fa-times-circle" aria-hidden="true"></i> Error toast</button>
-    </div>
-
     <div id="tableContainer"></div>
     <input
         type="file"
@@ -67,6 +61,12 @@
         accept=".xls,.xlsx,.csv"
         style="display:none"
     >
+
+    <div class="controls">
+        <button id="btnModel"><i class="fas fa-code tr-btn-icon" aria-hidden="true"></i> Log model</button>
+        <button id="btnSuccess"><i class="fas fa-check-circle tr-btn-icon" aria-hidden="true"></i> Success toast</button>
+        <button id="btnError"><i class="fas fa-times-circle tr-btn-icon" aria-hidden="true"></i> Error toast</button>
+    </div>
 
     <div class="page-log" id="log"></div>
 

@@ -78,10 +78,10 @@
     var Toast = (function () {
         var containers = {};
         var iconClasses = {
-            success: "fa fa-check-circle",
-            error: "fa fa-times-circle",
-            info: "fa fa-info-circle",
-            warning: "fa fa-exclamation-triangle"
+            success: "fas fa-check-circle",
+            error: "fas fa-times-circle",
+            info: "fas fa-info-circle",
+            warning: "fas fa-exclamation-triangle"
         };
 
         function mergeOptions(custom) {
@@ -181,7 +181,7 @@
                 closeButton.title = "Close";
                 closeButton.setAttribute("aria-label", "Close notification");
                 var closeIcon = document.createElement("i");
-                closeIcon.className = "fa fa-times";
+                closeIcon.className = "fas fa-times";
                 closeIcon.setAttribute("aria-hidden", "true");
                 closeButton.appendChild(closeIcon);
                 on(closeButton, "click", function (event) {
@@ -602,7 +602,7 @@
         searchBtn.type = "submit";
         searchBtn.className = "tr-btn tr-btn-primary tr-btn-search";
         var searchIcon = document.createElement("i");
-        searchIcon.className = "fa fa-search tr-btn-icon";
+        searchIcon.className = "fas fa-search tr-btn-icon";
         searchIcon.setAttribute("aria-hidden", "true");
         searchBtn.appendChild(searchIcon);
         searchBtn.appendChild(document.createTextNode("Search"));
@@ -612,7 +612,7 @@
         resetBtn.type = "button";
         resetBtn.className = "tr-btn tr-btn-reset";
         var resetIcon = document.createElement("i");
-        resetIcon.className = "fa fa-refresh tr-btn-icon";
+        resetIcon.className = "fas fa-sync-alt tr-btn-icon";
         resetIcon.setAttribute("aria-hidden", "true");
         resetBtn.appendChild(resetIcon);
         resetBtn.appendChild(document.createTextNode("Reset"));
