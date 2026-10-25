@@ -33,3 +33,5 @@ $ESBUILD table.css --minify --outfile=dist/table.min.css
 echo ""
 echo "✅  Build complete:"
 ls -lh dist/table.min.js dist/table.min.css
+
+zip -r table.zip dist/

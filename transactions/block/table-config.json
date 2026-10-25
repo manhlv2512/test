@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "key": "transactions-block",
+  "header": {
+    "title": "Danh sách giao dịch phong toả tài khoản"
+  },
+  "pageSize": 10,
+  "pageSizeOptions": [10, 20, 50, 100],
+  "pageSizeSelect2Options": {
+    "width": "72px"
+  },
+  "select2Options": {
+    "minimumResultsForSearch": 6,
+    "width": "resolve",
+    "allowClear": true
+  },
+  "datepickerOptions": {
+    "dateFormat": "dd-mm-yy",
+    "searchDateFormat": "yyyy-mm-dd",
+    "showButtonPanel": true,
+    "changeMonth": true,
+    "changeYear": true
+  },
+  "columns": [
+    {
+      "type": "actions",
+      "title": "Số GD",
+      "minWidth": 160,
+      "actions": [
+        {
+          "textField": "gntdCode",
+          "href": "#",
+          "title": "Xem chi tiết giao dịch",
+          "className": "tr-transaction-link",
+          "handler": "openTransactionDetail"
+        }
+      ]
+    },
+    {
+      "field": "pdtdCode",
+      "title": "Số PDTD",
+      "minWidth": 110,
+      "sortable": true
+    },
+    {
+      "field": "customerCode",
+      "title": "Mã KH",
+      "minWidth": 110,
+      "sortable": true
+    },
+    {
+      "field": "customerName",
+      "title": "Tên KH",
+      "minWidth": 160,
+      "sortable": true
+    },
+    {
+      "field": "accBlockNo",
+      "title": "Số tài khoản phong toả",
+      "minWidth": 140,
+      "sortable": true
+    },
+    {
+      "field": "branchCode",
+      "title": "Chi nhánh",
+      "width": 90,
+      "sortable": true
+    },
+    {
+      "field": "transactionFlowName",
+      "title": "Luồng GD",
+      "minWidth": 110,
+      "sortable": true
+    },
+    {
+      "field": "transactionType1Name",
+      "title": "Loại GD",
+      "minWidth": 160,
+      "sortable": true
+    },
+    {
+      "field": "currency",
+      "title": "Loại tiền",
+      "width": 80,
+      "sortable": true
+    },
+    {
+      "field": "gnApprovalBy",
+      "title": "Người PD",
+      "minWidth": 110,
+      "sortable": true
+    },
+    {
+      "field": "gnApprovalDate",
+      "title": "Ngày PD",
+      "minWidth": 100,
+      "sortable": true
+    },
+    {
+      "field": "processState",
+      "title": "Trạng thái",
+      "width": 100,
+      "renderer": "processStateBadge"
+    },
+    {
+      "type": "actions",
+      "title": "Thao tác",
+      "width": 90,
+      "actions": [
+        {
+          "text": "Chi tiết",
+          "href": "#",
+          "title": "Xem chi tiết",
+          "handler": "viewDocumentDetail"
+        }
+      ]
+    }
+  ],
+  "searchFields": [
+    {
+      "name": "keyword",
+      "label": "Từ khoá",
+      "type": "text",
+      "width": 300,
+      "placeholder": "Số GD, PDTD, mã/tên KH, TK phong toả"
+    },
+    {
+      "name": "flow",
+      "label": "Luồng GD",
+      "type": "select",
+      "width": 180,
+      "placeholder": "Tất cả",
+      "options": [
+        { "value": "TT", "label": "Tập trung" },
+        { "value": "GD_DVKD", "label": "GĐ ĐVKD" },
+        { "value": "DVKD", "label": "VH ĐVKD" }
+      ]
+    },
+    {
+      "name": "branch",
+      "label": "Chi nhánh",
+      "type": "select",
+      "width": 220,
+      "placeholder": "Tất cả chi nhánh"
+    },
+    {
+      "name": "processState",
+      "label": "Trạng thái",
+      "type": "select",
+      "width": 180,
+      "placeholder": "Tất cả",
+      "options": [
+        { "value": "1", "label": "Hoàn thành" },
+        { "value": "0", "label": "Chờ xử lý" }
+      ]
+    },
+    {
+      "name": "gnApprovalDate",
+      "label": "Ngày PD",
+      "type": "daterange",
+      "width": 360,
+      "fromPlaceholder": "Từ ngày",
+      "toPlaceholder": "Đến ngày"
+    }
+  ],
+  "buttons": [
+    {
+      "type": "dropdown",
+      "iconClass": "fas fa-ellipsis-h",
+      "title": "Thao tác",
+      "actions": [
+        {
+          "text": "Export Excel",
+          "iconClass": "fas fa-file-export",
+          "className": "tr-toolbar-menu-export",
+          "handler": "exportExcel"
+        },
+        {
+          "text": "Import",
+          "iconClass": "fas fa-file-import",
+          "className": "tr-toolbar-menu-import",
+          "handler": "importExcel"
+        },
+        {
+          "text": "Xóa tất cả",
+          "iconClass": "fas fa-trash-alt",
+          "className": "tr-toolbar-menu-danger",
+          "handler": "deleteAll"
+        }
+      ]
+    }
+  ],
+  "events": {
+    "onRowClick": "onRowClick",
+    "onDataLoaded": "onDataLoaded",
+    "onSearchChanged": "onSearchChanged"
+  }
+}

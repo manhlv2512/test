@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TableRenderer Demo</title>
+    <link rel="stylesheet" href="../../js-table/libs/font-awesome-5/css/all.min.css">
+    <link rel="stylesheet" href="../../js-table/libs/jquery-ui/jquery-ui.min.css">
+    <link rel="stylesheet" href="../../js-table/libs/select2/select2.min.css">
+    <link rel="stylesheet" href="../../js-table/libs/sweetalerts/sweetalert2.min.css">
+    <link rel="stylesheet" href="../../js-table/dist/table.min.css">
+    <!-- <link rel="stylesheet" href="../js-table/table.css"> -->
+    <style>
+        body {
+            font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            margin: 15px;
+            background: #fafbfc;
+            color: #222;
+            overflow-x: hidden;
+            /* overflow-y: hidden; */
+        }
+        .page-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .page-log {
+            margin-top: 15px;
+            padding: 10px 12px;
+            background: #272c33;
+            color: #9fe6a0;
+            border-radius: 6px;
+            font-family: Menlo, Consolas, monospace;
+            font-size: 12px;
+
+            min-height: 80px;
+            max-height: 80px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            white-space: pre-wrap;
+        }
+        .controls { margin-top: 15px; }
+        .controls button {
+            display: inline-flex;
+            height: 32px;
+            padding: 0 14px;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            margin-right: 8px;
+            border: 1px solid #ccd1d8;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+        }
+        .controls button:hover { background: #f0f2f5; }
+        .controls .fa { margin-right: 6px; }
+        .table-config-error {
+            padding: 14px 16px;
+            border: 1px solid #f0b8b8;
+            border-radius: 6px;
+            background: #fff2f2;
+            color: #b42318;
+            font-size: 14px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- <h1 class="page-title">Danh sách giao dịch phong toả tài khoản</h1> -->
+
+    <div id="tableContainer"></div>
+    <input
+        type="file"
+        id="importExcelFile"
+        accept=".xls,.xlsx,.csv"
+        style="display:none"
+    >
+
+    <div class="controls">
+        <button id="btnModel"><i class="fas fa-code tr-btn-icon" aria-hidden="true"></i> Search Log</button>
+        <button id="btnClearLog"><i class="fas fa-times-circle tr-btn-icon" aria-hidden="true"></i> Clear Log</button>
+        <button id="btnSuccess"><i class="fas fa-check-circle tr-btn-icon" aria-hidden="true"></i> Success toast</button>
+        <button id="btnError"><i class="fas fa-times-circle tr-btn-icon" aria-hidden="true"></i> Error toast</button>
+    </div>
+
+    <div class="page-log" id="log"></div>
+
+    <script src="../../js-table/libs/jquery-3.6.0.min.js"></script>
+    <script src="../../js-table/libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../../js-table/libs/select2/select2.min.js"></script>
+    <script src="../../js-table/libs/sweetalerts/sweetalert2.all.min.js"></script>
+    <script src="../../js-table/dist/table.min.js"></script>
+    <!-- <script src="../js-table/table.js"></script> -->
+    <script>
+        /* ---------------- Logging helper ---------------- */
+        var logEl = document.getElementById("log");
+        function log(msg) {
+            var time = new Date().toLocaleTimeString();
+            logEl.innerHTML = "[" + time + "] " + msg + "\n" + logEl.innerHTML;
+        }
+        function clearLog() {
+            logEl.innerHTML = "";
+        }
+
+        /* ---------------- Mock dataset ---------------- */
+        var TRANSACTION_TYPES = [
+            { code: "GiaiNganKhoanVay", name: "Giải ngân khoản vay" },
+            { code: "ThuNoGocLai", name: "Thu nợ gốc lãi" },
+            { code: "PhatVay", name: "Phát vay" }
+        ];
+        var TRANSACTION_FLOWS = [
+            { code: "TT", name: "Tập trung" },
+            { code: "GD_DVKD", name: "GĐ ĐVKD" },
+            { code: "DVKD", name: "VH ĐVKD" }
+        ];
+        var CURRENCIES = ["VND", "USD", "EUR"];
+        var PROCESSING_USERS = ["manhlv1", "toannv15", "hieunv3", "phuonglm8", "anhtq2"];
+        var APPROVAL_USERS = ["ngocnt5", "ducvm7", "lanpth2"];
+        var CUSTOMER_TYPES = ["00001001", "00001002", "00001003"];
+
+        function pad(n, len) {
+            var s = String(n);
+            while (s.length < len) { s = "0" + s; }
+            return s;
+        }
+
+        function randomDate(i) {
+            var day = (i % 28) + 1;
+            var month = (i % 12) + 1;
+            return "2026-" + pad(month, 2) + "-" + pad(day, 2);
+        }
+
+        function randomId(i) {
+            /* 16 hex chars, deterministic from index */
+            var hex = (i * 0x9e3779b9 >>> 0).toString(16);
+            while (hex.length < 8) { hex = "0" + hex; }
+            var hex2 = ((i * 0x6c62272e) >>> 0).toString(16);
+            while (hex2.length < 8) { hex2 = "0" + hex2; }
+            return (hex + hex2).toUpperCase();
+        }
+
+        var DATASET = (function () {
+            var rows = [];
+            var i;
+            for (i = 1; i <= 21850; i++) {
+                var tType = TRANSACTION_TYPES[i % TRANSACTION_TYPES.length];
+                var tFlow = TRANSACTION_FLOWS[i % TRANSACTION_FLOWS.length];
+                var procUser = PROCESSING_USERS[i % PROCESSING_USERS.length];
+                var apprUser = APPROVAL_USERS[i % APPROVAL_USERS.length];
+                var branchCode = pad((i % 90) + 1, 3);
+                var gnDate = randomDate(i);
+                var apprDate = randomDate(i + 3);
+
+                rows.push({
+                    id: randomId(i),
+                    status: "GNCN_HOAN_THANH",
+                    gntdCode: "GNCN" + branchCode + "26" + pad(i % 12 + 1, 2) + pad(i % 28 + 1, 2) + pad(i % 10000, 4),
+                    branchCode: branchCode,
+                    customerType: CUSTOMER_TYPES[i % CUSTOMER_TYPES.length],
+                    customerCode: "CIF" + pad(i, 7),
+                    customerName: "Khách hàng " + i,
+                    idCard: pad(i * 7 % 1000000000, 9),
+                    productCode: "SP" + pad(i % 99 + 1, 3),
+                    productName: "Sản phẩm " + pad(i % 99 + 1, 3),
+                    transactionType1: tType.code,
+                    transactionType1Name: tType.name,
+                    transactionType2: null,
+                    transactionType3: null,
+                    transactionFlow: tFlow.code,
+                    transactionFlowName: tFlow.name,
+                    currency: CURRENCIES[i % CURRENCIES.length],
+                    limitCode: "C" + pad(i % 9999999 + 1, 7),
+                    pdtdCode: pad(i * 13 % 100000000, 8),
+                    sourceSync: i % 3 === 0 ? "LOS" : (i % 3 === 1 ? "BPM" : "ECM"),
+                    accBlockNo: "ACC" + pad(i, 7),
+                    gnProcessingUser: procUser,
+                    gnProcessingDate: gnDate,
+                    gnApprovalBy: apprUser,
+                    gnApprovalDate: apprDate,
+                    approvalBy: apprUser,
+                    approvalDate: apprDate,
+                    processState: i % 2
+                });
+            }
+            return rows;
+        })();
+
+        /* ---------------- Mock Backend API ---------------- */
+        var BackendAPI = {
+            search: function (request, callback) {
+                setTimeout(function () {
+                    var filtered = DATASET.slice();
+                    var f = request.filters || {};
+
+                    if (f.keyword) {
+                        var kw = String(f.keyword).toLowerCase();
+                        filtered = filterArray(filtered, function (row) {
+                            return (
+                                (row.gntdCode && row.gntdCode.toLowerCase().indexOf(kw) !== -1) ||
+                                (row.pdtdCode && row.pdtdCode.toLowerCase().indexOf(kw) !== -1) ||
+                                (row.customerCode && row.customerCode.toLowerCase().indexOf(kw) !== -1) ||
+                                (row.customerName && row.customerName.toLowerCase().indexOf(kw) !== -1) ||
+                                (row.accBlockNo && row.accBlockNo.toLowerCase().indexOf(kw) !== -1)
+                            );
+                        });
+                    }
+
+                    if (f.branch) {
+                        filtered = filterArray(filtered, function (row) {
+                            return row.branchCode === f.branch;
+                        });
+                    }
+
+                    if (f.flow) {
+                        filtered = filterArray(filtered, function (row) {
+                            return row.transactionFlow === f.flow;
+                        });
+                    }
+
+                    if (f.processState !== null && f.processState !== undefined && f.processState !== "") {
+                        var stateVal = parseInt(f.processState, 10);
+                        filtered = filterArray(filtered, function (row) {
+                            return row.processState === stateVal;
+                        });
+                    }
+
+                    if (f.date_from) {
+                        filtered = filterArray(filtered, function (row) {
+                            return row.gnApprovalDate >= f.date_from;
+                        });
+                    }
+
+                    if (f.date_to) {
+                        filtered = filterArray(filtered, function (row) {
+                            return row.gnApprovalDate <= f.date_to;
+                        });
+                    }
+
+                    if (request.sort && request.sort.field && request.sort.type) {
+                        var field = request.sort.field;
+                        var dir = request.sort.type === "DESC" ? -1 : 1;
+                        filtered.sort(function (a, b) {
+                            var av = a[field];
+                            var bv = b[field];
+                            if (av === null || av === undefined) { return 1 * dir; }
+                            if (bv === null || bv === undefined) { return -1 * dir; }
+                            if (av < bv) { return -1 * dir; }
+                            if (av > bv) { return 1 * dir; }
+                            return 0;
+                        });
+                    }
+
+                    var total = filtered.length;
+                    var start = (request.page - 1) * request.pageSize;
+                    var pageData = filtered.slice(start, start + request.pageSize);
+
+                    callback({
+                        total: total,
+                        page: request.page,
+                        pageSize: request.pageSize,
+                        data: pageData
+                    });
+                }, 15);
+            }
+        };
+
+        /* ES5-safe array filter helper (avoids relying on Array.prototype.filter typing). */
+        function filterArray(arr, predicate) {
+            var out = [];
+            var i;
+            for (i = 0; i < arr.length; i++) {
+                if (predicate(arr[i])) {
+                    out.push(arr[i]);
+                }
+            }
+            return out;
+        }
+
+        /* Replace this function with the project's existing Excel exporter. */
+        function exportExcel(data) {
+            log("exportExcel called with " + data.length + " filtered/sorted rows");
+        }
+
+        function openTransactionDetail(row) {
+            log("Open transaction detail: " + row.gntdCode);
+            Swal.fire({
+                title: row.gntdCode,
+                html:
+                    "<b>Khách hàng:</b> " + row.customerCode + " - " + row.customerName + "<br/>" +
+                    "<b>Chi nhánh:</b> " + row.branchCode + "<br/>" +
+                    "<b>Loại GD:</b> " + row.transactionType1Name + "<br/>" +
+                    "<b>Luồng:</b> " + row.transactionFlowName + "<br/>" +
+                    "<b>Ngày PD:</b> " + row.gnApprovalDate + "<br/>" +
+                    "<b>Người PD:</b> " + row.gnApprovalBy,
+                icon: "info",
+                showCloseButton: true,
+                showConfirmButton: false
+            });
+        }
+
+        function deleteAllData(tableInstance) {
+            if (!window.confirm("Delete all mock data?")) {
+                return;
+            }
+            DATASET.length = 0;
+            var model = tableInstance.getSearchModel();
+            model.page = 1;
+            tableInstance.setSearchModel(model);
+            log("Delete all: mock dataset cleared");
+            Toast.success("All mock rows were deleted.", "Delete successful");
+        }
+
+        /* ---------------- Load external JSON config ---------------- */
+        var TableConfigAPI = {
+            load: function (url, callback) {
+                var request = new XMLHttpRequest();
+                var separator = url.indexOf("?") === -1 ? "?" : "&";
+                var requestUrl = url + separator + "_=" + new Date().getTime();
+                request.open("GET", requestUrl, true);
+                request.setRequestHeader("Cache-Control", "no-cache, no-store, max-age=0");
+                request.setRequestHeader("Pragma", "no-cache");
+                request.onreadystatechange = function () {
+                    if (request.readyState !== 4) {
+                        return;
+                    }
+                    if (request.status < 200 || request.status >= 300) {
+                        callback(
+                            new Error(
+                                "Cannot load table config (HTTP " + request.status + "): " + url
+                            )
+                        );
+                        return;
+                    }
+
+                    var responseText = request.responseText
+                        ? request.responseText.replace(/^\s+|\s+$/g, "")
+                        : "";
+                    if (!responseText) {
+                        callback(new Error("Table config file is empty: " + url));
+                        return;
+                    }
+
+                    try {
+                        var config = JSON.parse(responseText);
+                        if (
+                            !config ||
+                            Object.prototype.toString.call(config.columns) !== "[object Array]" ||
+                            !config.columns.length
+                        ) {
+                            callback(
+                                new Error("Table config must contain a non-empty columns array.")
+                            );
+                            return;
+                        }
+                        callback(null, config);
+                    } catch (parseError) {
+                        callback(new Error("Invalid table config JSON: " + parseError.message));
+                    }
+                };
+                request.onerror = function () {
+                    callback(new Error("Network error while loading table config: " + url));
+                };
+                request.send(null);
+            }
+        };
+
+        var table = null;
+        var tableContainer = document.getElementById("tableContainer");
+        tableContainer.innerHTML = "";
+        TableConfigAPI.load("table-config.json", function (error, config) {
+            if (error) {
+                tableContainer.innerHTML = "";
+                var errorMessage = document.createElement("div");
+                errorMessage.className = "table-config-error";
+                errorMessage.appendChild(document.createTextNode(error.message));
+                tableContainer.appendChild(errorMessage);
+                Toast.error(error.message, "Load config failed");
+                return;
+            }
+            console.log("Loaded table config from JSON file", config);
+
+            /* Inject branch options generated at runtime (too large for static JSON). */
+            (function () {
+                var i;
+                var branchOptions = [];
+                for (i = 1; i <= 300; i++) {
+                    var code = ("000" + i).slice(-3);
+                    branchOptions.push({ value: code, label: "CN " + code });
+                }
+                var fields = config.searchFields || [];
+                for (i = 0; i < fields.length; i++) {
+                    if (fields[i].name === "branch") {
+                        fields[i].options = branchOptions;
+                        break;
+                    }
+                }
+            })();
+
+            try {
+                table = TableRenderer.fromConfig(config, {
+                containerId: "tableContainer",
+                searchFunction: function (request, callback) {
+                    BackendAPI.search(request, callback);
+                },
+                renderers: {
+                    currency: function (value) {
+                        return "$" + Number(value).toLocaleString();
+                    },
+                    statusBadge: function (value) {
+                        var cls = "badge badge-" + String(value).toLowerCase();
+                        return "<span class='" + cls + "'>" + value + "</span>";
+                    },
+                    processStateBadge: function (value) {
+                        var label = value === 1 ? "Hoàn thành" : "Chờ xử lý";
+                        var cls = value === 1 ? "badge-open" : "badge-pending";
+                        return "<span class='badge " + cls + "'>" + label + "</span>";
+                    }
+                },
+                handlers: {
+                    openTransactionDetail: function (row) {
+                        openTransactionDetail(row);
+                    },
+                    viewDocumentDetail: function (row, index) {
+                        showLoading();
+                        /* Ví dụ gọi service bất đồng bộ trước khi mở detail */
+                        setTimeout(function () {
+                            hideLoading();
+                            log(
+                                "View detail: index=" + index +
+                                " id=" + row.id +
+                                " name=" + row.name
+                            );
+                            Swal.fire({
+                                title: row.name,
+                                text:
+                                    "ID: " + row.id +
+                                    " | Owner: " + row.owner +
+                                    " | Status: " + row.status,
+                                icon: "info",
+                                showCloseButton: true,
+                                showConfirmButton: false
+                            });
+                        }, 400);
+                    },
+                    exportExcel: function (tableInstance, menuItem) {
+                        menuItem.disabled = true;
+                        showLoading();
+                        tableInstance.getAllData(function (data) {
+                            hideLoading();
+                            menuItem.disabled = false;
+                            exportExcel(data);
+                            Toast.success(
+                                data.length + " rows are ready to export.",
+                                "Export successful"
+                            );
+                        });
+                    },
+                    importExcel: function () {
+                        document.getElementById("importExcelFile").click();
+                    },
+                    deleteAll: function (tableInstance) {
+                        deleteAllData(tableInstance);
+                    },
+                    onRowClick: function (row, index) {
+                        log(
+                            "onRowClick: index=" + index +
+                            " id=" + row.id +
+                            " name=" + row.name
+                        );
+                    },
+                    onDataLoaded: function (response) {
+                        log(
+                            "onDataLoaded: " + response.data.length +
+                            " rows of " + response.total
+                        );
+                    },
+                    onSearchChanged: function (filters) {
+                        log("onSearchChanged: " + JSON.stringify(filters));
+                    }
+                }
+                });
+                Toast.info("Table configuration loaded from JSON file.", "Table ready");
+            } catch (initError) {
+                Toast.error(initError.message, "Initialize table failed");
+            }
+        });
+
+        document.getElementById("importExcelFile").onchange = function () {
+            if (this.files && this.files.length) {
+                log("Import selected: " + this.files[0].name);
+                Toast.success(this.files[0].name, "Import file selected");
+            }
+            this.value = "";
+        };
+
+        function withLoadedTable(callback) {
+            if (!table) {
+                Toast.warning("Table is still loading, please wait.");
+                return;
+            }
+            callback(table);
+        }
+
+        /* ---------------- Control buttons ---------------- */
+        document.getElementById("btnModel").onclick = function () {
+            withLoadedTable(function (tableInstance) {
+                log("getSearchModel: " + JSON.stringify(tableInstance.getSearchModel()));
+            });
+        };
+        document.getElementById("btnClearLog").onclick = function () {
+            clearLog();
+        };
+        document.getElementById("btnSuccess").onclick = function () {
+            Toast.success("The operation completed successfully.", "Success");
+        };
+        document.getElementById("btnError").onclick = function () {
+            Toast.error("The operation could not be completed.", "Error", {
+                duration: 5000
+            });
+        };
+    </script>
+</body>
+</html>
