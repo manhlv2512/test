@@ -24,15 +24,15 @@
   "columns": [
     {
       "field": "id",
-      "title": "ID",
-      "width": 60,
+      "title": "No.",
+      "width": 50,
       "sortable": true
     },
     {
       "type": "actions",
       "title": "Transaction Code",
-      "minWidth": 150,
-      "maxWidth": 190,
+      "width": 100,
+      "sortable": true,
       "actions": [
         {
           "textField": "transactionCode",
@@ -46,8 +46,6 @@
     {
       "field": "name",
       "title": "Document Name",
-      "minWidth": 180,
-      "maxWidth": "260px",
       "sortable": true
     },
     {

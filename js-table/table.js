@@ -382,9 +382,8 @@
             }
             pageSizeSelect.appendChild(opt);
         }
-        on(pageSizeSelect, "change", function () {
-            self.setPageSize(parseInt(pageSizeSelect.value, 10));
-        });
+        /* Native change event fires when Select2 is NOT used (fallback).
+           jQuery change is bound after Select2 init below to cover both paths. */
         pageSizeWrap.appendChild(pageSizeSelect);
         pageSizeWrap.appendChild(document.createTextNode(" entries"));
         footer.appendChild(pageSizeWrap);
@@ -396,7 +395,19 @@
         this.dom.pagination = pagination;
 
         this.container.appendChild(footer);
+
+        /* Init Select2 for the page-size select, then bind change via jQuery so the
+           handler fires whether the user interacts with native select or Select2. */
         this._initPageSizeSelect2();
+        if (global.jQuery && isFunction(global.jQuery.fn.on)) {
+            global.jQuery(pageSizeSelect).on("change", function () {
+                self.setPageSize(parseInt(pageSizeSelect.value, 10));
+            });
+        } else {
+            on(pageSizeSelect, "change", function () {
+                self.setPageSize(parseInt(pageSizeSelect.value, 10));
+            });
+        }
 
         this._renderHeader();
     };
@@ -1056,13 +1067,8 @@
             if (typeof response.page === "number") {
                 self.state.page = response.page;
             }
-            if (typeof response.pageSize === "number") {
-                self.state.pageSize = response.pageSize;
-                if (self.dom.pageSizeSelect) {
-                    self.dom.pageSizeSelect.value = String(response.pageSize);
-                    self._syncSelect2(self.dom.pageSizeSelect);
-                }
-            }
+            /* Do NOT update pageSize from API response — only the user's explicit
+               action (setPageSize / setSearchModel) should change the selected size. */
             self.currentData = isArray(response.data) ? response.data : [];
 
             self._renderBody();
@@ -1076,10 +1082,27 @@
     };
 
     TableRenderer.prototype._setLoading = function (flag) {
-        this.loading = flag;
+        // this.loading = flag;
+        // if (this.dom.overlay) {
+        //     this.dom.overlay.style.display = flag ? "" : "none";
+        // }
+    };
+
+    /* Show the loading overlay from outside the component, e.g. while a
+       detail view is fetching data. Pair with hideLoading() when done. */
+    TableRenderer.prototype.showLoading = function () {
         if (this.dom.overlay) {
-            this.dom.overlay.style.display = flag ? "" : "none";
+            this.dom.overlay.style.display = "";
         }
+        return this;
+    };
+
+    /* Hide the overlay shown by showLoading(). */
+    TableRenderer.prototype.hideLoading = function () {
+        if (this.dom.overlay) {
+            this.dom.overlay.style.display = "none";
+        }
+        return this;
     };
 
     /* ------------------------- Body render ------------------------- */
@@ -1615,5 +1638,53 @@
         return new TableRenderer(hydrateTableConfig(config, runtime));
     };
     TableRenderer.toast = Toast;
+
+    /*
+     * Static loading helpers — safe to call before any instance exists.
+     * Creates a single full-page overlay on first use and reuses it.
+     * Usage:
+     *   TableRenderer.showLoading();
+     *   someAsyncWork(function () { TableRenderer.hideLoading(); });
+     */
+    TableRenderer.showLoading = function () {
+        var overlay = TableRenderer._globalOverlay;
+        if (!overlay) {
+            overlay = document.createElement("div");
+            overlay.id = "tr-global-loading";
+            overlay.style.cssText = [
+                "position:fixed",
+                "top:0", "left:0", "right:0", "bottom:0",
+                "background:rgba(255,255,255,0.72)",
+                "z-index:19999",
+                "display:none",
+                "align-items:center",
+                "justify-content:center",
+                "flex-direction:column"
+            ].join(";");
+
+            var spinner = document.createElement("div");
+            spinner.className = "tr-spinner";
+
+            var text = document.createElement("div");
+            text.className = "tr-loading-text";
+            text.appendChild(document.createTextNode("Loading..."));
+
+            overlay.appendChild(spinner);
+            overlay.appendChild(text);
+            document.body.appendChild(overlay);
+            TableRenderer._globalOverlay = overlay;
+        }
+        overlay.style.display = "flex";
+        return TableRenderer;
+    };
+
+    TableRenderer.hideLoading = function () {
+        var overlay = TableRenderer._globalOverlay;
+        if (overlay) {
+            overlay.style.display = "none";
+        }
+        return TableRenderer;
+    };
+
     global.TableRenderer = TableRenderer;
 })(this);

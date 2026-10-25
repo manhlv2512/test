@@ -4,18 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TableRenderer Demo</title>
-    <link rel="stylesheet" href="libs/font-awesome-5/css/all.min.css">
-    <link rel="stylesheet" href="libs/jquery-ui/jquery-ui.min.css">
-    <link rel="stylesheet" href="libs/select2/select2.min.css">
-    <link rel="stylesheet" href="libs/sweetalerts/sweetalert2.min.css">
-    <link rel="stylesheet" href="dist/table.min.css">
-    <!-- <link rel="stylesheet" href="table.css"> -->
+    <link rel="stylesheet" href="../js-table/libs/font-awesome-5/css/all.min.css">
+    <link rel="stylesheet" href="../js-table/libs/jquery-ui/jquery-ui.min.css">
+    <link rel="stylesheet" href="../js-table/libs/select2/select2.min.css">
+    <link rel="stylesheet" href="../js-table/libs/sweetalerts/sweetalert2.min.css">
+    <link rel="stylesheet" href="../js-table/dist/table.min.css">
+    <!-- <link rel="stylesheet" href="../js-table/table.css"> -->
     <style>
         body {
             font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
             margin: 15px;
             background: #fafbfc;
             color: #222;
+            overflow-x: hidden;
+            /* overflow-y: hidden; */
         }
         .page-title {
             font-size: 20px;
@@ -29,8 +31,11 @@
             border-radius: 6px;
             font-family: Menlo, Consolas, monospace;
             font-size: 12px;
-            max-height: 140px;
-            overflow: auto;
+
+            min-height: 80px;
+            max-height: 80px;
+            overflow-y: auto;
+            overflow-x: hidden;
             white-space: pre-wrap;
         }
         .controls { margin-top: 15px; }
@@ -49,6 +54,15 @@
         }
         .controls button:hover { background: #f0f2f5; }
         .controls .fa { margin-right: 6px; }
+        .table-config-error {
+            padding: 14px 16px;
+            border: 1px solid #f0b8b8;
+            border-radius: 6px;
+            background: #fff2f2;
+            color: #b42318;
+            font-size: 14px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -63,25 +77,29 @@
     >
 
     <div class="controls">
-        <button id="btnModel"><i class="fas fa-code tr-btn-icon" aria-hidden="true"></i> Log model</button>
+        <button id="btnModel"><i class="fas fa-code tr-btn-icon" aria-hidden="true"></i> Search Log</button>
+        <button id="btnClearLog"><i class="fas fa-times-circle tr-btn-icon" aria-hidden="true"></i> Clear Log</button>
         <button id="btnSuccess"><i class="fas fa-check-circle tr-btn-icon" aria-hidden="true"></i> Success toast</button>
         <button id="btnError"><i class="fas fa-times-circle tr-btn-icon" aria-hidden="true"></i> Error toast</button>
     </div>
 
     <div class="page-log" id="log"></div>
 
-    <script src="libs/jquery-3.6.0.min.js"></script>
-    <script src="libs/jquery-ui/jquery-ui.min.js"></script>
-    <script src="libs/select2/select2.min.js"></script>
-    <script src="libs/sweetalerts/sweetalert2.all.min.js"></script>
-    <script src="dist/table.min.js"></script>
-    <!-- <script src="table.js"></script> -->
+    <script src="../js-table/libs/jquery-3.6.0.min.js"></script>
+    <script src="../js-table/libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../js-table/libs/select2/select2.min.js"></script>
+    <script src="../js-table/libs/sweetalerts/sweetalert2.all.min.js"></script>
+    <script src="../js-table/dist/table.min.js"></script>
+    <!-- <script src="../js-table/table.js"></script> -->
     <script>
         /* ---------------- Logging helper ---------------- */
         var logEl = document.getElementById("log");
         function log(msg) {
             var time = new Date().toLocaleTimeString();
             logEl.innerHTML = "[" + time + "] " + msg + "\n" + logEl.innerHTML;
+        }
+        function clearLog() {
+            logEl.innerHTML = "";
         }
 
         /* ---------------- Mock dataset ---------------- */
@@ -180,7 +198,7 @@
                         pageSize: request.pageSize,
                         data: pageData
                     });
-                }, 450);
+                }, 15);
             }
         };
 
@@ -232,7 +250,11 @@
         var TableConfigAPI = {
             load: function (url, callback) {
                 var request = new XMLHttpRequest();
-                request.open("GET", url, true);
+                var separator = url.indexOf("?") === -1 ? "?" : "&";
+                var requestUrl = url + separator + "_=" + new Date().getTime();
+                request.open("GET", requestUrl, true);
+                request.setRequestHeader("Cache-Control", "no-cache, no-store, max-age=0");
+                request.setRequestHeader("Pragma", "no-cache");
                 request.onreadystatechange = function () {
                     if (request.readyState !== 4) {
                         return;
@@ -245,8 +267,28 @@
                         );
                         return;
                     }
+
+                    var responseText = request.responseText
+                        ? request.responseText.replace(/^\s+|\s+$/g, "")
+                        : "";
+                    if (!responseText) {
+                        callback(new Error("Table config file is empty: " + url));
+                        return;
+                    }
+
                     try {
-                        callback(null, JSON.parse(request.responseText));
+                        var config = JSON.parse(responseText);
+                        if (
+                            !config ||
+                            Object.prototype.toString.call(config.columns) !== "[object Array]" ||
+                            !config.columns.length
+                        ) {
+                            callback(
+                                new Error("Table config must contain a non-empty columns array.")
+                            );
+                            return;
+                        }
+                        callback(null, config);
                     } catch (parseError) {
                         callback(new Error("Invalid table config JSON: " + parseError.message));
                     }
@@ -259,11 +301,19 @@
         };
 
         var table = null;
+        var tableContainer = document.getElementById("tableContainer");
+        tableContainer.innerHTML = "";
         TableConfigAPI.load("table-config.json", function (error, config) {
             if (error) {
+                tableContainer.innerHTML = "";
+                var errorMessage = document.createElement("div");
+                errorMessage.className = "table-config-error";
+                errorMessage.appendChild(document.createTextNode(error.message));
+                tableContainer.appendChild(errorMessage);
                 TableRenderer.toast.error(error.message, "Load config failed");
                 return;
             }
+            console.log("Loaded table config from JSON file", config);
 
             try {
                 table = TableRenderer.fromConfig(config, {
@@ -285,25 +335,32 @@
                         openTransactionDetail(row);
                     },
                     viewDocumentDetail: function (row, index) {
-                        log(
-                            "View detail: index=" + index +
-                            " id=" + row.id +
-                            " name=" + row.name
-                        );
-                        Swal.fire({
-                            title: row.name,
-                            text:
-                                "ID: " + row.id +
-                                " | Owner: " + row.owner +
-                                " | Status: " + row.status,
-                            icon: "info",
-                            showCloseButton: true,
-                            showConfirmButton: false
-                        });
+                        TableRenderer.showLoading();
+                        /* Ví dụ gọi service bất đồng bộ trước khi mở detail */
+                        setTimeout(function () {
+                            TableRenderer.hideLoading();
+                            log(
+                                "View detail: index=" + index +
+                                " id=" + row.id +
+                                " name=" + row.name
+                            );
+                            Swal.fire({
+                                title: row.name,
+                                text:
+                                    "ID: " + row.id +
+                                    " | Owner: " + row.owner +
+                                    " | Status: " + row.status,
+                                icon: "info",
+                                showCloseButton: true,
+                                showConfirmButton: false
+                            });
+                        }, 400);
                     },
                     exportExcel: function (tableInstance, menuItem) {
                         menuItem.disabled = true;
+                        tableInstance.showLoading();
                         tableInstance.getAllData(function (data) {
+                            tableInstance.hideLoading();
                             menuItem.disabled = false;
                             exportExcel(data);
                             tableInstance.toast.success(
@@ -336,7 +393,7 @@
                     }
                 }
                 });
-                table.toast.success("Table configuration loaded from DB.", "Table ready");
+                table.toast.info("Table configuration loaded from JSON file.", "Table ready");
             } catch (initError) {
                 TableRenderer.toast.error(initError.message, "Initialize table failed");
             }
@@ -352,7 +409,7 @@
 
         function withLoadedTable(callback) {
             if (!table) {
-                TableRenderer.toast.warning("Table configuration is still loading.");
+                TableRenderer.toast.warning("Table is still loading, please wait.");
                 return;
             }
             callback(table);
@@ -362,11 +419,10 @@
         document.getElementById("btnModel").onclick = function () {
             withLoadedTable(function (tableInstance) {
                 log("getSearchModel: " + JSON.stringify(tableInstance.getSearchModel()));
-                tableInstance.toast.info(
-                    "Current search model was written to the log.",
-                    "Table model"
-                );
             });
+        };
+        document.getElementById("btnClearLog").onclick = function () {
+            clearLog();
         };
         document.getElementById("btnSuccess").onclick = function () {
             TableRenderer.toast.success("The operation completed successfully.", "Success");

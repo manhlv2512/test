@@ -730,7 +730,7 @@
     border-radius: 0;
     background: transparent;
     box-shadow: none;
-    font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+    /* font-family: Menlo, Monaco, Consolas, "Courier New", monospace; */
     letter-spacing: 0.2px;
     text-decoration: none;
 }
