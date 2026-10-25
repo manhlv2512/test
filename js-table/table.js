@@ -241,7 +241,6 @@
         options = options || {};
 
         this.options = options;
-        this.toast = Toast;
         this.container = document.getElementById(options.containerId);
         if (!this.container) {
             throw new Error(
@@ -1081,28 +1080,17 @@
         });
     };
 
+    /* _setLoading is intentionally a no-op: the table overlay is disabled to
+       avoid screen flicker on fast responses. Use Loading.show() / Loading.hide()
+       (or the global shorthand showLoading() / hideLoading()) from your own
+       async handlers instead. */
     TableRenderer.prototype._setLoading = function (flag) {
-        // this.loading = flag;
-        // if (this.dom.overlay) {
-        //     this.dom.overlay.style.display = flag ? "" : "none";
-        // }
-    };
-
-    /* Show the loading overlay from outside the component, e.g. while a
-       detail view is fetching data. Pair with hideLoading() when done. */
-    TableRenderer.prototype.showLoading = function () {
-        if (this.dom.overlay) {
-            this.dom.overlay.style.display = "";
-        }
-        return this;
-    };
-
-    /* Hide the overlay shown by showLoading(). */
-    TableRenderer.prototype.hideLoading = function () {
-        if (this.dom.overlay) {
-            this.dom.overlay.style.display = "none";
-        }
-        return this;
+        // Tạm đóng lại do loading hơi nhiều khi search, next trang
+        /* if (flag) {
+            Loading.show();
+        } else {
+            Loading.hide();
+        } */
     };
 
     /* ------------------------- Body render ------------------------- */
@@ -1637,18 +1625,23 @@
     TableRenderer.fromConfig = function (config, runtime) {
         return new TableRenderer(hydrateTableConfig(config, runtime));
     };
-    TableRenderer.toast = Toast;
 
-    /*
-     * Static loading helpers — safe to call before any instance exists.
-     * Creates a single full-page overlay on first use and reuses it.
+    /* ----------------------------------------------------------------
+     * Loading — standalone singleton, same pattern as Toast.
+     * Safe to call before any TableRenderer instance exists.
+     *
      * Usage:
-     *   TableRenderer.showLoading();
-     *   someAsyncWork(function () { TableRenderer.hideLoading(); });
-     */
-    TableRenderer.showLoading = function () {
-        var overlay = TableRenderer._globalOverlay;
-        if (!overlay) {
+     *   Loading.show();
+     *   doSomethingAsync(function () { Loading.hide(); });
+     * ---------------------------------------------------------------- */
+    var Loading = (function () {
+        var overlay = null;
+
+        function getOverlay() {
+            if (overlay && overlay.parentNode) {
+                return overlay;
+            }
+
             overlay = document.createElement("div");
             overlay.id = "tr-global-loading";
             overlay.style.cssText = [
@@ -1672,19 +1665,28 @@
             overlay.appendChild(spinner);
             overlay.appendChild(text);
             document.body.appendChild(overlay);
-            TableRenderer._globalOverlay = overlay;
+            return overlay;
         }
-        overlay.style.display = "flex";
-        return TableRenderer;
-    };
 
-    TableRenderer.hideLoading = function () {
-        var overlay = TableRenderer._globalOverlay;
-        if (overlay) {
-            overlay.style.display = "none";
-        }
-        return TableRenderer;
-    };
+        return {
+            show: function () {
+                getOverlay().style.display = "flex";
+                return Loading;
+            },
+            hide: function () {
+                if (overlay) {
+                    overlay.style.display = "none";
+                }
+                return Loading;
+            }
+        };
+    })();
 
     global.TableRenderer = TableRenderer;
+    global.Toast = Toast;
+    global.Loading = Loading;
+
+    /* Shorthand globals — same pattern as Toast convenience calls. */
+    global.showLoading = function () { Loading.show(); };
+    global.hideLoading = function () { Loading.hide(); };
 })(this);

@@ -243,7 +243,7 @@
             model.page = 1;
             tableInstance.setSearchModel(model);
             log("Delete all: mock dataset cleared");
-            tableInstance.toast.success("All mock rows were deleted.", "Delete successful");
+            Toast.success("All mock rows were deleted.", "Delete successful");
         }
 
         /* ---------------- Load external JSON config ---------------- */
@@ -310,7 +310,7 @@
                 errorMessage.className = "table-config-error";
                 errorMessage.appendChild(document.createTextNode(error.message));
                 tableContainer.appendChild(errorMessage);
-                TableRenderer.toast.error(error.message, "Load config failed");
+                Toast.error(error.message, "Load config failed");
                 return;
             }
             console.log("Loaded table config from JSON file", config);
@@ -335,10 +335,10 @@
                         openTransactionDetail(row);
                     },
                     viewDocumentDetail: function (row, index) {
-                        TableRenderer.showLoading();
+                        showLoading();
                         /* Ví dụ gọi service bất đồng bộ trước khi mở detail */
                         setTimeout(function () {
-                            TableRenderer.hideLoading();
+                            hideLoading();
                             log(
                                 "View detail: index=" + index +
                                 " id=" + row.id +
@@ -358,12 +358,12 @@
                     },
                     exportExcel: function (tableInstance, menuItem) {
                         menuItem.disabled = true;
-                        tableInstance.showLoading();
+                        showLoading();
                         tableInstance.getAllData(function (data) {
-                            tableInstance.hideLoading();
+                            hideLoading();
                             menuItem.disabled = false;
                             exportExcel(data);
-                            tableInstance.toast.success(
+                            Toast.success(
                                 data.length + " rows are ready to export.",
                                 "Export successful"
                             );
@@ -393,23 +393,23 @@
                     }
                 }
                 });
-                table.toast.info("Table configuration loaded from JSON file.", "Table ready");
+                Toast.info("Table configuration loaded from JSON file.", "Table ready");
             } catch (initError) {
-                TableRenderer.toast.error(initError.message, "Initialize table failed");
+                Toast.error(initError.message, "Initialize table failed");
             }
         });
 
         document.getElementById("importExcelFile").onchange = function () {
             if (this.files && this.files.length) {
                 log("Import selected: " + this.files[0].name);
-                TableRenderer.toast.success(this.files[0].name, "Import file selected");
+                Toast.success(this.files[0].name, "Import file selected");
             }
             this.value = "";
         };
 
         function withLoadedTable(callback) {
             if (!table) {
-                TableRenderer.toast.warning("Table is still loading, please wait.");
+                Toast.warning("Table is still loading, please wait.");
                 return;
             }
             callback(table);
@@ -425,10 +425,10 @@
             clearLog();
         };
         document.getElementById("btnSuccess").onclick = function () {
-            TableRenderer.toast.success("The operation completed successfully.", "Success");
+            Toast.success("The operation completed successfully.", "Success");
         };
         document.getElementById("btnError").onclick = function () {
-            TableRenderer.toast.error("The operation could not be completed.", "Error", {
+            Toast.error("The operation could not be completed.", "Error", {
                 duration: 5000
             });
         };
