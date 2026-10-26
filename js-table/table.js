@@ -456,12 +456,18 @@
                 if (buttonConfig.className) {
                     button.className += " " + buttonConfig.className;
                 }
-                button.appendChild(
-                    document.createTextNode(buttonConfig.text || buttonConfig.label || "Action")
-                );
                 if (buttonConfig.title) {
                     button.title = buttonConfig.title;
                 }
+                if (buttonConfig.iconClass) {
+                    var icon = document.createElement("i");
+                    icon.className = buttonConfig.iconClass + " tr-btn-icon";
+                    icon.setAttribute("aria-hidden", "true");
+                    button.appendChild(icon);
+                }
+                button.appendChild(
+                    document.createTextNode(buttonConfig.text || buttonConfig.label || "Action")
+                );
                 if (isFunction(buttonConfig.onClick)) {
                     on(button, "click", function (event) {
                         buttonConfig.onClick(self, button, event || global.event);

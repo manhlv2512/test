@@ -5,7 +5,12 @@
     "title": "Danh sách giao dịch phong toả tài khoản"
   },
   "pageSize": 10,
-  "pageSizeOptions": [10, 20, 50, 100],
+  "pageSizeOptions": [
+    10,
+    20,
+    50,
+    100
+  ],
   "pageSizeSelect2Options": {
     "width": "72px"
   },
@@ -16,7 +21,7 @@
   },
   "datepickerOptions": {
     "dateFormat": "dd-mm-yy",
-    "searchDateFormat": "yyyy-mm-dd",
+    "searchDateFormat": "yy-mm-dd",
     "showButtonPanel": true,
     "changeMonth": true,
     "changeYear": true
@@ -131,9 +136,18 @@
       "width": 180,
       "placeholder": "Tất cả",
       "options": [
-        { "value": "TT", "label": "Tập trung" },
-        { "value": "GD_DVKD", "label": "GĐ ĐVKD" },
-        { "value": "DVKD", "label": "VH ĐVKD" }
+        {
+          "value": "TT",
+          "label": "Tập trung"
+        },
+        {
+          "value": "GD_DVKD",
+          "label": "GĐ ĐVKD"
+        },
+        {
+          "value": "DVKD",
+          "label": "VH ĐVKD"
+        }
       ]
     },
     {
@@ -150,8 +164,14 @@
       "width": 180,
       "placeholder": "Tất cả",
       "options": [
-        { "value": "1", "label": "Hoàn thành" },
-        { "value": "0", "label": "Chờ xử lý" }
+        {
+          "value": "1",
+          "label": "Hoàn thành"
+        },
+        {
+          "value": "0",
+          "label": "Chờ xử lý"
+        }
       ]
     },
     {
@@ -165,29 +185,11 @@
   ],
   "buttons": [
     {
-      "type": "dropdown",
-      "iconClass": "fas fa-ellipsis-h",
-      "title": "Thao tác",
-      "actions": [
-        {
-          "text": "Export Excel",
-          "iconClass": "fas fa-file-export",
-          "className": "tr-toolbar-menu-export",
-          "handler": "exportExcel"
-        },
-        {
-          "text": "Import",
-          "iconClass": "fas fa-file-import",
-          "className": "tr-toolbar-menu-import",
-          "handler": "importExcel"
-        },
-        {
-          "text": "Xóa tất cả",
-          "iconClass": "fas fa-trash-alt",
-          "className": "tr-toolbar-menu-danger",
-          "handler": "deleteAll"
-        }
-      ]
+      "text": "Tải xuống",
+      "title": "Export Excel",
+      "iconClass": "fas fa-file-download",
+      "className": "tr-btn-default",
+      "handler": "exportExcel"
     }
   ],
   "events": {

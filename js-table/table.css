@@ -408,6 +408,11 @@
     color: var(--white-color);
 }
 
+.tr-btn-default {
+    border-color: var(--purple-color);
+    color: var(--purple-color);
+}
+
 .tr-btn-primary:hover {
     background: var(--hover-color);
 }
