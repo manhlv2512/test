@@ -144,6 +144,10 @@
     color: var(--placeholder-color) !important;
 }
 
+.select2-container .select2-results__option {
+    font-size: 14px;
+}
+
 .tr-field-select .select2-container .select2-selection__clear {
     display: inline-flex;
     align-items: center;
