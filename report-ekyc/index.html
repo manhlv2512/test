@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo eKYC</title>
+    <link rel="stylesheet" href="../js-table/libs/font-awesome-5/css/all.min.css">
+    <link rel="stylesheet" href="../js-table/libs/jquery-ui/jquery-ui.min.css">
+    <link rel="stylesheet" href="../js-table/libs/select2/select2.min.css">
+    <link rel="stylesheet" href="../js-table/libs/sweetalerts/sweetalert2.min.css">
+    <link rel="stylesheet" href="../js-table/dist/table.min.css">
+    <style>
+        body {
+            font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            margin: 15px;
+            background: #fafbfc;
+            color: #222;
+        }
+        .table-config-error {
+            padding: 14px 16px;
+            border: 1px solid #f0b8b8;
+            border-radius: 6px;
+            background: #fff2f2;
+            color: #b42318;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        /* ---- Detail popup ---- */
+        .ekyc-detail { text-align: left; font-size: 14px; }
+        .ekyc-section { margin-bottom: 18px; }
+        .ekyc-section-title {
+            font-weight: 700;
+            font-size: 13px;
+            color: #7b35ba;
+            border-bottom: 1px solid #e6daf2;
+            padding-bottom: 4px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .ekyc-row { display: flex; margin-bottom: 6px; }
+        .ekyc-label { width: 180px; flex-shrink: 0; color: #665c6d; font-size: 13px; }
+        .ekyc-value { flex: 1; font-weight: 600; font-size: 13px; }
+        .ekyc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .ekyc-table th {
+            background: #f1e9f7;
+            color: #5b3780;
+            font-weight: 600;
+            padding: 7px 10px;
+            text-align: left;
+            border-bottom: 1px solid #e6daf2;
+        }
+        .ekyc-table td {
+            padding: 7px 10px;
+            border-bottom: 1px solid #f2eff4;
+        }
+        .ekyc-table tr:last-child td { border-bottom: none; }
+        .compare-ok { color: #27ae60; font-weight: 700; }
+        .compare-fail { color: #c0392b; font-weight: 700; }
+        .score-bar {
+            display: inline-block;
+            width: 60px;
+            height: 8px;
+            background: #e6daf2;
+            border-radius: 4px;
+            vertical-align: middle;
+            margin-right: 6px;
+            overflow: hidden;
+        }
+        .score-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #a774cc, #7b35ba);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="tableContainer"></div>
+
+    <script src="../js-table/libs/jquery-3.6.0.min.js"></script>
+    <script src="../js-table/libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../js-table/libs/select2/select2.min.js"></script>
+    <script src="../js-table/libs/sweetalerts/sweetalert2.all.min.js"></script>
+    <script src="../js-table/dist/table.min.js"></script>
+    <script>
+    /* ============================================================
+       Helpers
+    ============================================================ */
+    function pad(n, len) {
+        var s = String(n);
+        while (s.length < len) { s = "0" + s; }
+        return s;
+    }
+
+    function addDays(base, days) {
+        var d = new Date(base);
+        d.setDate(d.getDate() + days);
+        return d.toISOString().slice(0, 10);
+    }
+
+    function filterArray(arr, fn) {
+        var out = [], i;
+        for (i = 0; i < arr.length; i++) { if (fn(arr[i])) { out.push(arr[i]); } }
+        return out;
+    }
+
+    /* ============================================================
+       Mock dataset — 50 records
+    ============================================================ */
+    var BRANCHES = ["001", "002", "003", "004", "005", "010", "020"];
+    var USERS    = ["manhlv1", "toannv15", "hieunv3", "phuonglm8", "anhtq2"];
+    var CARD_FIELDS = [
+        { key: "fullName",        label: "Họ và tên" },
+        { key: "birthday",        label: "Ngày sinh" },
+        { key: "gender",          label: "Giới tính" },
+        { key: "idCard",          label: "Số CCCD" },
+        { key: "permanentAddress", label: "Địa chỉ thường trú" },
+        { key: "currentAddress",  label: "Địa chỉ hiện tại" },
+        { key: "cif",             label: "CIF" },
+        { key: "cardType",        label: "Loại giấy tờ" }
+    ];
+    var GENDERS = ["NAM", "NỮ"];
+    var SURNAMES = ["NGUYEN", "TRAN", "LE", "PHAM", "HOANG", "VU", "DO", "BUI"];
+    var MIDNAMES = ["VAN", "THI", "DINH", "MINH", "QUANG", "HUU", "KIM"];
+    var LASTNAMES = ["AN", "HUNG", "LINH", "THAO", "LONG", "HIEN", "DUNG", "TOAN"];
+    var BASE_DATE = new Date("2026-09-26");
+
+    var DATASET = (function () {
+        var rows = [], i;
+        for (i = 1; i <= 50; i++) {
+            var verified  = i <= 35 ? 1 : 0;       /* 70% đạt */
+            var overall   = verified ? (95 + (i % 50) / 10) : (70 + (i % 20));
+            var face      = overall + 0.3;
+            var liveness  = overall - 0.1;
+            var branch    = BRANCHES[i % BRANCHES.length];
+            var userId    = USERS[i % USERS.length];
+            var reqDate   = addDays(BASE_DATE, i % 30);
+            var createdTs = reqDate + " " + pad(8 + i % 12, 2) + ":" + pad(i % 60, 2) + ":00";
+            var fullName  = SURNAMES[i % SURNAMES.length] + " " +
+                            MIDNAMES[i % MIDNAMES.length] + " " +
+                            LASTNAMES[i % LASTNAMES.length];
+            var birthday  = "199" + (i % 10) + "-" + pad((i % 12) + 1, 2) + "-" + pad((i % 28) + 1, 2);
+            var gender    = GENDERS[i % 2];
+            var idCard    = pad(i * 1000009, 12).slice(-12);
+            var cif       = "10000" + pad(i, 4);
+
+            /* jsonData: 3–8 fields, 80% isCompare = 1 */
+            var fieldCount = 3 + (i % 6);
+            var jsonData = [];
+            var j;
+            for (j = 0; j < fieldCount && j < CARD_FIELDS.length; j++) {
+                var fld = CARD_FIELDS[j];
+                var val = {
+                    fullName: fullName, birthday: birthday, gender: gender,
+                    idCard: idCard, permanentAddress: "Ba Dinh, Ha Noi",
+                    currentAddress: "Cau Giay, Ha Noi", cif: cif, cardType: "CCCD"
+                }[fld.key] || "";
+                jsonData.push({
+                    key: fld.key,
+                    label: fld.label,
+                    qrcodeValue: val,
+                    isCompare: (j % 5 === 4) ? 0 : 1   /* ~80% match */
+                });
+            }
+
+            rows.push({
+                id: pad(i * 0x9e3779b9 >>> 0, 8).toUpperCase() + pad(i * 0x6c62272e >>> 0, 8).toUpperCase(),
+                transId: "EKYC" + reqDate.replace(/-/g, "").slice(2) + pad(i, 4),
+                branch: branch,
+                userId: userId,
+                requestDate: reqDate,
+                cif: cif,
+                idCard: idCard,
+                cardType: "CCCD",
+                fullName: fullName,
+                birthday: birthday,
+                permanentAddress: "Ba Dinh, Ha Noi",
+                currentAddress: "Cau Giay, Ha Noi",
+                gender: gender,
+                refNum: "REF" + reqDate.replace(/-/g, "").slice(2) + pad(i, 4),
+                ecmId: "ECM" + pad(i, 6),
+                fileName: idCard + ".pdf",
+                customerPhoto: {
+                    faceMatchScore: +face.toFixed(1),
+                    livenessScore: +liveness.toFixed(1),
+                    overallScore: +overall.toFixed(1),
+                    isVerified: verified
+                },
+                jsonData: jsonData,
+                createdDate: createdTs
+            });
+        }
+        return rows;
+    })();
+
+    /* ============================================================
+       Mock Backend API
+    ============================================================ */
+    var BackendAPI = {
+        search: function (request, callback) {
+            setTimeout(function () {
+                var filtered = DATASET.slice();
+                var f = request.filters || {};
+
+                if (f.keyword) {
+                    var kw = f.keyword.toLowerCase();
+                    filtered = filterArray(filtered, function (r) {
+                        return (r.transId + r.refNum + r.cif + r.idCard + r.fullName)
+                            .toLowerCase().indexOf(kw) !== -1;
+                    });
+                }
+                if (f.branch) {
+                    filtered = filterArray(filtered, function (r) { return r.branch === f.branch; });
+                }
+                if (f.userId) {
+                    var uid = f.userId.toLowerCase();
+                    filtered = filterArray(filtered, function (r) {
+                        return r.userId.toLowerCase().indexOf(uid) !== -1;
+                    });
+                }
+                if (f.isVerified !== null && f.isVerified !== undefined && f.isVerified !== "") {
+                    var iv = parseInt(f.isVerified, 10);
+                    filtered = filterArray(filtered, function (r) {
+                        return r.customerPhoto.isVerified === iv;
+                    });
+                }
+                if (f.requestDate_from) {
+                    filtered = filterArray(filtered, function (r) {
+                        return r.requestDate >= f.requestDate_from;
+                    });
+                }
+                if (f.requestDate_to) {
+                    filtered = filterArray(filtered, function (r) {
+                        return r.requestDate <= f.requestDate_to;
+                    });
+                }
+
+                if (request.sort && request.sort.field && request.sort.type) {
+                    var sf = request.sort.field, dir = request.sort.type === "DESC" ? -1 : 1;
+                    filtered.sort(function (a, b) {
+                        var av = a[sf], bv = b[sf];
+                        if (av == null) return 1; if (bv == null) return -1;
+                        return av < bv ? -dir : av > bv ? dir : 0;
+                    });
+                }
+
+                var total = filtered.length;
+                var start = (request.page - 1) * request.pageSize;
+                callback({
+                    total: total,
+                    page: request.page,
+                    pageSize: request.pageSize,
+                    data: filtered.slice(start, start + request.pageSize)
+                });
+            }, 15);
+        }
+    };
+
+    /* ============================================================
+       Detail popup
+    ============================================================ */
+    function scoreBar(score) {
+        return "<span class='score-bar'><span class='score-fill' style='width:" +
+            Math.min(score, 100).toFixed(0) + "%'></span></span>" +
+            "<b>" + score + "%</b>";
+    }
+
+    function openDetailPopup(row) {
+        var p = row.customerPhoto || {};
+        var jd = row.jsonData || [];
+
+        /* ---- Customer info ---- */
+        var infoRows = [
+            ["CIF", row.cif], ["CCCD", row.idCard], ["Loại giấy tờ", row.cardType],
+            ["Họ tên", row.fullName], ["Ngày sinh", row.birthday],
+            ["Giới tính", row.gender],
+            ["Địa chỉ thường trú", row.permanentAddress],
+            ["Địa chỉ hiện tại", row.currentAddress]
+        ];
+        var infoHtml = "";
+        var k;
+        for (k = 0; k < infoRows.length; k++) {
+            infoHtml += "<div class='ekyc-row'><span class='ekyc-label'>" +
+                infoRows[k][0] + "</span><span class='ekyc-value'>" +
+                (infoRows[k][1] || "—") + "</span></div>";
+        }
+
+        /* ---- Biometric result ---- */
+        var verifiedLabel = p.isVerified ? "<span style='color:#27ae60'>✔ Đạt</span>"
+                                          : "<span style='color:#c0392b'>✘ Không đạt</span>";
+        var bioHtml =
+            "<div class='ekyc-row'><span class='ekyc-label'>Face Match Score</span><span class='ekyc-value'>" + scoreBar(p.faceMatchScore) + "</span></div>" +
+            "<div class='ekyc-row'><span class='ekyc-label'>Liveness Score</span><span class='ekyc-value'>" + scoreBar(p.livenessScore) + "</span></div>" +
+            "<div class='ekyc-row'><span class='ekyc-label'>Overall Score</span><span class='ekyc-value'>" + scoreBar(p.overallScore) + "</span></div>" +
+            "<div class='ekyc-row'><span class='ekyc-label'>Kết quả xác thực</span><span class='ekyc-value'>" + verifiedLabel + "</span></div>";
+
+        /* ---- Compare table ---- */
+        var compareRows = "";
+        for (k = 0; k < jd.length; k++) {
+            var item = jd[k];
+            var vneVal = row[item.key] || "—";
+            var cmpIcon = item.isCompare
+                ? "<span class='compare-ok'>✔ Khớp</span>"
+                : "<span class='compare-fail'>✘ Lệch</span>";
+            compareRows += "<tr><td>" + item.label + "</td><td>" + vneVal +
+                "</td><td>" + item.qrcodeValue + "</td><td>" + cmpIcon + "</td></tr>";
+        }
+        var compareHtml = "<table class='ekyc-table'>" +
+            "<thead><tr><th>Trường dữ liệu</th><th>Giá trị VNeID</th><th>Giá trị QR CCCD</th><th>Kết quả</th></tr></thead>" +
+            "<tbody>" + (compareRows || "<tr><td colspan='4'>Không có dữ liệu</td></tr>") + "</tbody></table>";
+
+        Swal.fire({
+            title: "Chi tiết hồ sơ eKYC — " + row.transId,
+            width: 760,
+            html: "<div class='ekyc-detail'>" +
+                "<div class='ekyc-section'><div class='ekyc-section-title'>Thông tin khách hàng</div>" + infoHtml + "</div>" +
+                "<div class='ekyc-section'><div class='ekyc-section-title'>Kết quả xác thực sinh trắc học</div>" + bioHtml + "</div>" +
+                "<div class='ekyc-section'><div class='ekyc-section-title'>Đối soát VNeID – QR CCCD</div>" + compareHtml + "</div>" +
+                "</div>",
+            showCloseButton: true,
+            showConfirmButton: false
+        });
+    }
+
+    function exportExcel(data) {
+        Toast.info("Export " + data.length + " records — tính năng sẽ gọi /api/report/ekyc/export.");
+    }
+
+    /* ============================================================
+       Table config loader
+    ============================================================ */
+    var TableConfigAPI = {
+        load: function (url, callback) {
+            var req = new XMLHttpRequest();
+            req.open("GET", url + "?_=" + new Date().getTime(), true);
+            req.setRequestHeader("Cache-Control", "no-cache, no-store, max-age=0");
+            req.setRequestHeader("Pragma", "no-cache");
+            req.onreadystatechange = function () {
+                if (req.readyState !== 4) { return; }
+                if (req.status < 200 || req.status >= 300) {
+                    callback(new Error("HTTP " + req.status + ": " + url));
+                    return;
+                }
+                var txt = (req.responseText || "").replace(/^\s+|\s+$/g, "");
+                if (!txt) { callback(new Error("Config file is empty.")); return; }
+                try {
+                    var cfg = JSON.parse(txt);
+                    if (!cfg || !Array.isArray(cfg.columns) || !cfg.columns.length) {
+                        callback(new Error("Config must have a non-empty columns array.")); return;
+                    }
+                    callback(null, cfg);
+                } catch (e) { callback(new Error("Invalid JSON: " + e.message)); }
+            };
+            req.onerror = function () { callback(new Error("Network error.")); };
+            req.send(null);
+        }
+    };
+
+    /* ============================================================
+       Boot
+    ============================================================ */
+    var table = null;
+    var tableContainer = document.getElementById("tableContainer");
+
+    TableConfigAPI.load("table-config.json", function (error, config) {
+        if (error) {
+            var el = document.createElement("div");
+            el.className = "table-config-error";
+            el.appendChild(document.createTextNode(error.message));
+            tableContainer.appendChild(el);
+            Toast.error(error.message, "Lỗi tải cấu hình");
+            return;
+        }
+
+        /* Inject branch options at runtime */
+        var i;
+        for (i = 0; i < config.searchFields.length; i++) {
+            if (config.searchFields[i].name === "branch") {
+                config.searchFields[i].options = BRANCHES.map(function (b) {
+                    return { value: b, label: "CN " + b };
+                });
+                break;
+            }
+        }
+
+        try {
+            table = TableRenderer.fromConfig(config, {
+                containerId: "tableContainer",
+                searchFunction: function (req, cb) { BackendAPI.search(req, cb); },
+                renderers: {
+                    sttRenderer: function (value, row, index) {
+                        return String(index + 1);
+                    },
+                    isVerifiedBadge: function (photo) {
+                        var v = photo && photo.isVerified;
+                        return v
+                            ? "<span class='badge badge-open'>Đạt</span>"
+                            : "<span class='badge badge-closed'>Không đạt</span>";
+                    },
+                    overallScoreRenderer: function (photo) {
+                        var s = photo ? photo.overallScore : 0;
+                        return scoreBar(s);
+                    }
+                },
+                handlers: {
+                    openDetailPopup: function (row) { openDetailPopup(row); },
+                    exportExcel: function (tableInstance, menuItem) {
+                        menuItem.disabled = true;
+                        tableInstance.getAllData(function (data) {
+                            menuItem.disabled = false;
+                            exportExcel(data);
+                        });
+                    },
+                    onRowClick: function (row) {
+                        /* optional: no-op hoặc highlight */
+                    },
+                    onDataLoaded: function (response) {
+                        /* log nếu cần */
+                    },
+                    onSearchChanged: function (filters) {
+                        /* log nếu cần */
+                    }
+                }
+            });
+        } catch (e) {
+            Toast.error(e.message, "Lỗi khởi tạo table");
+        }
+    });
+    </script>
+</body>
+</html>

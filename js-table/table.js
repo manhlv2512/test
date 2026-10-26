@@ -615,7 +615,7 @@
         searchIcon.className = "fas fa-search tr-btn-icon";
         searchIcon.setAttribute("aria-hidden", "true");
         searchBtn.appendChild(searchIcon);
-        searchBtn.appendChild(document.createTextNode("Search"));
+        searchBtn.appendChild(document.createTextNode("Tìm kiếm"));
         actions.appendChild(searchBtn);
 
         var resetBtn = document.createElement("button");
@@ -625,7 +625,7 @@
         resetIcon.className = "fas fa-sync-alt tr-btn-icon";
         resetIcon.setAttribute("aria-hidden", "true");
         resetBtn.appendChild(resetIcon);
-        resetBtn.appendChild(document.createTextNode("Reset"));
+        resetBtn.appendChild(document.createTextNode("Đặt lại"));
         on(resetBtn, "click", function () {
             self.resetFilter();
         });

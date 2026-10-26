@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "key": "report-ekyc",
+  "header": {
+    "title": "Báo cáo eKYC",
+    "description": "Tra cứu hồ sơ eKYC và kết quả xác thực sinh trắc học"
+  },
+  "pageSize": 10,
+  "pageSizeOptions": [10, 20, 50, 100],
+  "pageSizeSelect2Options": { "width": "72px" },
+  "select2Options": {
+    "minimumResultsForSearch": 6,
+    "width": "resolve",
+    "allowClear": true
+  },
+  "datepickerOptions": {
+    "dateFormat": "dd-mm-yy",
+    "searchDateFormat": "yyyy-mm-dd",
+    "showButtonPanel": true,
+    "changeMonth": true,
+    "changeYear": true
+  },
+  "columns": [
+    {
+      "field": "_stt",
+      "title": "STT",
+      "width": 50,
+      "renderer": "sttRenderer"
+    },
+    {
+      "field": "transId",
+      "title": "Mã GD",
+      "minWidth": 160,
+      "sortable": true
+    },
+    {
+      "field": "branch",
+      "title": "Chi nhánh",
+      "width": 90,
+      "sortable": true
+    },
+    {
+      "field": "userId",
+      "title": "User",
+      "minWidth": 100,
+      "sortable": true
+    },
+    {
+      "field": "requestDate",
+      "title": "Ngày yêu cầu",
+      "minWidth": 110,
+      "sortable": true
+    },
+    {
+      "field": "cif",
+      "title": "CIF",
+      "minWidth": 110,
+      "sortable": true
+    },
+    {
+      "field": "idCard",
+      "title": "CCCD",
+      "minWidth": 130,
+      "sortable": true
+    },
+    {
+      "field": "fullName",
+      "title": "Họ tên",
+      "minWidth": 160,
+      "sortable": true
+    },
+    {
+      "field": "customerPhoto",
+      "title": "Kết quả STH",
+      "width": 110,
+      "renderer": "isVerifiedBadge"
+    },
+    {
+      "field": "customerPhoto",
+      "title": "Tỷ lệ khớp",
+      "width": 90,
+      "renderer": "overallScoreRenderer"
+    },
+    {
+      "field": "createdDate",
+      "title": "Ngày tạo",
+      "minWidth": 140,
+      "sortable": true
+    },
+    {
+      "type": "actions",
+      "title": "Chi tiết",
+      "width": 80,
+      "actions": [
+        {
+          "text": "Chi tiết",
+          "href": "#",
+          "handler": "openDetailPopup"
+        }
+      ]
+    }
+  ],
+  "searchFields": [
+    {
+      "name": "keyword",
+      "label": "Từ khoá",
+      "type": "text",
+      "width": 280,
+      "placeholder": "Mã GD, RefNum, CIF, CCCD, Họ tên"
+    },
+    {
+      "name": "branch",
+      "label": "Chi nhánh",
+      "type": "select",
+      "width": 180,
+      "placeholder": "Tất cả"
+    },
+    {
+      "name": "userId",
+      "label": "User",
+      "type": "text",
+      "width": 160,
+      "placeholder": "Tên user"
+    },
+    {
+      "name": "isVerified",
+      "label": "Kết quả STH",
+      "type": "select",
+      "width": 160,
+      "placeholder": "Tất cả",
+      "options": [
+        { "value": "1", "label": "Đạt" },
+        { "value": "0", "label": "Không đạt" }
+      ]
+    },
+    {
+      "name": "requestDate",
+      "label": "Ngày yêu cầu",
+      "type": "daterange",
+      "width": 360,
+      "fromPlaceholder": "Từ ngày",
+      "toPlaceholder": "Đến ngày"
+    }
+  ],
+  "buttons": [
+    {
+      "type": "dropdown",
+      "iconClass": "fas fa-ellipsis-h",
+      "title": "Thao tác",
+      "actions": [
+        {
+          "text": "Export Excel",
+          "iconClass": "fas fa-file-export",
+          "className": "tr-toolbar-menu-export",
+          "handler": "exportExcel"
+        }
+      ]
+    }
+  ],
+  "events": {
+    "onRowClick": "onRowClick",
+    "onDataLoaded": "onDataLoaded",
+    "onSearchChanged": "onSearchChanged"
+  }
+}

@@ -79,7 +79,7 @@
     display: block;
     font-size: 12px;
     font-weight: 600;
-    color: #666;
+    color: black;
     margin-bottom: 4px;
 }
 
@@ -89,7 +89,7 @@
     padding: 4px 8px;
     border: 1px solid #ccd1d8;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 13px;
     background: #fff;
     line-height: 1.2;
 }
@@ -137,6 +137,7 @@
     line-height: 30px;
     padding-left: 8px;
     padding-right: 28px;
+    font-size: 13px;
 }
 
 .tr-field-select .select2-container .select2-selection__placeholder {
@@ -144,7 +145,12 @@
 }
 
 .tr-field-select .select2-container .select2-selection__clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
     font-weight: 700;
+    line-height: 1;
 }
 
 .tr-field-select .select2-container .select2-selection--single .select2-selection__arrow {
@@ -423,7 +429,7 @@
 
 .tr-statistic {
     float: left;
-    color: #555;
+    /* color: #555; */
     line-height: 32px;
 }
 
@@ -567,7 +573,7 @@
 
 .tr-pagesize {
     float: left;
-    color: #555;
+    /* color: #555; */
     line-height: 32px;
 }
 
@@ -674,6 +680,7 @@
 .tr-td {
     padding: 10px 12px;
     border-bottom: 1px solid #eef0f2;
+    color: black;
 }
 
 .tr-th-actions,
@@ -890,7 +897,7 @@
     margin-left: 12px;
     padding-left: 12px;
     border-left: 1px solid #e7e1eb;
-    color: #665c6d;
+    /* color: #665c6d; */
     font-size: 13px;
     line-height: 1;
     vertical-align: middle;
@@ -921,7 +928,7 @@
 .tr-page-total {
     display: inline-block;
     margin-left: 5px;
-    color: #665c6d;
+    /* color: #665c6d; */
     line-height: 1;
     text-align: center;
     white-space: nowrap;
