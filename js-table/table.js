@@ -663,13 +663,23 @@
             input.setAttribute("data-field", field.name);
             input.setAttribute("data-placeholder", field.placeholder || "Chọn...");
             input._trSelect2Options = field.select2Options || {};
+            var isMultiple = field.multiple === true;
+            input._trMultiple = isMultiple;
+            if (isMultiple) {
+                input.multiple = true;
+                input.setAttribute("multiple", "multiple");
+            }
             var options = field.options || [];
-            var placeholder = document.createElement("option");
-            placeholder.value = "";
-            placeholder.appendChild(
-                document.createTextNode(field.placeholder || "Chọn...")
-            );
-            input.appendChild(placeholder);
+            /* A single-select needs an empty option so the placeholder shows;
+               a multi-select must not have one. */
+            if (!isMultiple) {
+                var placeholder = document.createElement("option");
+                placeholder.value = "";
+                placeholder.appendChild(
+                    document.createTextNode(field.placeholder || "Chọn...")
+                );
+                input.appendChild(placeholder);
+            }
             var i;
             for (i = 0; i < options.length; i++) {
                 var o = document.createElement("option");
@@ -757,6 +767,35 @@
                 options.showButtonPanel = true;
             }
             inputs[i]._trDatepickerOnSelect = options.onSelect;
+
+            /* Apply Select2 on month/year dropdowns each time the datepicker
+               opens or navigates, so hover colour follows the theme. */
+            var s2Opts = {
+                minimumResultsForSearch: Infinity,
+                width: "resolve",
+                dropdownCssClass: "tr-datepicker-select2-dropdown"
+            };
+            options.beforeShow = function (input, inst) {
+                global.setTimeout(function () {
+                    inst.dpDiv.find("select.ui-datepicker-month, select.ui-datepicker-year")
+                        .each(function () {
+                            if (!global.jQuery(this).hasClass("select2-hidden-accessible")) {
+                                global.jQuery(this).select2(s2Opts);
+                            }
+                        });
+                }, 0);
+            };
+            options.onChangeMonthYear = function (year, month, inst) {
+                global.setTimeout(function () {
+                    inst.dpDiv.find("select.ui-datepicker-month, select.ui-datepicker-year")
+                        .each(function () {
+                            if (!global.jQuery(this).hasClass("select2-hidden-accessible")) {
+                                global.jQuery(this).select2(s2Opts);
+                            }
+                        });
+                }, 0);
+            };
+
             global.jQuery(inputs[i]).datepicker(options);
         }
 
@@ -901,7 +940,11 @@
             if (typeof options.placeholder === "undefined") {
                 options.placeholder = selects[i].getAttribute("data-placeholder") || "Chọn...";
             }
-            if (typeof options.allowClear === "undefined") {
+            /* allowClear is not supported together with multiple select. */
+            if (selects[i]._trMultiple) {
+                options.allowClear = false;
+                options.multiple = true;
+            } else if (typeof options.allowClear === "undefined") {
                 options.allowClear = true;
             }
             if (typeof options.minimumResultsForSearch === "undefined") {
@@ -937,6 +980,27 @@
         global.jQuery(this.dom.pageSizeSelect).select2(options);
     };
 
+    /* Set a form control's value, handling multiple select (array value). */
+    TableRenderer.prototype._setFieldValue = function (element, value) {
+        if (element._trMultiple) {
+            var selectedValues = isArray(value)
+                ? value
+                : (value === null || value === undefined || value === "" ? [] : [value]);
+            var map = {};
+            var v;
+            for (v = 0; v < selectedValues.length; v++) {
+                map[String(selectedValues[v])] = true;
+            }
+            var opts = element.options;
+            var o;
+            for (o = 0; o < opts.length; o++) {
+                opts[o].selected = !!map[opts[o].value];
+            }
+        } else {
+            element.value = value === null || value === undefined ? "" : value;
+        }
+    };
+
     /* Keep the Select2 UI in sync after a programmatic value change. */
     TableRenderer.prototype._syncSelect2 = function (element) {
         if (
@@ -962,6 +1026,23 @@
         for (i = 0; i < inputs.length; i++) {
             var el = inputs[i];
             var name = el.getAttribute("data-field");
+
+            /* Multiple select returns an array of selected values. */
+            if (el._trMultiple) {
+                var selected = [];
+                var opts = el.options;
+                var o;
+                for (o = 0; o < opts.length; o++) {
+                    if (opts[o].selected && opts[o].value !== "") {
+                        selected.push(opts[o].value);
+                    }
+                }
+                if (selected.length) {
+                    filters[name] = selected;
+                }
+                continue;
+            }
+
             var value = el.value;
             if ((" " + el.className + " ").indexOf(" tr-datepicker ") !== -1) {
                 value = this._formatDatepickerForSearch(el);
@@ -1370,7 +1451,7 @@
             var inputs = this.dom.searchForm.querySelectorAll("[data-field]");
             var i;
             for (i = 0; i < inputs.length; i++) {
-                inputs[i].value = "";
+                this._setFieldValue(inputs[i], "");
                 this._syncDatepicker(inputs[i]);
                 this._syncSelect2(inputs[i]);
             }
@@ -1485,9 +1566,12 @@
                 var i;
                 for (i = 0; i < inputs.length; i++) {
                     var fieldName = inputs[i].getAttribute("data-field");
-                    inputs[i].value = this.state.filters.hasOwnProperty(fieldName)
-                        ? this.state.filters[fieldName]
-                        : "";
+                    this._setFieldValue(
+                        inputs[i],
+                        this.state.filters.hasOwnProperty(fieldName)
+                            ? this.state.filters[fieldName]
+                            : ""
+                    );
                     this._syncDatepicker(inputs[i]);
                     this._syncSelect2(inputs[i]);
                 }
