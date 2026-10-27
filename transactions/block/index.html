@@ -179,7 +179,7 @@
                     gnApprovalDate: apprDate,
                     approvalBy: apprUser,
                     approvalDate: apprDate,
-                    processState: i % 2
+                    processState: i % 3
                 });
             }
             return rows;
@@ -206,8 +206,16 @@
                     }
 
                     if (f.branch) {
+                        /* branch giờ là chuỗi "001,002,003" (joinWith) */
+                        var branchList = String(f.branch).split(",");
                         filtered = filterArray(filtered, function (row) {
-                            return row.branchCode === f.branch;
+                            return branchList.indexOf(row.branchCode) !== -1;
+                        });
+                    }
+
+                    if (f.user) {
+                        filtered = filterArray(filtered, function (row) {
+                            return row.approvalBy === f.user;
                         });
                     }
 
@@ -218,9 +226,15 @@
                     }
 
                     if (f.processState !== null && f.processState !== undefined && f.processState !== "") {
-                        var stateVal = parseInt(f.processState, 10);
+                        /* processState là chuỗi "0,2" (multi-select joinWith) */
+                        var stateList = String(f.processState).split(",");
+                        var stateMap = {};
+                        var s;
+                        for (s = 0; s < stateList.length; s++) {
+                            stateMap[parseInt(stateList[s], 10)] = true;
+                        }
                         filtered = filterArray(filtered, function (row) {
-                            return row.processState === stateVal;
+                            return stateMap[row.processState] === true;
                         });
                     }
 
@@ -379,21 +393,14 @@
             }
             console.log("Loaded table config from JSON file", config);
 
-            /* Inject branch options generated at runtime (too large for static JSON). */
-            (function () {
-                var i;
-                var branchOptions = [];
+            /* Biến private chứa danh sách chi nhánh (giả lập fetch từ API). */
+            var BRANCH_OPTIONS = (function () {
+                var list = [], i;
                 for (i = 1; i <= 300; i++) {
                     var code = ("000" + i).slice(-3);
-                    branchOptions.push({ value: code, label: "CN " + code });
+                    list.push({ value: code, label: "CN " + code });
                 }
-                var fields = config.searchFields || [];
-                for (i = 0; i < fields.length; i++) {
-                    if (fields[i].name === "branch") {
-                        fields[i].options = branchOptions;
-                        break;
-                    }
-                }
+                return list;
             })();
 
             try {
@@ -401,6 +408,31 @@
                 containerId: "tableContainer",
                 searchFunction: function (request, callback) {
                     BackendAPI.search(request, callback);
+                },
+                optionsProviders: {
+                    /* Sync: trả về từ biến private */
+                    branchOptions: function () {
+                        return BRANCH_OPTIONS;
+                    },
+                    /* Async: giả lập gọi API, lấy danh sách approvalBy từ DATASET */
+                    userOptions: function (field, setOptions) {
+                        setTimeout(function () {
+                            var seen = {};
+                            var list = [];
+                            var i;
+                            for (i = 0; i < DATASET.length; i++) {
+                                var user = DATASET[i].approvalBy;
+                                if (user && !seen[user]) {
+                                    seen[user] = true;
+                                    list.push({ value: user, label: user });
+                                }
+                            }
+                            list.sort(function (a, b) {
+                                return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
+                            });
+                            setOptions(list);
+                        }, 300);
+                    }
                 },
                 renderers: {
                     currency: function (value) {
@@ -411,12 +443,19 @@
                         return "<span class='" + cls + "'>" + value + "</span>";
                     },
                     processStateBadge: function (value) {
-                        var label = value === 1 ? "Hoàn thành" : "Chờ xử lý";
-                        var cls = value === 1 ? "badge-open" : "badge-pending";
-                        return "<span class='badge " + cls + "'>" + label + "</span>";
+                        var map = {
+                            0: { label: "Chờ xử lý", cls: "badge-pending" },
+                            1: { label: "Hoàn thành", cls: "badge-open" },
+                            2: { label: "Lỗi hạch toán", cls: "badge-closed" }
+                        };
+                        var s = map[value] || map[0];
+                        return "<span class='badge " + s.cls + "'>" + s.label + "</span>";
                     }
                 },
                 handlers: {
+                    formatBranch: function (value, field) {
+                        return value.join(",");
+                    },
                     openTransactionDetail: function (row) {
                         openTransactionDetail(row);
                     },

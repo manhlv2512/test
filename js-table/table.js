@@ -6,6 +6,155 @@
  * notifications, custom cell renderers, event callbacks and responsiveness.
  *
  * Compatibility: ES5 syntax for modern browsers.
+ *
+ * =====================================================================
+ * GLOBALS EXPORTED
+ * =====================================================================
+ *   window.TableRenderer   - component constructor + static helpers
+ *   window.Toast           - toast notifier (success/error/info/warning)
+ *   window.Loading         - full-page loading overlay (show/hide)
+ *   window.showLoading()   - shorthand for Loading.show()
+ *   window.hideLoading()   - shorthand for Loading.hide()
+ *
+ * =====================================================================
+ * QUICK START
+ * =====================================================================
+ *   // Inline config
+ *   var table = new TableRenderer(optionsObject);
+ *
+ *   // Config loaded from DB/JSON (functions resolved from a runtime registry)
+ *   var table = TableRenderer.fromConfig(jsonConfig, runtime);
+ *
+ * =====================================================================
+ * CONFIG OBJECT
+ * =====================================================================
+ *   containerId      {string}  id của DOM element chứa table (bắt buộc)
+ *   header           {string|{title,description}}  tiêu đề component
+ *   pageSize         {number}  số dòng mỗi trang (mặc định 10)
+ *   pageSizeOptions  {number[]} danh sách page size (mặc định [10,20,50,100])
+ *   sort             {{field,type}} sort khởi tạo; type = "ASC"|"DESC"
+ *   columns          {Column[]}      định nghĩa cột (xem bên dưới)
+ *   searchFields     {SearchField[]} định nghĩa form tìm kiếm
+ *   buttons          {Button[]}      toolbar actions (góc trên phải)
+ *   searchFunction   {function(request, callback)} nguồn dữ liệu server-side
+ *   select2Options         {object} option Select2 dùng chung cho search select
+ *   pageSizeSelect2Options {object} option Select2 cho page-size select
+ *   datepickerOptions      {object} option jQuery UI Datepicker dùng chung
+ *   onRowClick       {function(row, index)}
+ *   onDataLoaded     {function(response)}
+ *   onSearchChanged  {function(filters)}
+ *
+ * ---------------------------------------------------------------------
+ * Column
+ * ---------------------------------------------------------------------
+ *   field     {string}  khoá dữ liệu trong row
+ *   title     {string}  tiêu đề cột
+ *   sortable  {boolean} cho phép sort server-side
+ *   width / minWidth / maxWidth {number|string} kích thước (number = px)
+ *   align     {string}  text-align của th/td
+ *   className {string}  class thêm vào th/td (vd "tr-action-inline")
+ *   render    {function(value, row, index) : htmlString}  renderer tuỳ biến
+ *             Khi load từ DB dùng "renderer": "<tên>" (runtime.renderers)
+ *   type      {"actions"} cột chứa action buttons/links
+ *   actions   {Action[]}  danh sách action (khi type = "actions")
+ *
+ * ---------------------------------------------------------------------
+ * Action  (row action trong column type "actions")
+ * ---------------------------------------------------------------------
+ *   text       {string|function(row,index)}  nhãn text
+ *   textField  {string}  lấy nhãn từ row[textField]
+ *   iconClass  {string}  render dạng icon (vd "fas fa-eye")
+ *   label      {string}  nhãn ẩn cho screen reader khi dùng icon
+ *   variant    {"info"|"success"|"warning"|"danger"}  màu button
+ *   title      {string}  tooltip
+ *   href       {string|function(row,index)}  mặc định "#" (preventDefault)
+ *   target     {string}  target của link
+ *   className  {string}  class thêm (vd "tr-transaction-link")
+ *   visible    {function(row,index):boolean}  ẩn/hiện action
+ *   disabled   {boolean|function(row,index)|string|
+ *               {field, equals}|{field, values:[...]}}  vô hiệu hoá động
+ *               - string: tên field, truthy = disable
+ *               - {field, equals}: disable khi row[field] === equals
+ *               - {field, values}: disable khi row[field] thuộc values
+ *   onClick    {function(row, index, event)}
+ *   Khi load từ DB dùng tên trong runtime.handlers:
+ *               "handler", "visibleHandler", "hrefHandler", "disabledHandler"
+ *
+ * ---------------------------------------------------------------------
+ * SearchField
+ * ---------------------------------------------------------------------
+ *   name        {string}  khoá filter trong request.filters
+ *   label       {string}  nhãn field
+ *   type        {"text"|"select"|"date"|"daterange"}
+ *   width       {number|string}  độ rộng field
+ *   placeholder {string}
+ *   options     {{value,label}[]}  cho type "select"
+ *   multiple    {boolean}  select nhiều giá trị (Select2 multiple)
+ *   select2Options {object}  option Select2 riêng cho field
+ *   datepickerOptions {object}  option Datepicker riêng cho field
+ *   fromPlaceholder / toPlaceholder {string}  cho type "daterange"
+ *   optionsProvider {string}  tên function trong runtime.optionsProviders;
+ *               function(field, setOptions) — trả về array (sync) HOẶC gọi
+ *               setOptions(array) sau khi fetch xong (async).
+ *   valueFormatter  {string}  tên function trong runtime.handlers;
+ *               function(value, field) — format giá trị trước khi đưa vào
+ *               request.filters (vd multi-select -> chuỗi).
+ *   joinWith    {string|true}  cách nhanh để join array thành chuỗi khi
+ *               collect filter; true => ",".
+ *
+ * ---------------------------------------------------------------------
+ * Button  (toolbar, góc trên phải)
+ * ---------------------------------------------------------------------
+ *   type      {"dropdown"}  nhóm nhiều action vào menu icon
+ *   iconClass {string}      icon cho trigger / từng menu item
+ *   title     {string}
+ *   text      {string}      nhãn menu item
+ *   className {string}
+ *   onClick / handler  {function(tableInstance, button, event)}
+ *   actions   {Button[]}    menu items (khi type = "dropdown")
+ *
+ * =====================================================================
+ * RUNTIME  (tham số thứ 2 của TableRenderer.fromConfig)
+ * =====================================================================
+ *   containerId      {string}
+ *   searchFunction   {function(request, callback)}  BẮT BUỘC
+ *   renderers        {Object<string, function>}  cho column.renderer
+ *   handlers         {Object<string, function>}  cho action/button/event/
+ *                                                 valueFormatter
+ *   optionsProviders {Object<string, function>}  cho searchField.optionsProvider
+ *   callbacks        {Object<string, function>}  override event callbacks
+ *
+ * =====================================================================
+ * SEARCH REQUEST  (đối số truyền vào searchFunction)
+ * =====================================================================
+ *   {
+ *     page:     {number},
+ *     pageSize: {number},
+ *     sort:     { field: string|null, type: "ASC"|"DESC"|null },
+ *     filters:  { <fieldName>: value, ... }
+ *   }
+ *   callback(response) với response:
+ *   { total:number, page:number, pageSize:number, data:Array }
+ *
+ * =====================================================================
+ * PUBLIC METHODS
+ * =====================================================================
+ *   reload()                 load lại giữ nguyên state
+ *   search()                 thu thập form, về page 1, load
+ *   resetFilter()            xoá form, về page 1, load
+ *   gotoPage(page)
+ *   setPageSize(size)        đổi page size, về page 1
+ *   setSort({field,type})
+ *   getSearchModel()         trả về request hiện tại
+ *   setSearchModel(model)    gán state + đồng bộ form
+ *   getAllData(callback)     lấy toàn bộ dữ liệu theo filter/sort hiện tại
+ *   setFieldOptions(name, options)  cập nhật options của 1 select field
+ *
+ * =====================================================================
+ * STATIC
+ * =====================================================================
+ *   TableRenderer.fromConfig(config, runtime)
+ *   TableRenderer.showLoading() / TableRenderer.hideLoading()
  */
 (function (global) {
     "use strict";
@@ -311,6 +460,7 @@
         this.dom.searchForm = searchForm;
         this._initSelect2();
         this._initDatepickers();
+        this._loadFieldOptions();
 
         /* Top toolbar: statistic on the left, action buttons on the right. */
         var toolbar = document.createElement("div");
@@ -957,6 +1107,81 @@
         }
     };
 
+    /* Call each search field's options provider (if any) after render.
+       Provider: function(field, setOptions) — return an array for a sync
+       source, or call setOptions(array) later for an async source. */
+    TableRenderer.prototype._loadFieldOptions = function () {
+        var self = this;
+        var i;
+        for (i = 0; i < this.searchFields.length; i++) {
+            (function (field) {
+                if (!isFunction(field._optionsProvider)) {
+                    return;
+                }
+                var applied = false;
+                var setter = function (opts) {
+                    applied = true;
+                    self.setFieldOptions(field.name, opts);
+                };
+                var result = field._optionsProvider(field, setter);
+                /* Support a synchronous array return value. */
+                if (!applied && isArray(result)) {
+                    self.setFieldOptions(field.name, result);
+                }
+            })(this.searchFields[i]);
+        }
+    };
+
+    /* Replace the <option> list of a select search field at runtime, keeping
+       the current selection when still valid. Works with Select2. */
+    TableRenderer.prototype.setFieldOptions = function (name, optionList) {
+        if (!this.dom.searchForm) {
+            return this;
+        }
+        var select = this.dom.searchForm.querySelector(
+            "select.tr-select2[data-field='" + name + "']"
+        );
+        if (!select) {
+            return this;
+        }
+
+        optionList = isArray(optionList) ? optionList : [];
+
+        /* Preserve current value(s). */
+        var previous = {};
+        var opts = select.options;
+        var o;
+        for (o = 0; o < opts.length; o++) {
+            if (opts[o].selected && opts[o].value !== "") {
+                previous[opts[o].value] = true;
+            }
+        }
+
+        /* Rebuild options. */
+        select.innerHTML = "";
+        if (!select._trMultiple) {
+            var placeholder = document.createElement("option");
+            placeholder.value = "";
+            placeholder.appendChild(
+                document.createTextNode(select.getAttribute("data-placeholder") || "Chọn...")
+            );
+            select.appendChild(placeholder);
+        }
+        var i;
+        for (i = 0; i < optionList.length; i++) {
+            var opt = document.createElement("option");
+            opt.value = String(optionList[i].value);
+            opt.appendChild(document.createTextNode(optionList[i].label));
+            if (previous[String(optionList[i].value)]) {
+                opt.selected = true;
+            }
+            select.appendChild(opt);
+        }
+
+        this._syncSelect2(select);
+        return this;
+    };
+
     TableRenderer.prototype._initPageSizeSelect2 = function () {
         if (
             !this.dom.pageSizeSelect ||
@@ -1015,6 +1240,32 @@
         }
     };
 
+    /* Look up the search field config by its name. */
+    TableRenderer.prototype._getSearchFieldConfig = function (name) {
+        var i;
+        for (i = 0; i < this.searchFields.length; i++) {
+            if (this.searchFields[i].name === name) {
+                return this.searchFields[i];
+            }
+        }
+        return null;
+    };
+
+    /* Apply a field's valueFormatter / joinWith to the raw collected value. */
+    TableRenderer.prototype._formatFilterValue = function (field, value) {
+        if (!field) {
+            return value;
+        }
+        if (isFunction(field._valueFormatter)) {
+            return field._valueFormatter(value, field);
+        }
+        /* joinWith: chuyển array thành chuỗi, mặc định "," */
+        if (field.joinWith !== undefined && isArray(value)) {
+            return value.join(field.joinWith === true ? "," : field.joinWith);
+        }
+        return value;
+    };
+
     /* Collect all filter values from the search form. */
     TableRenderer.prototype._collectFilters = function () {
         var filters = {};
@@ -1026,6 +1277,7 @@
         for (i = 0; i < inputs.length; i++) {
             var el = inputs[i];
             var name = el.getAttribute("data-field");
+            var fieldCfg = this._getSearchFieldConfig(name);
 
             /* Multiple select returns an array of selected values. */
             if (el._trMultiple) {
@@ -1038,7 +1290,7 @@
                     }
                 }
                 if (selected.length) {
-                    filters[name] = selected;
+                    filters[name] = this._formatFilterValue(fieldCfg, selected);
                 }
                 continue;
             }
@@ -1048,7 +1300,7 @@
                 value = this._formatDatepickerForSearch(el);
             }
             if (value !== null && String(value) !== "") {
-                filters[name] = value;
+                filters[name] = this._formatFilterValue(fieldCfg, value);
             }
         }
         return filters;
@@ -1722,6 +1974,7 @@
         var handlers = runtime.handlers || {};
         var renderers = runtime.renderers || {};
         var callbacks = runtime.callbacks || {};
+        var optionsProviders = runtime.optionsProviders || {};
         var options = cloneObject(config);
         var i;
 
@@ -1756,6 +2009,26 @@
             var searchField = cloneObject(searchFields[i]);
             if (searchField.options) {
                 searchField.options = searchField.options.slice(0);
+            }
+            /* optionsProvider: tên function trong runtime.optionsProviders.
+               Function nhận (field, setOptions) — có thể trả về array (sync)
+               hoặc gọi setOptions(array) sau khi fetch xong (async). */
+            if (searchField.optionsProvider) {
+                searchField._optionsProvider = resolveRegisteredFunction(
+                    optionsProviders,
+                    searchField.optionsProvider,
+                    "options provider"
+                );
+            }
+            /* valueFormatter: tên function trong runtime.handlers.
+               Nhận (value, field) và trả về giá trị đã format để đưa vào
+               request filter, ví dụ multi-select join thành chuỗi. */
+            if (searchField.valueFormatter) {
+                searchField._valueFormatter = resolveRegisteredFunction(
+                    handlers,
+                    searchField.valueFormatter,
+                    "value formatter"
+                );
             }
             options.searchFields.push(searchField);
         }

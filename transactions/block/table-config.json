@@ -180,7 +180,17 @@
       "type": "select",
       "width": 220,
       "multiple": true,
-      "placeholder": "Tất cả chi nhánh"
+      "placeholder": "Tất cả chi nhánh",
+      "optionsProvider": "branchOptions",
+      "valueFormatter": "formatBranch"
+    },
+    {
+      "name": "user",
+      "label": "User PD",
+      "type": "select",
+      "width": 220,
+      "placeholder": "Chọn...",
+      "optionsProvider": "userOptions"
     },
     {
       "name": "processState",
@@ -188,6 +198,7 @@
       "type": "select",
       "width": 180,
       "placeholder": "Tất cả",
+      "multiple": true,
       "options": [
         {
           "value": "1",
@@ -196,8 +207,13 @@
         {
           "value": "0",
           "label": "Chờ xử lý"
+        },
+        {
+          "value": "2",
+          "label": "Lỗi hạch toán"
         }
-      ]
+      ],
+      "joinWith": ","
     },
     {
       "name": "gnApprovalDate",
