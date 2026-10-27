@@ -1070,6 +1070,12 @@
                 if (col.type === "actions") {
                     th.className += " tr-th-actions";
                 }
+                if (col.className) {
+                    th.className += " " + col.className;
+                }
+                if (col.align) {
+                    th.style.textAlign = col.align;
+                }
                 applyColumnSize(th, col);
 
                 var titleSpan = document.createElement("span");
@@ -1209,6 +1215,12 @@
                     var col = self.columns[c];
                     var td = document.createElement("td");
                     td.className = "tr-td";
+                    if (col.className) {
+                        td.className += " " + col.className;
+                    }
+                    if (col.align) {
+                        td.style.textAlign = col.align;
+                    }
                     applyColumnSize(td, col);
 
                     if (col.type === "actions") {
@@ -1237,7 +1249,38 @@
         }
     };
 
+    /* Resolve a dynamic action flag.
+       Accepts: boolean | function(row,index) | string (field name whose
+       truthy value disables) | { field, equals } | { field, values: [...] }. */
+    function resolveActionFlag(flag, row, index) {
+        if (typeof flag === "boolean") {
+            return flag;
+        }
+        if (isFunction(flag)) {
+            return !!flag(row, index);
+        }
+        if (typeof flag === "string") {
+            return !!row[flag];
+        }
+        if (flag && typeof flag === "object" && flag.field) {
+            var val = row[flag.field];
+            if (isArray(flag.values)) {
+                var k;
+                for (k = 0; k < flag.values.length; k++) {
+                    if (flag.values[k] === val) { return true; }
+                }
+                return false;
+            }
+            if (typeof flag.equals !== "undefined") {
+                return val === flag.equals;
+            }
+            return !!val;
+        }
+        return false;
+    }
+
     TableRenderer.prototype._renderRowActions = function (cell, actions, row, index) {
+        var self = this;
         var actionWrap = document.createElement("span");
         actionWrap.className = "tr-row-actions";
         var i;
@@ -1251,6 +1294,9 @@
                     return;
                 }
 
+                var isIcon = !!actionConfig.iconClass;
+                var isDisabled = resolveActionFlag(actionConfig.disabled, row, index);
+
                 var link = document.createElement("a");
                 var href = isFunction(actionConfig.href)
                     ? actionConfig.href(row, index)
@@ -1258,28 +1304,56 @@
                 href = href || "#";
 
                 link.className = "tr-action-link";
+                if (isIcon) {
+                    link.className += " tr-action-icon";
+                }
+                if (actionConfig.variant) {
+                    link.className += " tr-action-" + actionConfig.variant;
+                }
                 if (actionConfig.className) {
                     link.className += " " + actionConfig.className;
+                }
+                if (isDisabled) {
+                    link.className += " tr-action-disabled";
+                    link.setAttribute("aria-disabled", "true");
                 }
                 link.href = href;
                 if (actionConfig.target) {
                     link.target = actionConfig.target;
                 }
-                if (actionConfig.title) {
-                    link.title = actionConfig.title;
+
+                var tipText = actionConfig.title || actionConfig.tooltip;
+                if (tipText) {
+                    link.title = tipText;
                 }
-                var actionText = isFunction(actionConfig.text)
-                    ? actionConfig.text(row, index)
-                    : actionConfig.textField
-                        ? row[actionConfig.textField]
-                        : actionConfig.text || actionConfig.label || "Action";
-                link.appendChild(
-                    document.createTextNode(
-                        actionText === null || typeof actionText === "undefined"
-                            ? ""
-                            : String(actionText)
-                    )
-                );
+
+                if (isIcon) {
+                    var icon = document.createElement("i");
+                    icon.className = actionConfig.iconClass;
+                    icon.setAttribute("aria-hidden", "true");
+                    link.appendChild(icon);
+                    if (actionConfig.text || actionConfig.label) {
+                        var sr = document.createElement("span");
+                        sr.className = "tr-visually-hidden";
+                        sr.appendChild(
+                            document.createTextNode(actionConfig.text || actionConfig.label)
+                        );
+                        link.appendChild(sr);
+                    }
+                } else {
+                    var actionText = isFunction(actionConfig.text)
+                        ? actionConfig.text(row, index)
+                        : actionConfig.textField
+                            ? row[actionConfig.textField]
+                            : actionConfig.text || actionConfig.label || "Action";
+                    link.appendChild(
+                        document.createTextNode(
+                            actionText === null || typeof actionText === "undefined"
+                                ? ""
+                                : String(actionText)
+                        )
+                    );
+                }
 
                 on(link, "click", function (event) {
                     event = event || global.event;
@@ -1294,6 +1368,9 @@
                         } else {
                             event.returnValue = false;
                         }
+                    }
+                    if (resolveActionFlag(actionConfig.disabled, row, index)) {
+                        return;
                     }
                     if (isFunction(actionConfig.onClick)) {
                         actionConfig.onClick(row, index, event);
@@ -1623,6 +1700,13 @@
                     handlers,
                     action.hrefHandler,
                     "href handler"
+                );
+            }
+            if (action.disabledHandler) {
+                action.disabled = resolveRegisteredFunction(
+                    handlers,
+                    action.disabledHandler,
+                    "disabled handler"
                 );
             }
             hydrated.push(action);

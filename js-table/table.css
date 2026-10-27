@@ -878,6 +878,18 @@
     box-shadow: -2px 0 4px rgba(35, 20, 48, 0.03);
 }
 
+/* Inline action column (giữa bảng): bỏ border phân cách, bỏ ép căn giữa.
+   Thêm "tr-action-inline" vào col.className trong config để dùng. */
+.tr-th-actions.tr-action-inline,
+.tr-action-cell.tr-action-inline {
+    border-left: 0;
+    text-align: left;
+}
+
+.tr-th-actions.tr-action-inline {
+    box-shadow: none;
+}
+
 .tr-row-actions {
     display: inline-block;
 }
@@ -940,6 +952,81 @@
     box-shadow: none;
     outline: 1px dotted var(--purple-color);
     outline-offset: 2px;
+}
+
+/* ---- Icon action button (detail, log, release, approve, edit, delete...) ---- */
+.tr-action-link.tr-action-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    margin-left: 4px;
+    font-size: 13px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.tr-action-link.tr-action-icon:first-child {
+    margin-left: 0;
+}
+
+.tr-action-link.tr-action-icon:hover {
+    text-decoration: none;
+}
+
+/* ---- Variant colours ---- */
+.tr-action-link.tr-action-success {
+    border-color: #b6ddc4;
+    background: #eafaf0;
+    color: var(--toast-success-color);
+}
+.tr-action-link.tr-action-success:hover {
+    background: #d8f3e2;
+    border-color: #27ae60;
+    color: #1f7d49;
+}
+
+.tr-action-link.tr-action-danger {
+    border-color: #f0c0bb;
+    background: #fdeeec;
+    color: var(--toast-error-color);
+}
+.tr-action-link.tr-action-danger:hover {
+    background: #fbddd9;
+    border-color: #c0392b;
+    color: #a93226;
+}
+
+.tr-action-link.tr-action-warning {
+    border-color: #f3dcae;
+    background: #fdf4e3;
+    color: #b9790f;
+}
+.tr-action-link.tr-action-warning:hover {
+    background: #fbe9c6;
+    border-color: #d99016;
+    color: #9a6410;
+}
+
+.tr-action-link.tr-action-info {
+    border-color: #bcd3f2;
+    background: #eef4fd;
+    color: var(--toast-info-color);
+}
+.tr-action-link.tr-action-info:hover {
+    background: #dde9fa;
+    border-color: #3978d4;
+    color: #2a5fab;
+}
+
+/* ---- Disabled state ---- */
+.tr-action-link.tr-action-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+    box-shadow: none;
 }
 
 .tr-row:hover {

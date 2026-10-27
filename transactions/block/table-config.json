@@ -31,6 +31,7 @@
       "type": "actions",
       "title": "Số GD",
       "minWidth": 160,
+      "className": "tr-action-inline",
       "actions": [
         {
           "textField": "gntdCode",
@@ -104,19 +105,42 @@
     {
       "field": "processState",
       "title": "Trạng thái",
-      "width": 100,
+      "width": 120,
       "renderer": "processStateBadge"
     },
     {
       "type": "actions",
       "title": "Thao tác",
-      "width": 90,
+      "width": 170,
       "actions": [
         {
-          "text": "Chi tiết",
-          "href": "#",
+          "iconClass": "fas fa-eye",
+          "variant": "info",
           "title": "Xem chi tiết",
+          "href": "#",
           "handler": "viewDocumentDetail"
+        },
+        {
+          "iconClass": "fas fa-history",
+          "title": "Log xử lý",
+          "href": "#",
+          "handler": "viewProcessLog"
+        },
+        {
+          "iconClass": "fas fa-unlock",
+          "variant": "warning",
+          "title": "Giải toả",
+          "href": "#",
+          "handler": "releaseBlock",
+          "disabled": { "field": "processState", "equals": 0 }
+        },
+        {
+          "iconClass": "fas fa-check",
+          "variant": "success",
+          "title": "Phê duyệt",
+          "href": "#",
+          "handler": "approveTransaction",
+          "disabled": { "field": "processState", "equals": 1 }
         }
       ]
     }

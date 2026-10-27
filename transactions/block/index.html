@@ -420,27 +420,20 @@
                     openTransactionDetail: function (row) {
                         openTransactionDetail(row);
                     },
-                    viewDocumentDetail: function (row, index) {
-                        showLoading();
-                        /* Ví dụ gọi service bất đồng bộ trước khi mở detail */
-                        setTimeout(function () {
-                            hideLoading();
-                            log(
-                                "View detail: index=" + index +
-                                " id=" + row.id +
-                                " name=" + row.name
-                            );
-                            Swal.fire({
-                                title: row.name,
-                                text:
-                                    "ID: " + row.id +
-                                    " | Owner: " + row.owner +
-                                    " | Status: " + row.status,
-                                icon: "info",
-                                showCloseButton: true,
-                                showConfirmButton: false
-                            });
-                        }, 400);
+                    viewDocumentDetail: function (row) {
+                        openTransactionDetail(row);
+                    },
+                    viewProcessLog: function (row) {
+                        log("Log xử lý: " + row.gntdCode);
+                        Toast.info("Xem log xử lý giao dịch " + row.gntdCode, "Log xử lý");
+                    },
+                    releaseBlock: function (row) {
+                        log("Giải toả: " + row.gntdCode);
+                        Toast.warning("Giải toả phong toả cho " + row.gntdCode, "Giải toả");
+                    },
+                    approveTransaction: function (row) {
+                        log("Phê duyệt: " + row.gntdCode);
+                        Toast.success("Đã phê duyệt giao dịch " + row.gntdCode, "Phê duyệt");
                     },
                     exportExcel: function (tableInstance, menuItem) {
                         menuItem.disabled = true;
