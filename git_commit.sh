@@ -24,8 +24,11 @@ if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 fi
 
 # Chuyển branch nếu được truyền vào
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 if [[ -n "$BRANCH" ]]; then
-  if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
+  if [[ "$BRANCH" == "$CURRENT_BRANCH" ]]; then
+    echo "▶  Đang ở branch: $BRANCH (không cần checkout)"
+  elif git show-ref --verify --quiet "refs/heads/$BRANCH"; then
     echo "▶  Checkout branch: $BRANCH"
     git checkout "$BRANCH"
   else
@@ -33,7 +36,7 @@ if [[ -n "$BRANCH" ]]; then
     git checkout -b "$BRANCH"
   fi
 else
-  BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+  BRANCH="$CURRENT_BRANCH"
   echo "▶  Branch hiện tại: $BRANCH"
 fi
 
