@@ -179,7 +179,6 @@
       "label": "Chi nhánh",
       "type": "select",
       "width": 220,
-      "multiple": true,
       "placeholder": "Tất cả chi nhánh",
       "optionsProvider": "branchOptions",
       "valueFormatter": "formatBranch"

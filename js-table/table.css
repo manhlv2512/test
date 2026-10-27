@@ -40,7 +40,7 @@
 
 .tr-root {
     font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-    font-size: 14px;
+    font-size: 13px;
     color: #333;
     box-sizing: border-box;
 }
@@ -102,7 +102,7 @@
 
 .tr-field-label {
     display: block;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     color: black;
     margin-bottom: 4px;
@@ -170,7 +170,7 @@
 }
 
 .select2-container .select2-results__option {
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .tr-field-select .select2-container .select2-selection__clear {
@@ -186,8 +186,10 @@
     height: 30px;
 }
 
-.tr-field-select .select2-container--focus .select2-selection--single,
-.tr-field-select .select2-container--open .select2-selection--single {
+.select2-container--focus .select2-selection--single,
+.select2-container--open .select2-selection--single {
+    border-color: var(--select-color);
+    outline: none !important;
     box-shadow: 0 0 0 2px rgba(167, 116, 204, 0.16);
 }
 
@@ -202,6 +204,7 @@
 .tr-field-select .select2-container--focus .select2-selection--multiple,
 .tr-field-select .select2-container--open .select2-selection--multiple {
     border-color: var(--select-color);
+    outline: none;
     box-shadow: 0 0 0 2px rgba(167, 116, 204, 0.16);
 }
 
@@ -315,8 +318,8 @@
 
 .ui-datepicker {
     z-index: 10000 !important;
-    width: 290px;
-    padding: 10px;
+    width: 250px;
+    padding: 8px;
     border: 1px solid var(--border-purple) !important;
     border-radius: 8px;
     background: var(--white-color);
@@ -326,7 +329,7 @@
 }
 
 .ui-datepicker .ui-datepicker-header {
-    padding: 7px 34px;
+    padding: 0;
     border: 0;
     border-radius: 6px;
     background: var(--white-color);
@@ -367,7 +370,7 @@
 /* Select2 applied to datepicker month/year dropdowns */
 .ui-datepicker .select2-container--default .select2-selection--single {
     height: 26px;
-    border: 1px solid rgba(255, 255, 255, 0.55);
+    border: 1px solid var(--select-color);
     border-radius: 4px;
     background: var(--white-color);
 }
@@ -386,7 +389,7 @@
 
 .ui-datepicker .select2-container--focus .select2-selection--single,
 .ui-datepicker .select2-container--open .select2-selection--single {
-    border-color: var(--select-color);
+    /* border-color: var(--select-color); */
     box-shadow: 0 0 0 2px rgba(167, 116, 204, 0.2);
 }
 
@@ -423,9 +426,9 @@
 
 .ui-datepicker .ui-datepicker-prev,
 .ui-datepicker .ui-datepicker-next {
-    top: 7px;
-    width: 30px;
-    height: 30px;
+    top: 3px;
+    width: 26px;
+    height: 26px;
     border: 0;
     border-radius: 5px;
     cursor: pointer;
@@ -442,7 +445,7 @@
 
 .ui-datepicker .ui-datepicker-prev-hover,
 .ui-datepicker .ui-datepicker-next-hover {
-    top: 7px;
+    top: 3px;
     border: 0;
     background: var(--hover-color);
 }
@@ -561,7 +564,7 @@
 .tr-btn {
     display: inline-flex;
     height: 32px;
-    padding: 0 16px;
+    padding: 0 8px;
     align-items: center;
     justify-content: center;
     border: 1px solid var(--border-color);
@@ -569,7 +572,7 @@
     background: var(--white-color);
     color: #333;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     margin-right: 8px;
 }
 

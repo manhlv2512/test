@@ -454,7 +454,8 @@
                 },
                 handlers: {
                     formatBranch: function (value, field) {
-                        return value.join(",");
+                        // return value.join(",");
+                        return [value];
                     },
                     openTransactionDetail: function (row) {
                         openTransactionDetail(row);
