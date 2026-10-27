@@ -213,7 +213,7 @@
     border-radius: 8px;
     background: #fff;
     box-shadow: 0 10px 28px rgba(35, 20, 48, 0.2);
-    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-family: -apple-system, "Segoe UI", Inter, Arial, sans-serif;
     font-size: 13px;
 }
 
@@ -221,8 +221,8 @@
     padding: 7px 34px;
     border: 0;
     border-radius: 6px;
-    background: var(--purple-color);
-    color: #fff;
+    background: var(--white-color);
+    /* color: #fff; */
 }
 
 .ui-datepicker .ui-datepicker-title {
@@ -255,6 +255,7 @@
     border: 0;
     border-radius: 5px;
     cursor: pointer;
+    background: var(--purple-color);
 }
 
 .ui-datepicker .ui-datepicker-prev {
@@ -269,7 +270,7 @@
 .ui-datepicker .ui-datepicker-next-hover {
     top: 7px;
     border: 0;
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--hover-color);
 }
 
 .ui-datepicker .ui-datepicker-prev-hover {
