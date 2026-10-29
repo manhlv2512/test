@@ -102,7 +102,7 @@
 
 .tr-field-label {
     display: block;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: black;
     margin-bottom: 4px;
@@ -277,26 +277,22 @@
     padding-right: 0 !important;
 }
 
-.tr-select2-dropdown,
 .select2-container--open .select2-dropdown {
     border-radius: 4px;
     box-shadow: 0 6px 16px rgba(35, 20, 48, 0.14);
     overflow: hidden;
 }
 
-.tr-select2-dropdown .select2-search--dropdown .select2-search__field,
 .select2-container--open .select2-search--dropdown .select2-search__field {
     border: 1px solid var(--border-color);
     border-radius: 4px;
     outline: none;
 }
 
-.tr-select2-dropdown .select2-search--dropdown .select2-search__field:focus,
 .select2-container--open .select2-search--dropdown .select2-search__field:focus {
     box-shadow: 0 0 0 2px rgba(167, 116, 204, 0.14);
 }
 
-.tr-select2-dropdown .select2-results__option[aria-selected="true"],
 .select2-container--open .select2-results__option[aria-selected="true"] {
     background: var(--select-hover-color) !important;
     color: var(--purple-dark) !important;
@@ -352,19 +348,6 @@
     font-size: 12px;
     cursor: pointer;
     accent-color: var(--purple-color);
-}
-
-.ui-datepicker .ui-datepicker-title select option {
-    background: var(--white-color);
-    color: var(--text-secondary);
-}
-
-.ui-datepicker .ui-datepicker-title select option:hover,
-.ui-datepicker .ui-datepicker-title select option:focus,
-.ui-datepicker .ui-datepicker-title select option:checked {
-    background: var(--select-hover-color);
-    background: linear-gradient(var(--select-hover-color), var(--select-hover-color));
-    color: var(--purple-dark);
 }
 
 /* Select2 applied to datepicker month/year dropdowns */
@@ -780,17 +763,6 @@
     box-shadow: 0 0 0 2px rgba(123, 53, 186, 0.16);
 }
 
-.tr-pagesize-select option:hover,
-.tr-pagesize-select option:focus {
-    background: var(--hover-color);
-    color: var(--purple-dark);
-}
-
-.tr-pagesize-select option:checked {
-    background: var(--purple-color);
-    color: var(--white-color);
-}
-
 .tr-pagesize .select2-container {
     width: 72px !important;
     margin: 0 4px;
@@ -870,31 +842,48 @@
     color: black;
 }
 
-.tr-th-actions,
-.tr-action-cell {
-    border-left: 1px solid #e3e6ea;
-    text-align: center;
-    white-space: nowrap;
-}
-
-.tr-th-actions {
-    box-shadow: -2px 0 4px rgba(35, 20, 48, 0.03);
-}
-
-/* Inline action column (giữa bảng): bỏ border phân cách, bỏ ép căn giữa.
-   Thêm "tr-action-inline" vào col.className trong config để dùng. */
-.tr-th-actions.tr-action-inline,
-.tr-action-cell.tr-action-inline {
-    border-left: 0;
+/* ---- Column alignment (config: column.align = left | center | right) ---- */
+.tr-th.tr-align-left,
+.tr-td.tr-align-left {
     text-align: left;
 }
 
-.tr-th-actions.tr-action-inline {
-    box-shadow: none;
+.tr-th.tr-align-center,
+.tr-td.tr-align-center {
+    text-align: center;
 }
 
+.tr-th.tr-align-right,
+.tr-td.tr-align-right {
+    text-align: right;
+}
+
+/* Số liệu căn phải dễ so sánh hơn */
+.tr-td.tr-align-right {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- Column separator (config: column.separator = true | false) ---- */
+.tr-th.tr-col-separator,
+.tr-td.tr-col-separator {
+    border-left: 1px solid #e3e6ea;
+}
+
+.tr-th.tr-col-separator {
+    box-shadow: -2px 0 4px rgba(35, 20, 48, 0.03);
+}
+
+.tr-th-actions,
+.tr-action-cell {
+    white-space: nowrap;
+}
+
+/* Action wrapper theo hướng căn của cell */
 .tr-row-actions {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    vertical-align: middle;
 }
 
 .tr-action-link {
@@ -1058,18 +1047,7 @@
 .badge-closed { background: var(--badge-danger-bg); }
 .badge-pending { background: var(--badge-warning-bg); }
 
-/* --------------------------- Loading overlay --------------------------- */
-
-.tr-loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.75);
-    z-index: 5;
-    text-align: center;
-}
+/* ------------- Spinner (dùng bởi Loading toàn trang) ------------- */
 
 .tr-spinner {
     width: 36px;

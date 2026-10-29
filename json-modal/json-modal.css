@@ -1,10 +1,47 @@
 /* ============================================================
-   JSON Modal Viewer — standalone styles (ES5 compatible)
-   Nhúng kèm json-modal.js. Chỉ cần chèn markup #jsonModal hoặc
-   để JsonModal tự tạo khi gọi showJsonModal().
+   JSON Modal Viewer — standalone styles
+   Nhúng kèm json-modal.js.
+
+   Theme:
+     - mặc định (dark)          : class "json-modal"
+     - purple (đồng bộ js-table): class "json-modal json-modal--purple"
+       Bật bằng JsonModal.show(data, { theme: "purple" })
+       hoặc JsonModal.setTheme("purple") cho toàn bộ lần mở sau.
+   Theme purple ưu tiên lấy màu từ :root của js-table/table.css
+   (var(--purple-color) ...), nếu không có sẽ dùng giá trị fallback.
    ============================================================ */
 
 .json-modal {
+    /* ---- Dark theme (default) ---- */
+    --jm-backdrop:        rgba(1, 4, 9, 0.78);
+    --jm-dialog-bg:       #161b22;
+    --jm-dialog-border:   #484f58;
+    --jm-header-bg:       #21262d;
+    --jm-divider:         #30363d;
+    --jm-title:           #f0f6fc;
+    --jm-muted:           #8b949e;
+    --jm-body-bg:         #0d1117;
+    --jm-text:            #d4d4d4;
+    --jm-dot:             #3fb950;
+    --jm-dot-ring:        rgba(63, 185, 80, 0.12);
+    --jm-focus:           #58a6ff;
+    --jm-btn-bg:          #21262d;
+    --jm-btn-border:      #30363d;
+    --jm-btn-text:        #c9d1d9;
+    --jm-btn-hover-bg:    #30363d;
+    --jm-btn-hover-text:  #f0f6fc;
+    --jm-primary-bg:      #238636;
+    --jm-primary-hover:   #2ea043;
+    --jm-primary-text:    #fff;
+    --jm-key:             #79c0ff;
+    --jm-string:          #a5d6ff;
+    --jm-number:          #79c0ff;
+    --jm-boolean:         #ff7b72;
+    --jm-null:            #d2a8ff;
+    --jm-error-text:      #ff7b72;
+    --jm-error-bg:        rgba(248, 81, 73, 0.08);
+    --jm-shadow:          0 30px 100px rgba(0, 0, 0, 0.7);
+
     position: fixed;
     z-index: 99999;
     top: 0;
@@ -18,10 +55,42 @@
     visibility: hidden;
     opacity: 0;
     pointer-events: none;
-    background: rgba(1, 4, 9, 0.78);
+    background: var(--jm-backdrop);
     backdrop-filter: blur(5px);
     transition: opacity 0.18s ease, visibility 0.18s ease;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+}
+
+/* ---- Purple theme — đồng bộ dải màu js-table ---- */
+.json-modal.json-modal--purple {
+    --jm-backdrop:        rgba(35, 20, 48, 0.45);
+    --jm-dialog-bg:       var(--white-color, #fff);
+    --jm-dialog-border:   var(--border-purple, #ccb7df);
+    --jm-header-bg:       var(--surface-purple, #f6effc);
+    --jm-divider:         var(--hover-color, #e6daf2);
+    --jm-title:           var(--text-primary, #2f2834);
+    --jm-muted:           var(--text-muted, #665c6d);
+    --jm-body-bg:         #fcfafe;
+    --jm-text:            var(--text-body, #403746);
+    --jm-dot:             var(--purple-color, #7b35ba);
+    --jm-dot-ring:        rgba(123, 53, 186, 0.15);
+    --jm-focus:           var(--purple-color, #7b35ba);
+    --jm-btn-bg:          var(--white-color, #fff);
+    --jm-btn-border:      var(--border-purple, #ccb7df);
+    --jm-btn-text:        var(--purple-dark, #6a299f);
+    --jm-btn-hover-bg:    var(--select-hover-color, #f1e9f7);
+    --jm-btn-hover-text:  var(--purple-dark, #6a299f);
+    --jm-primary-bg:      var(--purple-color, #7b35ba);
+    --jm-primary-hover:   var(--purple-dark, #6a299f);
+    --jm-primary-text:    var(--white-color, #fff);
+    --jm-key:             var(--purple-dark, #6a299f);
+    --jm-string:          #1f7d49;
+    --jm-number:          var(--toast-info-color, #3978d4);
+    --jm-boolean:         var(--toast-error-color, #d64545);
+    --jm-null:            var(--select-color, #a774cc);
+    --jm-error-text:      var(--toast-error-color, #d64545);
+    --jm-error-bg:        var(--surface-error, #fcebea);
+    --jm-shadow:          0 24px 70px rgba(82, 42, 112, 0.28);
 }
 
 .json-modal.is-open {
@@ -37,10 +106,10 @@
     max-width: 100%;
     max-height: 90vh;
     overflow: hidden;
-    background: #161b22;
-    border: 1px solid #484f58;
+    background: var(--jm-dialog-bg);
+    border: 1px solid var(--jm-dialog-border);
     border-radius: 13px;
-    box-shadow: 0 30px 100px rgba(0, 0, 0, 0.7);
+    box-shadow: var(--jm-shadow);
     transform: translateY(12px) scale(0.985);
     transition: transform 0.18s ease;
 }
@@ -54,9 +123,9 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 14px 16px 14px 18px;
-    background: #21262d;
-    border-bottom: 1px solid #30363d;
+    padding: 8px 5px 8px 16px;
+    background: var(--jm-header-bg);
+    border-bottom: 1px solid var(--jm-divider);
 }
 
 .json-modal-heading {
@@ -70,15 +139,15 @@
     width: 10px;
     height: 10px;
     flex: 0 0 auto;
-    background: #3fb950;
+    background: var(--jm-dot);
     border-radius: 50%;
-    box-shadow: 0 0 0 4px rgba(63, 185, 80, 0.12);
+    box-shadow: 0 0 0 4px var(--jm-dot-ring);
 }
 
 .json-modal-title {
     overflow: hidden;
     margin: 0;
-    color: #f0f6fc;
+    color: var(--jm-title);
     font-size: 16px;
     font-weight: 700;
     text-overflow: ellipsis;
@@ -90,7 +159,7 @@
     height: 34px;
     flex: 0 0 auto;
     padding: 0;
-    color: #8b949e;
+    color: var(--jm-muted);
     background: transparent;
     border: 0;
     border-radius: 7px;
@@ -100,27 +169,27 @@
 }
 
 .json-modal .icon-button:hover {
-    color: #f0f6fc;
-    background: #30363d;
+    color: var(--jm-btn-hover-text);
+    background: var(--jm-btn-hover-bg);
 }
 
 .json-modal .icon-button:focus,
 .json-modal .secondary-button:focus {
-    outline: 2px solid #58a6ff;
+    outline: 2px solid var(--jm-focus);
     outline-offset: 2px;
 }
 
 .json-modal-body {
     min-height: 220px;
     overflow: auto;
-    background: #0d1117;
+    background: var(--jm-body-bg);
 }
 
 .json-content {
     min-height: 100%;
     margin: 0;
     padding: 20px 22px;
-    color: #d4d4d4;
+    color: var(--jm-text);
     font-family: Monaco, Menlo, Consolas, monospace;
     font-size: 14px;
     line-height: 1.65;
@@ -129,31 +198,15 @@
     tab-size: 2;
 }
 
-.json-key {
-    color: #79c0ff;
-}
-
-.json-string {
-    color: #a5d6ff;
-}
-
-.json-number {
-    color: #79c0ff;
-}
-
-.json-boolean {
-    color: #ff7b72;
-    font-weight: 700;
-}
-
-.json-null {
-    color: #d2a8ff;
-    font-style: italic;
-}
+.json-modal .json-key     { color: var(--jm-key); }
+.json-modal .json-string  { color: var(--jm-string); }
+.json-modal .json-number  { color: var(--jm-number); }
+.json-modal .json-boolean { color: var(--jm-boolean); font-weight: 700; }
+.json-modal .json-null    { color: var(--jm-null); font-style: italic; }
 
 .json-content.json-error {
-    color: #ff7b72;
-    background: rgba(248, 81, 73, 0.08);
+    color: var(--jm-error-text);
+    background: var(--jm-error-bg);
 }
 
 .json-modal-footer {
@@ -161,10 +214,10 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 11px 16px;
-    color: #8b949e;
-    background: #161b22;
-    border-top: 1px solid #30363d;
+    padding: 8px 15px;
+    color: var(--jm-muted);
+    background: var(--jm-dialog-bg);
+    border-top: 1px solid var(--jm-divider);
     font-size: 12px;
 }
 
@@ -174,25 +227,39 @@
     gap: 8px;
 }
 
-.json-modal .secondary-button:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-}
-
 .json-modal .secondary-button {
     padding: 8px 14px;
-    color: #c9d1d9;
-    background: #21262d;
-    border: 1px solid #30363d;
+    color: var(--jm-btn-text);
+    background: var(--jm-btn-bg);
+    border: 1px solid var(--jm-btn-border);
     border-radius: 7px;
+    font: inherit;
     font-weight: 650;
     cursor: pointer;
-    font: inherit;
 }
 
 .json-modal .secondary-button:hover {
-    color: #f0f6fc;
-    background: #30363d;
+    color: var(--jm-btn-hover-text);
+    background: var(--jm-btn-hover-bg);
+}
+
+/* Nút Tải JSON là hành động chính */
+.json-modal #downloadJsonModalButton {
+    color: var(--jm-primary-text);
+    background: var(--jm-primary-bg);
+    border-color: var(--jm-primary-bg);
+}
+
+.json-modal #downloadJsonModalButton:hover {
+    color: var(--jm-primary-text);
+    background: var(--jm-primary-hover);
+    border-color: var(--jm-primary-hover);
+}
+
+.json-modal .secondary-button:disabled,
+.json-modal #downloadJsonModalButton:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
 }
 
 @media (max-width: 640px) {

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JSON Modal Viewer - ES5</title>
-  <link rel="stylesheet" href="json-modal.css">
+  <link rel="stylesheet" href="json-modal.css?v=2">
   <style>
     * {
       box-sizing: border-box;
@@ -202,19 +202,25 @@
 
       <div class="demo-actions">
         <span class="demo-hint">Modal có thể đóng bằng nút ×, nút Đóng, phím ESC hoặc click ra ngoài.</span>
-        <button id="openJsonModal" class="primary-button" type="button">Xem JSON trong modal</button>
+        <span>
+          <button id="openJsonModal" class="primary-button" type="button">Xem JSON (dark)</button>
+          <button id="openJsonModalPurple" class="primary-button" type="button">Xem JSON (purple)</button>
+        </span>
       </div>
     </section>
   </main>
 
-  <script src="json-modal.js"></script>
+  <script src="json-modal.js?v=2"></script>
   <script>
-    document.getElementById("openJsonModal").onclick = function () {
+    function openModal(theme) {
       JsonModal.show(document.getElementById("jsonInput").value, {
         title: "Kết quả JSON",
-        fileName: "deploy-result"
+        fileName: "deploy-result",
+        theme: theme
       });
-    };
+    }
+    document.getElementById("openJsonModal").onclick = function () { openModal("dark"); };
+    document.getElementById("openJsonModalPurple").onclick = function () { openModal("purple"); };
   </script>
 </body>
 </html>

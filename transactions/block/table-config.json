@@ -31,7 +31,8 @@
       "type": "actions",
       "title": "Số GD",
       "minWidth": 160,
-      "className": "tr-action-inline",
+      "align": "left",
+      "separator": false,
       "actions": [
         {
           "textField": "gntdCode",
@@ -70,6 +71,7 @@
       "field": "branchCode",
       "title": "Chi nhánh",
       "width": 90,
+      "align": "center",
       "sortable": true
     },
     {
@@ -88,6 +90,7 @@
       "field": "currency",
       "title": "Loại tiền",
       "width": 80,
+      "align": "center",
       "sortable": true
     },
     {
@@ -100,12 +103,14 @@
       "field": "gnApprovalDate",
       "title": "Ngày PD",
       "minWidth": 100,
+      "align": "right",
       "sortable": true
     },
     {
       "field": "processState",
       "title": "Trạng thái",
       "width": 120,
+      "align": "center",
       "renderer": "processStateBadge"
     },
     {
@@ -121,7 +126,7 @@
           "handler": "viewDocumentDetail"
         },
         {
-          "iconClass": "fas fa-history",
+          "iconClass": "fas fa-code",
           "title": "Log xử lý",
           "href": "#",
           "handler": "viewProcessLog"

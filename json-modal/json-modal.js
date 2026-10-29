@@ -8,14 +8,17 @@
  * API:
  *   JsonModal.show(input)
  *   JsonModal.show(input, "Tiêu đề")
- *   JsonModal.show(input, { title: "...", fileName: "..." })
+ *   JsonModal.show(input, { title: "...", fileName: "...", theme: "purple" })
  *   JsonModal.close()
  *   JsonModal.isOpen()
+ *   JsonModal.setTheme("purple")   // theme mặc định cho các lần mở sau
  *
  *   input   : chuỗi JSON hoặc object/giá trị JS bất kỳ (tự stringify)
  *   title   : tiêu đề hiển thị trên header modal
  *   fileName: tên gốc file khi tải; file tải ra là
  *             "<fileName>_<Date.now()>.json" (mặc định "data")
+ *   theme   : "dark" (mặc định) | "purple" (đồng bộ dải màu js-table;
+ *             tự lấy biến màu từ table.css nếu trang đã load)
  *
  * Tính năng:
  *   - Format + tô màu JSON (key/string/number/boolean/null)
@@ -46,6 +49,16 @@
     /* Nội dung JSON hợp lệ hiện tại + tên file tải xuống. */
     var currentJsonText = "";
     var currentFileName = "data.json";
+
+    /* Theme mặc định cho mọi lần mở: "dark" | "purple". */
+    var defaultTheme = "dark";
+    var THEMES = { dark: "", purple: "json-modal--purple" };
+
+    function applyTheme(theme) {
+        var cls = modal.className.replace(/\s*\bjson-modal--[\w-]+/g, "");
+        var themeClass = THEMES[theme] || "";
+        modal.className = cls + (themeClass ? " " + themeClass : "");
+    }
 
     function setText(element, text) {
         if (typeof element.textContent !== "undefined") {
@@ -186,6 +199,7 @@
             previousFocusedElement = document.activeElement;
         }
 
+        applyTheme(options.theme || defaultTheme);
         setText(modalTitle, options.title || "JSON Viewer");
         modalContent.className = "json-content";
         currentFileName = options.fileName || "data";
@@ -257,10 +271,19 @@
         }
     }
 
+    /* Đặt theme mặc định cho các lần mở sau ("dark" | "purple"). */
+    function setTheme(theme) {
+        if (THEMES.hasOwnProperty(theme)) {
+            defaultTheme = theme;
+        }
+        return JsonModal;
+    }
+
     var JsonModal = {
         show: show,
         close: close,
-        isOpen: isModalOpen
+        isOpen: isModalOpen,
+        setTheme: setTheme
     };
 
     /* Exports */

@@ -51,8 +51,11 @@
  *   title     {string}  tiêu đề cột
  *   sortable  {boolean} cho phép sort server-side
  *   width / minWidth / maxWidth {number|string} kích thước (number = px)
- *   align     {string}  text-align của th/td
- *   className {string}  class thêm vào th/td (vd "tr-action-inline")
+ *   align     {"left"|"center"|"right"}  căn nội dung th/td (kể cả link/
+ *             action). Mặc định: column thường "left", type "actions" "center"
+ *   separator {boolean} border trái phân cách cột. Mặc định true với type
+ *             "actions", false với column thường
+ *   className {string}  class thêm vào th/td
  *   render    {function(value, row, index) : htmlString}  renderer tuỳ biến
  *             Khi load từ DB dùng "renderer": "<tên>" (runtime.renderers)
  *   type      {"actions"} cột chứa action buttons/links
@@ -204,6 +207,23 @@
             return "";
         }
         return typeof value === "number" ? value + "px" : String(value);
+    }
+
+    /* Layout classes cho th/td:
+       - align: "left" | "center" | "right" → tr-align-*
+         Mặc định: column thường căn trái, column type "actions" căn giữa.
+       - separator: true → border trái phân cách (mặc định true với
+         column "actions", false với column thường). */
+    function columnLayoutClass(column) {
+        var isAction = column.type === "actions";
+        var align = column.align || (isAction ? "center" : "left");
+        if (align !== "left" && align !== "center" && align !== "right") {
+            align = "left";
+        }
+        var separator = typeof column.separator === "boolean"
+            ? column.separator
+            : isAction;
+        return " tr-align-" + align + (separator ? " tr-col-separator" : "");
     }
 
     function applyColumnSize(element, column) {
@@ -479,7 +499,7 @@
 
         this.container.appendChild(toolbar);
 
-        /* Table wrapper (for responsive horizontal scroll) + overlay */
+        /* Table wrapper (for responsive horizontal scroll) */
         var tableWrap = document.createElement("div");
         tableWrap.className = "tr-table-wrap";
 
@@ -492,24 +512,10 @@
         table.appendChild(tbody);
         tableWrap.appendChild(table);
 
-        /* Loading overlay */
-        var overlay = document.createElement("div");
-        overlay.className = "tr-loading-overlay";
-        overlay.style.display = "none";
-        var spinner = document.createElement("div");
-        spinner.className = "tr-spinner";
-        var loadingText = document.createElement("div");
-        loadingText.className = "tr-loading-text";
-        loadingText.appendChild(document.createTextNode("Loading..."));
-        overlay.appendChild(spinner);
-        overlay.appendChild(loadingText);
-        tableWrap.appendChild(overlay);
-
         this.container.appendChild(tableWrap);
 
         this.dom.thead = thead;
         this.dom.tbody = tbody;
-        this.dom.overlay = overlay;
 
         /* Bottom footer: page size on the left, pagination on the right. */
         var footer = document.createElement("div");
@@ -1322,6 +1328,7 @@
                 if (col.type === "actions") {
                     th.className += " tr-th-actions";
                 }
+                th.className += columnLayoutClass(col);
                 if (col.className) {
                     th.className += " " + col.className;
                 }
@@ -1425,8 +1432,8 @@
         });
     };
 
-    /* _setLoading is intentionally a no-op: the table overlay is disabled to
-       avoid screen flicker on fast responses. Use Loading.show() / Loading.hide()
+    /* _setLoading is intentionally a no-op to avoid screen flicker on fast
+       responses. Use Loading.show() / Loading.hide()
        (or the global shorthand showLoading() / hideLoading()) from your own
        async handlers instead. */
     TableRenderer.prototype._setLoading = function (flag) {
@@ -1470,6 +1477,7 @@
                     if (col.className) {
                         td.className += " " + col.className;
                     }
+                    td.className += columnLayoutClass(col);
                     if (col.align) {
                         td.style.textAlign = col.align;
                     }
