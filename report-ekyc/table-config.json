@@ -2,12 +2,36 @@
   "schemaVersion": 1,
   "key": "report-ekyc",
   "header": {
-    "title": "Báo cáo eKYC",
+    "title": "Báo cáo dữ liệu eKYC",
     "description": "Tra cứu hồ sơ eKYC và kết quả xác thực sinh trắc học"
   },
+  "detail": {
+    "compareFields": ["idCard", "fullName", "birthday", "issueDate", "permanentAddress"],
+    "emptyValueText": "—",
+    "ekycFields": {
+      "idCard": "Số CCCD/Thẻ CC",
+      "oldIdNumber": "Số CMND cũ",
+      "fullName": "Họ và tên",
+      "birthday": "Ngày sinh",
+      "gender": "Giới tính",
+      "issuePlace": "Nơi cấp",
+      "issueDate": "Ngày cấp",
+      "expiryDate": "Ngày hết hạn",
+      "nationality": "Quốc tịch",
+      "permanentAddress": "Địa chỉ thường trú",
+      "currentAddress": "Địa chỉ hiện tại"
+    }
+  },
   "pageSize": 10,
-  "pageSizeOptions": [10, 20, 50, 100],
-  "pageSizeSelect2Options": { "width": "72px" },
+  "pageSizeOptions": [
+    10,
+    20,
+    50,
+    100
+  ],
+  "pageSizeSelect2Options": {
+    "width": "72px"
+  },
   "select2Options": {
     "minimumResultsForSearch": 6,
     "width": "resolve",
@@ -15,7 +39,7 @@
   },
   "datepickerOptions": {
     "dateFormat": "dd-mm-yy",
-    "searchDateFormat": "yyyy-mm-dd",
+    "searchDateFormat": "yy-mm-dd",
     "showButtonPanel": true,
     "changeMonth": true,
     "changeYear": true
@@ -25,49 +49,47 @@
       "field": "_stt",
       "title": "STT",
       "width": 50,
+      "align": "center",
       "renderer": "sttRenderer"
     },
     {
       "field": "transId",
-      "title": "Mã GD",
-      "minWidth": 160,
-      "sortable": true
+      "title": "Trace ID",
+      "width": 300,
+      "minWidth": 160
     },
     {
       "field": "branch",
-      "title": "Chi nhánh",
-      "width": 90,
+      "title": "ĐVKD",
+      "width": 100,
       "sortable": true
     },
     {
       "field": "userId",
-      "title": "User",
+      "title": "Người thực hiện",
       "minWidth": 100,
       "sortable": true
     },
     {
       "field": "requestDate",
-      "title": "Ngày yêu cầu",
+      "title": "Ngày phát sinh",
       "minWidth": 110,
       "sortable": true
     },
     {
       "field": "cif",
       "title": "CIF",
-      "minWidth": 110,
-      "sortable": true
+      "minWidth": 110
     },
     {
       "field": "idCard",
       "title": "CCCD",
-      "minWidth": 130,
-      "sortable": true
+      "minWidth": 130
     },
     {
       "field": "fullName",
       "title": "Họ tên",
-      "minWidth": 160,
-      "sortable": true
+      "minWidth": 160
     },
     {
       "field": "customerPhoto",
@@ -82,20 +104,35 @@
       "renderer": "overallScoreRenderer"
     },
     {
-      "field": "createdDate",
-      "title": "Ngày tạo",
+      "field": "createdAt",
+      "title": "Ngày cập nhật",
       "minWidth": 140,
       "sortable": true
     },
     {
       "type": "actions",
-      "title": "Chi tiết",
+      "title": "Hành động",
       "width": 80,
       "actions": [
         {
-          "text": "Chi tiết",
+          "iconClass": "fas fa-code",
+          "title": "Xem log",
+          "variant": "warning",
           "href": "#",
-          "handler": "openDetailPopup"
+          "handler": "viewProcessLog"
+        },
+        {
+          "iconClass": "fas fa-eye",
+          "title": "Xem chi tiết",
+          "variant": "info",
+          "href": "#",
+          "handler": "viewDetail"
+        },
+        {
+          "iconClass": "fas fa-file-download",
+          "title": "Tải xuống",
+          "href": "#",
+          "handler": "downloadFile"
         }
       ]
     }
@@ -105,37 +142,37 @@
       "name": "keyword",
       "label": "Từ khoá",
       "type": "text",
-      "width": 280,
-      "placeholder": "Mã GD, RefNum, CIF, CCCD, Họ tên"
+      "width": 400,
+      "placeholder": "CIF hoặc CCCD hoặc Họ tên hoặc Người thực hiện"
     },
     {
       "name": "branch",
-      "label": "Chi nhánh",
+      "label": "ĐVKD",
       "type": "select",
       "width": 180,
-      "placeholder": "Tất cả"
-    },
-    {
-      "name": "userId",
-      "label": "User",
-      "type": "text",
-      "width": 160,
-      "placeholder": "Tên user"
+      "placeholder": "Tất cả",
+      "optionsProvider": "branchOptions"
     },
     {
       "name": "isVerified",
       "label": "Kết quả STH",
       "type": "select",
-      "width": 160,
+      "width": 180,
       "placeholder": "Tất cả",
       "options": [
-        { "value": "1", "label": "Đạt" },
-        { "value": "0", "label": "Không đạt" }
+        {
+          "value": "1",
+          "label": "Trùng khớp"
+        },
+        {
+          "value": "0",
+          "label": "Không khớp"
+        }
       ]
     },
     {
-      "name": "requestDate",
-      "label": "Ngày yêu cầu",
+      "name": "date",
+      "label": "Ngày phát sinh",
       "type": "daterange",
       "width": 360,
       "fromPlaceholder": "Từ ngày",

@@ -27,7 +27,8 @@
         }
         /* ---- Detail popup ---- */
         .ekyc-detail { text-align: left; font-size: 14px; }
-        .ekyc-section { margin-bottom: 18px; }
+        .ekyc-section { margin-bottom: 15px; }
+        .ekyc-section:last-child { margin-bottom: 0; }
         .ekyc-section-title {
             font-weight: 700;
             font-size: 13px;
@@ -38,10 +39,38 @@
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
-        .ekyc-row { display: flex; margin-bottom: 6px; }
-        .ekyc-label { width: 180px; flex-shrink: 0; color: #665c6d; font-size: 13px; }
-        .ekyc-value { flex: 1; font-weight: 600; font-size: 13px; }
-        .ekyc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        /* Lưới 3 cột cho "Thông tin yêu cầu" và "Kết quả xác thực sinh trắc học":
+           mỗi ô gồm label nhỏ phía trên, giá trị phía dưới. */
+        .ekyc-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+        /* Mỗi ô là một thẻ nhỏ, chiếm đủ 1/3 dòng, chữ căn trái */
+        .ekyc-cell {
+            min-width: 0;
+            text-align: left;
+            padding: 8px 12px;
+            background: #faf7fd;
+            border: 1px solid #ece3f4;
+            border-left: 3px solid #8e5bb5;
+            border-radius: 6px;
+        }
+        .ekyc-label { display: block; margin-bottom: 3px; color: #7a6e85; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .ekyc-value { display: block; font-weight: 600; font-size: 13px; word-break: break-word; }
+        @media (max-width: 640px) {
+            .ekyc-grid { grid-template-columns: minmax(0, 1fr); }
+        }
+        /* Viền ngoài bo góc cho bảng đối soát (separate để border-radius hoạt động) */
+        .ekyc-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13px;
+            border: 1px solid #e6daf2;
+            border-radius: 6px;
+            overflow: hidden;
+        }
         .ekyc-table th {
             background: #f1e9f7;
             color: #5b3780;
@@ -57,6 +86,49 @@
         .ekyc-table tr:last-child td { border-bottom: none; }
         .compare-ok { color: #27ae60; font-weight: 700; }
         .compare-fail { color: #c0392b; font-weight: 700; }
+
+        /* ---- Popup chi tiết: rộng, padding nhỏ, title cùng hàng với nút đóng ---- */
+        .swal2-popup.ekyc-swal-popup {
+            padding: 10px 15px 15px 15px;
+            border-radius: 10px;
+        }
+        /* Title và nút đóng cùng cao 36px, cùng top => thẳng hàng theo chiều dọc */
+        .swal2-popup.ekyc-swal-popup .swal2-title.ekyc-swal-title {
+            justify-self: stretch;
+            width: auto;
+            height: 36px;
+            margin: 0 48px;
+            padding: 0;
+            overflow: hidden;
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 36px;
+            text-align: center;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--text-primary, #2f2834);
+        }
+        /* SweetAlert2 v11 đặt nút đóng là grid item (hàng 1) nên title bị đẩy xuống hàng 2.
+           Chuyển sang absolute để title và nút đóng nằm cùng một hàng. */
+        .swal2-popup.ekyc-swal-popup { position: relative; }
+        .swal2-popup.ekyc-swal-popup .swal2-close {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 36px;
+            height: 36px;
+            margin: 0;
+            font-size: 28px;
+        }
+        .swal2-popup.ekyc-swal-popup .swal2-html-container.ekyc-swal-html {
+            justify-self: stretch;
+            width: auto;
+            max-height: calc(100vh - 120px);
+            margin: 0;
+            padding: 15px 0 0;
+            border-top: 1px solid var(--hover-color, #e6daf2);
+            text-align: left;
+        }
         .score-bar {
             display: inline-block;
             width: 60px;
@@ -105,21 +177,94 @@
         return out;
     }
 
+    /* customerPhoto / jsonData được lưu dạng chuỗi JSON → parse an toàn. */
+    function parseJson(value, fallback) {
+        if (value === null || value === undefined || value === "") { return fallback; }
+        if (typeof value !== "string") { return value; }
+        try { return JSON.parse(value); } catch (e) { return fallback; }
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    /* Cấu hình popup chi tiết — được ghi đè bởi mục "detail" trong table-config.json.
+       compareFields: chỉ các key này hiện kết quả Trùng khớp/Không khớp;
+                      các key còn lại để trống ô kết quả. null/[] = so sánh tất cả.
+       emptyValueText: chữ hiển thị cho ô giá trị VNeID/QR CCCD bị null. */
+    var DETAIL_CONFIG = { compareFields: null, emptyValueText: "—" };
+
+    function shouldCompare(key) {
+        var list = DETAIL_CONFIG.compareFields;
+        return !Array.isArray(list) || !list.length || list.indexOf(key) !== -1;
+    }
+
+    /* Giá trị rỗng/null hiển thị emptyValueText, còn lại escape HTML. */
+    function showValue(value) {
+        return (value === null || value === undefined || value === "")
+            ? escapeHtml(DETAIL_CONFIG.emptyValueText) : escapeHtml(value);
+    }
+
     /* ============================================================
        Mock dataset — 50 records
     ============================================================ */
     var BRANCHES = ["001", "002", "003", "004", "005", "010", "020"];
     var USERS    = ["manhlv1", "toannv15", "hieunv3", "phuonglm8", "anhtq2"];
-    var CARD_FIELDS = [
-        { key: "fullName",        label: "Họ và tên" },
-        { key: "birthday",        label: "Ngày sinh" },
-        { key: "gender",          label: "Giới tính" },
-        { key: "idCard",          label: "Số CCCD" },
-        { key: "permanentAddress", label: "Địa chỉ thường trú" },
-        { key: "currentAddress",  label: "Địa chỉ hiện tại" },
-        { key: "cif",             label: "CIF" },
-        { key: "cardType",        label: "Loại giấy tờ" }
-    ];
+    /* Nhãn hiển thị cho từng key trong jsonData. */
+    var EKYC_FIELD_LABELS = {
+        idCard: "Số CCCD/Thẻ CC",
+        oldIdNumber: "Số CMND cũ",
+        fullName: "Họ và tên",
+        birthday: "Ngày sinh",
+        gender: "Giới tính",
+        issuePlace: "Nơi cấp", 
+        issueDate: "Ngày cấp",
+        expiryDate: "Ngày hết hạn",
+        nationality: "Quốc tịch",
+        permanentAddress: "Địa chỉ thường trú",
+        currentAddress: "Địa chỉ hiện tại",
+    };
+
+    /* Bản ghi mẫu (record #1) đúng theo dữ liệu thực tế. */
+    var SAMPLE_PHOTO = JSON.stringify({"livenessScore":"90.00","faceCompareScore":"82.50","verified":1});
+    var SAMPLE_JSON_DATA = JSON.stringify({"idCard":{"qrCode":"037197000865","vneid":"037197000865","verified":1},"oldIdNumber":{"qrCode":"164594703","vneid":null,"verified":0},"fullName":{"qrCode":"Hà Thị Phương Chi","vneid":"Hà Thị Phương Chi","verified":1},"birthday":{"qrCode":"1997-02-14","vneid":"1997-02-14","verified":1},"issuePlace":{"qrCode":null,"vneid":"Cục Cảnh sát Quản lý hành chính về trật tự xã hội","verified":null},"issueDate":{"qrCode":"2021-04-13","vneid":"2021-04-13","verified":0},"expiryDate":{"qrCode":null,"vneid":null,"verified":null},"nationality":{"qrCode":null,"vneid":"VN","verified":null},"permanentAddress":{"qrCode":"Thôn Thượng, Ninh Nhất, Thành phố Ninh Bình, Ninh Bình","vneid":"Thôn Thượng, Ninh Nhất, Thành phố Ninh Bình, Ninh Bình","verified":1},"currentAddress":{"qrCode":null,"vneid":"Thôn Thượng, Ninh Nhất, Thành phố Ninh Bình, Ninh Bình","verified":null},"gender":{"qrCode":"Nữ","vneid":null,"verified":0}});
+
+    /* UUID v4 giả lập (xác định theo i) để xem độ dài thực tế: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx */
+    function mockUuid(i) {
+        var seed = (i * 2654435761) >>> 0;
+        function hex(n) {
+            var s = "";
+            while (n-- > 0) {
+                seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+                s += ((seed >>> 24) & 15).toString(16);
+            }
+            return s;
+        }
+        return hex(8) + "-" + hex(4) + "-4" + hex(3) + "-" +
+            "89ab".charAt(seed & 3) + hex(3) + "-" + hex(12);
+    }
+
+    /* Sinh jsonData (chuỗi JSON) cùng cấu trúc với bản ghi mẫu:
+       { <key>: { qrCode, vneid, verified: 1 khớp | 0 lệch | null không so sánh } } */
+    function buildJsonData(i, p) {
+        function ok(n) { return (i + n) % 5 === 0 ? 0 : 1; }   /* ~80% khớp */
+        var issueDate = "2021-04-13";
+        return JSON.stringify({
+            idCard:           { qrCode: p.idCard, vneid: p.idCard, verified: ok(0) },
+            oldIdNumber:      { qrCode: pad(i * 7919, 9).slice(-9), vneid: null, verified: 0 },
+            fullName:         { qrCode: p.fullName, vneid: p.fullName, verified: ok(1) },
+            birthday:         { qrCode: p.birthday, vneid: p.birthday, verified: ok(2) },
+            issuePlace:       { qrCode: null, vneid: "Cục Cảnh sát Quản lý hành chính về trật tự xã hội", verified: null },
+            issueDate:        { qrCode: issueDate, vneid: issueDate, verified: ok(3) },
+            expiryDate:       { qrCode: null, vneid: null, verified: null },
+            nationality:      { qrCode: null, vneid: "VN", verified: null },
+            permanentAddress: { qrCode: p.permanentAddress, vneid: p.permanentAddress, verified: ok(4) },
+            currentAddress:   { qrCode: null, vneid: p.currentAddress, verified: null },
+            gender:           { qrCode: p.gender, vneid: null, verified: 0 }
+        });
+    }
     var GENDERS = ["NAM", "NỮ"];
     var SURNAMES = ["NGUYEN", "TRAN", "LE", "PHAM", "HOANG", "VU", "DO", "BUI"];
     var MIDNAMES = ["VAN", "THI", "DINH", "MINH", "QUANG", "HUU", "KIM"];
@@ -130,9 +275,8 @@
         var rows = [], i;
         for (i = 1; i <= 50; i++) {
             var verified  = i <= 35 ? 1 : 0;       /* 70% đạt */
-            var overall   = verified ? (95 + (i % 50) / 10) : (70 + (i % 20));
-            var face      = overall + 0.3;
-            var liveness  = overall - 0.1;
+            var liveness  = verified ? 85 + (i % 15) + (i % 7) / 10 : 50 + (i % 30) + (i % 7) / 10;
+            var faceScore = verified ? 80 + (i % 19) + (i % 5) / 10 : 40 + (i % 39) + (i % 5) / 10;
             var branch    = BRANCHES[i % BRANCHES.length];
             var userId    = USERS[i % USERS.length];
             var reqDate   = addDays(BASE_DATE, i % 30);
@@ -145,28 +289,36 @@
             var idCard    = pad(i * 1000009, 12).slice(-12);
             var cif       = "10000" + pad(i, 4);
 
-            /* jsonData: 3–8 fields, 80% isCompare = 1 */
-            var fieldCount = 3 + (i % 6);
-            var jsonData = [];
-            var j;
-            for (j = 0; j < fieldCount && j < CARD_FIELDS.length; j++) {
-                var fld = CARD_FIELDS[j];
-                var val = {
-                    fullName: fullName, birthday: birthday, gender: gender,
-                    idCard: idCard, permanentAddress: "Ba Dinh, Ha Noi",
-                    currentAddress: "Cau Giay, Ha Noi", cif: cif, cardType: "CCCD"
-                }[fld.key] || "";
-                jsonData.push({
-                    key: fld.key,
-                    label: fld.label,
-                    qrcodeValue: val,
-                    isCompare: (j % 5 === 4) ? 0 : 1   /* ~80% match */
+            var permanentAddress = "Ba Dinh, Ha Noi";
+            var currentAddress   = "Cau Giay, Ha Noi";
+
+            /* customerPhoto & jsonData: chuỗi JSON */
+            var photo = JSON.stringify({
+                livenessScore: liveness.toFixed(2),
+                faceCompareScore: faceScore.toFixed(2),
+                verified: verified
+            });
+            var jsonData;
+            if (i === 1) {
+                /* Record #1 = dữ liệu mẫu thực tế */
+                photo = SAMPLE_PHOTO;
+                jsonData = SAMPLE_JSON_DATA;
+                fullName = "Hà Thị Phương Chi";
+                idCard = "037197000865";
+                birthday = "1997-02-14";
+                gender = "Nữ";
+                permanentAddress = "Thôn Thượng, Ninh Nhất, Thành phố Ninh Bình, Ninh Bình";
+                currentAddress = permanentAddress;
+            } else {
+                jsonData = buildJsonData(i, {
+                    idCard: idCard, fullName: fullName, birthday: birthday, gender: gender,
+                    permanentAddress: permanentAddress, currentAddress: currentAddress
                 });
             }
 
             rows.push({
                 id: pad(i * 0x9e3779b9 >>> 0, 8).toUpperCase() + pad(i * 0x6c62272e >>> 0, 8).toUpperCase(),
-                transId: "EKYC" + reqDate.replace(/-/g, "").slice(2) + pad(i, 4),
+                transId: mockUuid(i),
                 branch: branch,
                 userId: userId,
                 requestDate: reqDate,
@@ -175,20 +327,15 @@
                 cardType: "CCCD",
                 fullName: fullName,
                 birthday: birthday,
-                permanentAddress: "Ba Dinh, Ha Noi",
-                currentAddress: "Cau Giay, Ha Noi",
+                permanentAddress: permanentAddress,
+                currentAddress: currentAddress,
                 gender: gender,
                 refNum: "REF" + reqDate.replace(/-/g, "").slice(2) + pad(i, 4),
                 ecmId: "ECM" + pad(i, 6),
                 fileName: idCard + ".pdf",
-                customerPhoto: {
-                    faceMatchScore: +face.toFixed(1),
-                    livenessScore: +liveness.toFixed(1),
-                    overallScore: +overall.toFixed(1),
-                    isVerified: verified
-                },
+                customerPhoto: photo,
                 jsonData: jsonData,
-                createdDate: createdTs
+                createdAt: createdTs
             });
         }
         return rows;
@@ -206,33 +353,27 @@
                 if (f.keyword) {
                     var kw = f.keyword.toLowerCase();
                     filtered = filterArray(filtered, function (r) {
-                        return (r.transId + r.refNum + r.cif + r.idCard + r.fullName)
+                        return (r.transId + r.refNum + r.cif + r.idCard + r.fullName + r.userId)
                             .toLowerCase().indexOf(kw) !== -1;
                     });
                 }
                 if (f.branch) {
                     filtered = filterArray(filtered, function (r) { return r.branch === f.branch; });
                 }
-                if (f.userId) {
-                    var uid = f.userId.toLowerCase();
-                    filtered = filterArray(filtered, function (r) {
-                        return r.userId.toLowerCase().indexOf(uid) !== -1;
-                    });
-                }
                 if (f.isVerified !== null && f.isVerified !== undefined && f.isVerified !== "") {
                     var iv = parseInt(f.isVerified, 10);
                     filtered = filterArray(filtered, function (r) {
-                        return r.customerPhoto.isVerified === iv;
+                        return parseJson(r.customerPhoto, {}).verified === iv;
                     });
                 }
-                if (f.requestDate_from) {
+                if (f.date_from) {
                     filtered = filterArray(filtered, function (r) {
-                        return r.requestDate >= f.requestDate_from;
+                        return r.requestDate >= f.date_from;
                     });
                 }
-                if (f.requestDate_to) {
+                if (f.date_to) {
                     filtered = filterArray(filtered, function (r) {
-                        return r.requestDate <= f.requestDate_to;
+                        return r.requestDate <= f.date_to;
                     });
                 }
 
@@ -261,60 +402,81 @@
        Detail popup
     ============================================================ */
     function scoreBar(score) {
+        if (isNaN(parseFloat(score))) { return "—"; }
         return "<span class='score-bar'><span class='score-fill' style='width:" +
             Math.min(score, 100).toFixed(0) + "%'></span></span>" +
             "<b>" + score + "%</b>";
     }
 
-    function openDetailPopup(row) {
-        var p = row.customerPhoto || {};
-        var jd = row.jsonData || [];
+    /* Một ô trong lưới 3 cột: label phía trên, value (đã là HTML an toàn) phía dưới. */
+    function ekycCell(label, valueHtml) {
+        return "<div class='ekyc-cell'><span class='ekyc-label'>" + escapeHtml(label) +
+            "</span><span class='ekyc-value'>" + valueHtml + "</span></div>";
+    }
 
-        /* ---- Customer info ---- */
+    function openDetailPopup(row) {
+        var p = parseJson(row.customerPhoto, {});
+        var jd = parseJson(row.jsonData, {});
+
+        /* ---- Request info ---- */
         var infoRows = [
-            ["CIF", row.cif], ["CCCD", row.idCard], ["Loại giấy tờ", row.cardType],
-            ["Họ tên", row.fullName], ["Ngày sinh", row.birthday],
-            ["Giới tính", row.gender],
-            ["Địa chỉ thường trú", row.permanentAddress],
-            ["Địa chỉ hiện tại", row.currentAddress]
+            ["Trace ID", row.transId],
+            ["Ngày cập nhật", row.createdAt], 
+            ["Người thực hiện", row.userId]
         ];
         var infoHtml = "";
         var k;
         for (k = 0; k < infoRows.length; k++) {
-            infoHtml += "<div class='ekyc-row'><span class='ekyc-label'>" +
-                infoRows[k][0] + "</span><span class='ekyc-value'>" +
-                (infoRows[k][1] || "—") + "</span></div>";
+            infoHtml += ekycCell(infoRows[k][0], showValue(infoRows[k][1]));
         }
+        infoHtml = "<div class='ekyc-grid'>" + infoHtml + "</div>";
 
         /* ---- Biometric result ---- */
-        var verifiedLabel = p.isVerified ? "<span style='color:#27ae60'>✔ Đạt</span>"
-                                          : "<span style='color:#c0392b'>✘ Không đạt</span>";
-        var bioHtml =
-            "<div class='ekyc-row'><span class='ekyc-label'>Face Match Score</span><span class='ekyc-value'>" + scoreBar(p.faceMatchScore) + "</span></div>" +
-            "<div class='ekyc-row'><span class='ekyc-label'>Liveness Score</span><span class='ekyc-value'>" + scoreBar(p.livenessScore) + "</span></div>" +
-            "<div class='ekyc-row'><span class='ekyc-label'>Overall Score</span><span class='ekyc-value'>" + scoreBar(p.overallScore) + "</span></div>" +
-            "<div class='ekyc-row'><span class='ekyc-label'>Kết quả xác thực</span><span class='ekyc-value'>" + verifiedLabel + "</span></div>";
+        var verifiedLabel = p.verified ? "<span style='color:#27ae60'>✔ Trùng khớp</span>"
+                                       : "<span style='color:#c0392b'>✘ Không khớp</span>";
+        var bioHtml = "<div class='ekyc-grid'>" +
+            ekycCell("Liveness Score", scoreBar(p.livenessScore)) +
+            ekycCell("Face Compare Score", scoreBar(p.faceCompareScore)) +
+            ekycCell("Kết quả xác thực", verifiedLabel) +
+            "</div>";
 
         /* ---- Compare table ---- */
         var compareRows = "";
-        for (k = 0; k < jd.length; k++) {
-            var item = jd[k];
-            var vneVal = row[item.key] || "—";
-            var cmpIcon = item.isCompare
-                ? "<span class='compare-ok'>✔ Khớp</span>"
-                : "<span class='compare-fail'>✘ Lệch</span>";
-            compareRows += "<tr><td>" + item.label + "</td><td>" + vneVal +
-                "</td><td>" + item.qrcodeValue + "</td><td>" + cmpIcon + "</td></tr>";
+        var fieldKey;
+        for (fieldKey in jd) {
+            if (!jd.hasOwnProperty(fieldKey)) { continue; }
+            var item = jd[fieldKey] || {};
+            /* verified: 1 khớp | 0 lệch | null không so sánh */
+            var vf = (item.verified === null || item.verified === undefined)
+                ? null : Number(item.verified);
+            /* Chỉ field nằm trong compareFields mới hiện kết quả, còn lại để trống */
+            var cmpIcon = "";
+            if (shouldCompare(fieldKey)) {
+                if (vf === 1) {
+                    cmpIcon = "<span class='compare-ok'>✔ Trùng khớp</span>";
+                } else if (vf === 0) {
+                    cmpIcon = "<span class='compare-fail'>✘ Không khớp</span>";
+                }
+            }
+            compareRows += "<tr><td>" + escapeHtml(EKYC_FIELD_LABELS[fieldKey] || fieldKey) +
+                "</td><td>" + showValue(item.vneid) +
+                "</td><td>" + showValue(item.qrCode) +
+                "</td><td>" + cmpIcon + "</td></tr>";
         }
         var compareHtml = "<table class='ekyc-table'>" +
-            "<thead><tr><th>Trường dữ liệu</th><th>Giá trị VNeID</th><th>Giá trị QR CCCD</th><th>Kết quả</th></tr></thead>" +
+            "<thead><tr><th>Thông tin</th><th>Kết quả từ VNeID</th><th>Kết quả từ QRCode</th><th>Đánh giá</th></tr></thead>" +
             "<tbody>" + (compareRows || "<tr><td colspan='4'>Không có dữ liệu</td></tr>") + "</tbody></table>";
 
         Swal.fire({
-            title: "Chi tiết hồ sơ eKYC — " + row.transId,
-            width: 760,
+            title: "KẾT QUẢ XÁC THỰC eKYC",
+            width: 1000,
+            customClass: {
+                popup: "ekyc-swal-popup",
+                title: "ekyc-swal-title",
+                htmlContainer: "ekyc-swal-html"
+            },
             html: "<div class='ekyc-detail'>" +
-                "<div class='ekyc-section'><div class='ekyc-section-title'>Thông tin khách hàng</div>" + infoHtml + "</div>" +
+                "<div class='ekyc-section'><div class='ekyc-section-title'>Thông tin yêu cầu</div>" + infoHtml + "</div>" +
                 "<div class='ekyc-section'><div class='ekyc-section-title'>Kết quả xác thực sinh trắc học</div>" + bioHtml + "</div>" +
                 "<div class='ekyc-section'><div class='ekyc-section-title'>Đối soát VNeID – QR CCCD</div>" + compareHtml + "</div>" +
                 "</div>",
@@ -357,6 +519,13 @@
         }
     };
 
+    /* Inject branch options at runtime */
+    function getBranchs() {
+        return BRANCHES.map(function (b) {
+            return { value: b, label: b };
+        });
+    }
+
     /* ============================================================
        Boot
     ============================================================ */
@@ -373,14 +542,21 @@
             return;
         }
 
-        /* Inject branch options at runtime */
-        var i;
-        for (i = 0; i < config.searchFields.length; i++) {
-            if (config.searchFields[i].name === "branch") {
-                config.searchFields[i].options = BRANCHES.map(function (b) {
-                    return { value: b, label: "CN " + b };
-                });
-                break;
+        /* Nạp cấu hình popup chi tiết từ table-config.json (mục "detail") */
+        if (config.detail) {
+            if (Array.isArray(config.detail.compareFields)) {
+                DETAIL_CONFIG.compareFields = config.detail.compareFields;
+            }
+            if (typeof config.detail.emptyValueText === "string") {
+                DETAIL_CONFIG.emptyValueText = config.detail.emptyValueText;
+            }
+            /* Nhãn field: config ghi đè/bổ sung lên mặc định */
+            if (config.detail.ekycFields && typeof config.detail.ekycFields === "object") {
+                for (var fk in config.detail.ekycFields) {
+                    if (Object.prototype.hasOwnProperty.call(config.detail.ekycFields, fk)) {
+                        EKYC_FIELD_LABELS[fk] = config.detail.ekycFields[fk];
+                    }
+                }
             }
         }
 
@@ -388,23 +564,34 @@
             table = TableRenderer.fromConfig(config, {
                 containerId: "tableContainer",
                 searchFunction: function (req, cb) { BackendAPI.search(req, cb); },
+                optionsProviders: {
+                    branchOptions: function () {
+                        return getBranchs();
+                    }
+                },
                 renderers: {
                     sttRenderer: function (value, row, index) {
                         return String(index + 1);
                     },
                     isVerifiedBadge: function (photo) {
-                        var v = photo && photo.isVerified;
+                        var v = parseJson(photo, {}).verified;
                         return v
-                            ? "<span class='badge badge-open'>Đạt</span>"
-                            : "<span class='badge badge-closed'>Không đạt</span>";
+                            ? "<span class='badge badge-open'>Trùng khớp</span>"
+                            : "<span class='badge badge-closed'>Không khớp</span>";
                     },
                     overallScoreRenderer: function (photo) {
-                        var s = photo ? photo.overallScore : 0;
+                        var s = parseJson(photo, {}).faceCompareScore;
                         return scoreBar(s);
                     }
                 },
                 handlers: {
-                    openDetailPopup: function (row) { openDetailPopup(row); },
+                    viewDetail: function (row) { openDetailPopup(row); },
+                    viewProcessLog: function (row) { 
+                        Toast.warning("Tính năng đang xử lý...", "Warning");
+                    },
+                    downloadFile: function (row) { 
+                        Toast.info("Tính năng đang xử lý...", "Info");
+                    },
                     exportExcel: function (tableInstance, menuItem) {
                         menuItem.disabled = true;
                         tableInstance.getAllData(function (data) {
