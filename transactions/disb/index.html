@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách giao dịch giải ngân</title>
+    <link rel="stylesheet" href="../../js-table/libs/font-awesome-5/css/all.min.css">
+    <link rel="stylesheet" href="../../js-table/libs/jquery-ui/jquery-ui.min.css">
+    <link rel="stylesheet" href="../../js-table/libs/select2/select2.min.css">
+    <link rel="stylesheet" href="../../js-table/libs/sweetalerts/sweetalert2.min.css">
+    <link rel="stylesheet" href="../../js-table/dist/table.min.css">
+    <style>
+        body {
+            font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            margin: 15px;
+            background: #fafbfc;
+            color: #222;
+            overflow-x: hidden;
+        }
+        .page-log {
+            margin-top: 15px;
+            padding: 10px 12px;
+            background: #272c33;
+            color: #9fe6a0;
+            border-radius: 6px;
+            font-family: Menlo, Consolas, monospace;
+            font-size: 12px;
+            min-height: 80px;
+            max-height: 80px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            white-space: pre-wrap;
+        }
+        .table-config-error {
+            padding: 14px 16px;
+            border: 1px solid #f0b8b8;
+            border-radius: 6px;
+            background: #fff2f2;
+            color: #b42318;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .disb-cell-sub { color: #665c6d; font-size: 12px; }
+
+        /* ---- SLA: chữ + icon theo trạng thái, thanh tiến độ mảnh bên dưới ---- */
+        .disb-sla { display: inline-block; width: 100%; max-width: 104px; text-align: left; cursor: default; }
+        .disb-sla-text {
+            display: block;
+            overflow: hidden;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 18px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .disb-sla-text .fas { width: 14px; margin-right: 4px; font-size: 11px; text-align: center; }
+        .disb-sla-bar {
+            display: block;
+            height: 4px;
+            margin-top: 3px;
+            overflow: hidden;
+            border-radius: 2px;
+            background: #eee8f2;
+        }
+        .disb-sla-bar > span { display: block; height: 100%; border-radius: 2px; }
+        .disb-sla-ok { color: #1e8e4e; }
+        .disb-sla-ok .disb-sla-bar > span { background: #27ae60; }
+        .disb-sla-warning { color: #b7791f; }
+        .disb-sla-warning .disb-sla-bar > span { background: #f0a500; }
+        .disb-sla-overdue { color: #c0392b; }
+        .disb-sla-overdue .disb-sla-bar > span { background: #e74c3c; }
+
+        /* ---- Popup chọn loại giao dịch: thẻ button lớn ---- */
+        /* Popup neo phía trên (position: "top"), cách mép trên ~12% chiều cao màn hình
+           thay vì căn giữa dọc, để nhìn cân hơn với nội dung ngắn. */
+        .swal2-container.disb-swal-container { padding-top: 12vh; }
+        .swal2-popup.disb-swal-popup { position: relative; padding: 15px; border-radius: 10px; }
+        .swal2-popup.disb-swal-popup .swal2-title.disb-swal-title {
+            justify-self: stretch;
+            width: auto;
+            height: 36px;
+            margin: 0 48px;
+            padding: 0;
+            overflow: hidden;
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 36px;
+            text-align: center;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .swal2-popup.disb-swal-popup .swal2-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            margin: 0;
+            font-size: 28px;
+        }
+        .swal2-popup.disb-swal-popup .swal2-html-container.disb-swal-html {
+            justify-self: stretch;
+            width: auto;
+            margin: 15px 0 0;
+            padding: 15px 0 0;
+            border-top: 1px solid var(--hover-color, #e6daf2);
+        }
+        .disb-type-grid { display: grid; gap: 15px; }
+        .disb-type-card {
+            display: flex;
+            min-height: 120px;
+            padding: 16px 12px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ece3f4;
+            border-radius: 10px;
+            background: #faf7fd;
+            color: #2f2834;
+            font-family: inherit;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+        }
+        .disb-type-card:hover:not(:disabled) {
+            border-color: #8e5bb5;
+            background: #f1e9f7;
+            box-shadow: 0 2px 8px rgba(123, 53, 186, 0.15);
+        }
+        .disb-type-card:focus-visible { outline: 2px solid #7b35ba; outline-offset: 2px; }
+        .disb-type-card:disabled { opacity: 0.5; cursor: not-allowed; }
+        .disb-type-icon { margin-bottom: 10px; color: #7b35ba; font-size: 30px; }
+        .disb-type-label { font-size: 15px; font-weight: 700; }
+        .disb-type-desc { margin-top: 4px; color: #665c6d; font-size: 12px; }
+        .disb-type-empty { padding: 20px 0; color: #665c6d; text-align: center; }
+        @media (max-width: 760px) { .disb-type-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
+        @media (max-width: 480px) { .disb-type-grid { grid-template-columns: minmax(0, 1fr) !important; } }
+    </style>
+</head>
+<body>
+    <div id="tableContainer"></div>
+    <div class="page-log" id="log"></div>
+
+    <script src="../../js-table/libs/jquery-3.6.0.min.js"></script>
+    <script src="../../js-table/libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../../js-table/libs/select2/select2.min.js"></script>
+    <script src="../../js-table/libs/sweetalerts/sweetalert2.all.min.js"></script>
+    <script src="../../js-table/dist/table.min.js"></script>
+    <script src="constants.js"></script>
+    <script src="model.js"></script>
+    <script src="sla.js"></script>
+    <script>
+    /* ---------------- Logging ---------------- */
+    var logEl = document.getElementById("log");
+    function log(msg) {
+        logEl.innerHTML = "[" + new Date().toLocaleTimeString() + "] " + DisbUtil.escapeHtml(msg) +
+            "\n" + logEl.innerHTML;
+    }
+
+    function pad(n, len) {
+        var s = String(n);
+        while (s.length < (len || 2)) { s = "0" + s; }
+        return s;
+    }
+
+    function toIso(d) {
+        return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + " " +
+            pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+    }
+
+    function filterArray(arr, predicate) {
+        var out = [], i;
+        for (i = 0; i < arr.length; i++) {
+            if (predicate(arr[i])) { out.push(arr[i]); }
+        }
+        return out;
+    }
+
+    /* ============================================================
+       Mock dataset
+    ============================================================ */
+    var TYPE_CODES = [
+        { code: "Giaingankhoanvay", name: "Giải ngân khoản vay" },
+        { code: "Giainganthauchi", name: "Giải ngân thấu chi" },
+        { code: "Khoitaohanmuc", name: "Khởi tạo hạn mức" },
+        { code: "NhapvaduyetFCC", name: "Nhập và duyệt bút toán FCC" },
+        { code: "Khac", name: "Khác" },
+    ];
+    var FLOWS = [
+        { code: "TT", name: "Tập trung" },
+        { code: "GD_DVKD", name: "GĐ ĐVKD" },
+        { code: "DVKD", name: "VH ĐVKD" }
+    ];
+    var STATES = [
+        { code: "KHOI_TAO", name: "GN - Khởi tạo" },
+        { code: "HACH_TOAN", name: "GN - Hạch toán khoản vay thành công" },
+        { code: "HOAN_THANH", name: "GN - Hoàn thành" }
+    ];
+    var GROUPS = ["RB.TINH", "RB.HCM", "CB.HN"];
+    var BRANCH_CODES = ["441", "360", "310", "520", "274", "810"];
+    var USERS = ["LoanTT3", "HongHTD", "GiangNT6", "ThanhHM2", "ThuyNT66", "OanhNTK4"];
+    var STATE_BY_INDEX = [0, 1, 1, 2, 0];
+
+    /* ---------------- Đo hiệu năng ---------------- */
+    function now() {
+        return window.performance && performance.now ? performance.now() : new Date().getTime();
+    }
+    var PERF = { genMs: 0, serverMs: 0 };
+
+    /* Số bản ghi mock: mặc định 1.000.000, đổi bằng ?rows=5000 trên URL */
+    var ROW_COUNT = (function () {
+        var m = /[?&]rows=(\d+)/.exec(window.location.search);
+        return m ? Math.max(1, parseInt(m[1], 10)) : 1000000;
+    })();
+
+    var DATASET = (function () {
+        var t0 = now();
+        var rows = new Array(ROW_COUNT), base = new Date().getTime(), i;
+        for (i = 1; i <= ROW_COUNT; i++) {
+            var type = TYPE_CODES[i % TYPE_CODES.length];
+            var flow = FLOWS[i % FLOWS.length];
+            var state = STATES[STATE_BY_INDEX[i % STATE_BY_INDEX.length]];
+            var branch = BRANCH_CODES[i % BRANCH_CODES.length];
+            var user = USERS[i % USERS.length];
+            /* mỗi hồ sơ cách nhau 3 phút => 1M bản ghi trải khoảng 5,7 năm */
+            var created = toIso(new Date(base - i * 3 * 60000));
+            rows[i - 1] = ({
+                id: i,
+                gntdCode: "GNCN" + branch + "26" + pad(i % 12 + 1) + pad(i % 28 + 1) + pad(i % 1000, 3),
+                pdtdCode: i % 4 === 0 ? "PD" + pad(i * 13 % 100000000, 8) : pad(i * 13 % 10000000, 7),
+                transactionType1: type.code,
+                transactionType1Name: type.name,
+                flow: flow.code,
+                flowName: i % 3 === 0 ? "" : flow.name,
+                branchCode: branch,
+                customerCode: pad(i * 7919 % 100000000, 8),
+                customerName: "KHÁCH HÀNG " + i,
+                processStateCode: state.code,
+                processStateName: state.name,
+                processUser: user,
+                assignUser: user.toLowerCase(),
+                lockUser: i % 7 === 0 ? user.toLowerCase() : "",
+                processGroup: i % 5 === 0 ? GROUPS[i % GROUPS.length] : "",
+                taskStartTime: created,
+                createdAt: created
+            });
+        }
+        PERF.genMs = now() - t0;
+        return rows;
+    })();
+    log("Mock dataset: " + ROW_COUNT.toLocaleString() + " rows, generated in " + Math.round(PERF.genMs) + " ms");
+
+    /* ============================================================
+       Mock service (thay bằng gọi API thật)
+    ============================================================ */
+    /* Thời lượng gọn, tối đa 2 đơn vị, theo ngày làm việc của config:
+       45p | 3g 20p | 2n 3g | 125n. 1 ngày (n) = tổng phút của workingHours. */
+    function slaDuration(minutes) {
+        var cfg = PAGE_CONFIG.sla || {}, perDay = 0, i, p;
+        for (i = 0; i < (cfg.workingHours || []).length; i++) {
+            p = cfg.workingHours[i];
+            perDay += (parseInt(p.to.split(":")[0], 10) * 60 + parseInt(p.to.split(":")[1], 10)) -
+                (parseInt(p.from.split(":")[0], 10) * 60 + parseInt(p.from.split(":")[1], 10));
+        }
+        perDay = perDay > 0 ? perDay : 480;
+        var m = Math.max(0, Math.round(minutes));
+        var d = Math.floor(m / perDay), h = Math.floor((m % perDay) / 60), mm = m % 60;
+        if (d >= 10) { return d.toLocaleString() + "n"; }
+        if (d > 0) { return d + "n" + (h ? " " + h + "g" : ""); }
+        if (h > 0) { return h + "g" + (mm ? " " + mm + "p" : ""); }
+        return mm + "p";
+    }
+
+    /* Hạn xử lý (ms) của một hồ sơ, null nếu không tính SLA. Chỉ cộng phút làm việc từ lúc bắt đầu,
+       không tính thời gian đã dùng, nên đủ nhanh để chạy trên 1M dòng khi sort. */
+    function slaDeadlineOf(row) {
+        var cfg = PAGE_CONFIG.sla;
+        if (!cfg) { return null; }
+        var code = row[cfg.taskField];
+        if ((cfg.doneStates || []).indexOf(code) !== -1) { return null; }
+        var task = (cfg.tasks || {})[code] || (cfg.tasks || {}).DEFAULT;
+        var start = DisbUtil.parseDateTime(row[cfg.startField]);
+        if (!task || !start) { return null; }
+        var dl = DisbSla.addWorkMinutes(start, task.minutes, cfg);
+        return dl ? dl.getTime() : null;
+    }
+
+    /* Giả lập gọi API danh mục: trả { error, lists: [{ code, name }] } sau `delay` ms */
+    function mockCatalogApi(source, delay) {
+        return function (callback) {
+            setTimeout(function () {
+                var lists = [], i;
+                for (i = 0; i < source.length; i++) {
+                    lists.push(typeof source[i] === "string"
+                        ? { code: source[i], name: source[i] }
+                        : { code: source[i].code, name: source[i].name });
+                }
+                callback({ error: null, lists: lists });
+            }, delay);
+        };
+    }
+
+    var transactionService = {
+        /* Danh mục cho bộ lọc (mỗi API gọi độc lập, bất đồng bộ) */
+        getFlows: mockCatalogApi(FLOWS, 400),
+        getTransactionTypes: mockCatalogApi(TYPE_CODES, 600),
+        getProcessStates: mockCatalogApi(STATES, 800),
+        getProcessGroups: mockCatalogApi(GROUPS, 1000),
+
+        /* Object phân quyền: { error, allowBranchs, visibleConfig } */
+        getPermissions: function (callback) {
+            setTimeout(function () {
+                callback({
+                    error: null,
+                    allowBranchs: ["441", "360", "310", "520", "274"],
+                    visibleConfig: { create: true, export: true }
+                });
+            }, 100);
+        },
+
+        /* Response: { error, total, count, lists } */
+        getDisbursementQueue: function (request, permissions, callback) {
+            setTimeout(function () {
+                var t0 = now();
+                var f = request.filters || {};
+                var allowed = permissions.allowBranchs || [];
+                var branchList = f.branch ? String(f.branch).split(",") : null;
+                var i;
+
+                /* Server kiểm tra lại quyền ĐVKD */
+                if (branchList) {
+                    for (i = 0; i < branchList.length; i++) {
+                        if (allowed.indexOf(branchList[i]) === -1) {
+                            callback({
+                                error: { code: DISB_CONSTANTS.ERRORS.FORBIDDEN_BRANCH,
+                                         message: "Bạn không có quyền với ĐVKD " + branchList[i] },
+                                total: 0, count: 0, lists: []
+                            });
+                            return;
+                        }
+                    }
+                }
+                var scope = branchList || allowed;
+                var data = filterArray(DATASET, function (r) { return scope.indexOf(r.branchCode) !== -1; });
+
+                if (f.keyword) {
+                    var kw = String(f.keyword).toLowerCase();
+                    data = filterArray(data, function (r) {
+                        return (r.gntdCode + " " + r.pdtdCode + " " + r.customerCode + " " +
+                            r.customerName + " " + r.processUser).toLowerCase().indexOf(kw) !== -1;
+                    });
+                }
+                if (f.transactionType1) {
+                    data = filterArray(data, function (r) { return r.transactionType1 === f.transactionType1; });
+                }
+                if (f.flow) {
+                    data = filterArray(data, function (r) { return r.flow === f.flow; });
+                }
+                if (f.processState) {
+                    var states = String(f.processState).split(",");
+                    data = filterArray(data, function (r) { return states.indexOf(r.processStateCode) !== -1; });
+                }
+                if (f.processGroup) {
+                    data = filterArray(data, function (r) { return r.processGroup === f.processGroup; });
+                }
+                if (f.date_from) {
+                    data = filterArray(data, function (r) { return r.createdAt.slice(0, 10) >= f.date_from; });
+                }
+                if (f.date_to) {
+                    data = filterArray(data, function (r) { return r.createdAt.slice(0, 10) <= f.date_to; });
+                }
+
+                if (request.sort && request.sort.field && request.sort.type) {
+                    var sf = request.sort.field, dir = request.sort.type === "DESC" ? -1 : 1;
+                    /* Sort SLA = sort theo hạn xử lý (deadline). ASC: gấp/quá hạn lên đầu.
+                       Hồ sơ không tính SLA (đã hoàn thành) để null => luôn xuống cuối.
+                       BE thật cần trả/tính field slaDeadline để sort phía server. */
+                    if (sf === "_sla") {
+                        sf = "_slaDeadline";
+                        for (i = 0; i < data.length; i++) {
+                            if (data[i]._slaDeadline === undefined) {
+                                data[i]._slaDeadline = slaDeadlineOf(data[i]);
+                            }
+                        }
+                    }
+                    /* data đã là mảng mới (từ filterArray) nên sort tại chỗ, không copy thêm */
+                    data.sort(function (a, b) {
+                        var av = a[sf], bv = b[sf];
+                        /* null/rỗng luôn xuống cuối, bất kể chiều sort */
+                        var an = av === null || av === undefined || av === "";
+                        var bn = bv === null || bv === undefined || bv === "";
+                        if (an || bn) { return an === bn ? 0 : an ? 1 : -1; }
+                        return av < bv ? -dir : av > bv ? dir : 0;
+                    });
+                }
+
+                var start = (request.page - 1) * request.pageSize;
+                var lists = data.slice(start, start + request.pageSize);
+                PERF.serverMs = now() - t0;
+                callback({ error: null, total: data.length, count: lists.length, lists: lists });
+            }, 20);
+        }
+    };
+
+    /* ============================================================
+       Tải cấu hình JSON
+    ============================================================ */
+    var TableConfigAPI = {
+        load: function (url, callback) {
+            var request = new XMLHttpRequest();
+            var requestUrl = url + (url.indexOf("?") === -1 ? "?" : "&") + "_=" + new Date().getTime();
+            request.open("GET", requestUrl, true);
+            request.setRequestHeader("Cache-Control", "no-cache, no-store, max-age=0");
+            request.onreadystatechange = function () {
+                if (request.readyState !== 4) { return; }
+                if (request.status < 200 || request.status >= 300) {
+                    callback(new Error("Cannot load table config (HTTP " + request.status + "): " + url));
+                    return;
+                }
+                try {
+                    var config = JSON.parse(request.responseText);
+                    if (!config || !Array.isArray(config.columns) || !config.columns.length) {
+                        callback(new Error("Table config must contain a non-empty columns array."));
+                        return;
+                    }
+                    callback(null, config);
+                } catch (e) {
+                    callback(new Error("Invalid table config JSON: " + e.message));
+                }
+            };
+            request.onerror = function () {
+                callback(new Error("Network error while loading table config: " + url));
+            };
+            request.send(null);
+        }
+    };
+
+    /* ============================================================
+       Trạng thái trang (nạp từ config + phân quyền)
+    ============================================================ */
+    var PAGE_CONFIG = { detail: { url: "", target: "_self" }, create: null, sla: null };
+    var PERMISSIONS = { allowBranchs: [], visibleConfig: { create: false, export: false } };
+    var table = null;
+    var tableContainer = document.getElementById("tableContainer");
+
+    /* ============================================================
+       Catalog: nạp danh mục bất đồng bộ, gọi API một lần.
+       - Bắt đầu gọi ngay khi script chạy, song song với tải config/phân quyền.
+       - Catalog.get(key, cb): có dữ liệu thì cb ngay, chưa có thì xếp hàng chờ.
+       - Lỗi API: Toast lỗi, cb([]) để ô chọn rỗng nhưng form vẫn dùng được.
+    ============================================================ */
+    var Catalog = (function () {
+        var store = {};
+
+        function load(key, fetcher, title) {
+            var entry = store[key] = { done: false, data: [], waiters: [] };
+            fetcher(function (res) {
+                if (!res || res.error) {
+                    Toast.error((res && res.error && res.error.message) || "Không tải được danh mục", title);
+                } else {
+                    entry.data = res.lists || [];
+                }
+                entry.done = true;
+                log("Catalog loaded: " + key + " (" + entry.data.length + ")");
+                var w = entry.waiters, i;
+                entry.waiters = [];
+                for (i = 0; i < w.length; i++) { w[i](entry.data); }
+            });
+        }
+
+        function get(key, callback) {
+            var entry = store[key];
+            if (!entry) { callback([]); return; }
+            if (entry.done) { callback(entry.data); return; }
+            entry.waiters.push(callback);
+        }
+
+        /* Lấy đồng bộ (dùng cho popup Khởi tạo); null nếu chưa tải xong */
+        function peek(key) {
+            return store[key] && store[key].done ? store[key].data : null;
+        }
+
+        return { load: load, get: get, peek: peek };
+    })();
+
+    Catalog.load("flows", transactionService.getFlows, "Lỗi tải phân luồng");
+    Catalog.load("transactionTypes", transactionService.getTransactionTypes, "Lỗi tải loại giao dịch");
+    Catalog.load("processStates", transactionService.getProcessStates, "Lỗi tải trạng thái");
+    Catalog.load("processGroups", transactionService.getProcessGroups, "Lỗi tải nhóm xử lý");
+
+    /* Provider async cho js-table: chờ Catalog rồi setOptions -> js-table dựng lại <option> và cập nhật Select2 */
+    function catalogProvider(key) {
+        return function (field, setOptions) {
+            Catalog.get(key, function (lists) {
+                var out = [], i;
+                for (i = 0; i < lists.length; i++) {
+                    out.push({ value: lists[i].code, label: lists[i].name });
+                }
+                setOptions(out);
+            });
+        };
+    }
+
+    /* Loại giao dịch cho popup Khởi tạo: danh sách từ API, icon/mô tả/url bổ sung từ config theo code.
+       API chưa trả về thì dùng tạm create.types trong config. */
+    function getCreateTypes() {
+        var cfgTypes = (PAGE_CONFIG.create && PAGE_CONFIG.create.types) || [];
+
+        var apiTypes = Catalog.peek("transactionTypes");
+        if (!apiTypes || !apiTypes.length) { return cfgTypes; }
+        var byCode = {}, out = [], i, k;
+        for (i = 0; i < cfgTypes.length; i++) { byCode[cfgTypes[i].value] = cfgTypes[i]; }
+        for (i = 0; i < apiTypes.length; i++) {
+            var extra = byCode[apiTypes[i].code] || {};
+            var item = {};
+            for (k in extra) { if (extra.hasOwnProperty(k)) { item[k] = extra[k]; } }
+            item.value = apiTypes[i].code;
+            item.label = apiTypes[i].name || extra.label || apiTypes[i].code;
+            out.push(item);
+        }
+        return out;
+    }
+
+    function toOptions(list, labelPrefix) {
+        var out = [], i;
+        for (i = 0; i < list.length; i++) {
+            out.push({ value: list[i], label: (labelPrefix || "") + list[i] });
+        }
+        return out;
+    }
+
+    function showConfigError(message) {
+        var el = document.createElement("div");
+        el.className = "table-config-error";
+        el.appendChild(document.createTextNode(message));
+        tableContainer.appendChild(el);
+        Toast.error(message, "Lỗi tải cấu hình");
+    }
+
+    /* Dòng phụ trong ô gộp; bỏ qua nếu không có giá trị */
+    function subLine(label, value) {
+        if (value === null || value === undefined || value === "") { return ""; }
+        return "<div class='disb-cell-sub'>" + (label ? DisbUtil.escapeHtml(label) + ": " : "") +
+            DisbUtil.escapeHtml(value) + "</div>";
+    }
+
+    /* ---------------- Kiểm tra tên field SP trả về ----------------
+       SP đặt sai alias (vd TRANSACTIONTYPE1NAME thay vì TRANSACTION_TYPE1_NAME) thì sau toCamel
+       field bị thiếu và ô trên bảng trống. Cảnh báo một lần, kèm alias đúng cần trả. */
+
+    /* Field dùng trong renderer nhưng không khai báo là "field" của cột */
+    var RENDERER_FIELDS = ["pdtdCode", "customerCode", "processGroup"];
+
+    function collectExpectedFields(config) {
+        var seen = {}, out = [], i, j, cols = config.columns || [];
+        function add(name) {
+            if (name && name.charAt(0) !== "_" && !seen[name]) { seen[name] = true; out.push(name); }
+        }
+        for (i = 0; i < cols.length; i++) {
+            add(cols[i].field);
+            for (j = 0; cols[i].actions && j < cols[i].actions.length; j++) { add(cols[i].actions[j].textField); }
+        }
+        if (config.sla) { add(config.sla.startField); add(config.sla.taskField); }
+        for (i = 0; i < RENDERER_FIELDS.length; i++) { add(RENDERER_FIELDS[i]); }
+        return out;
+    }
+
+    var missingFieldsWarned = false;
+    function warnMissingFields(rows) {
+        if (missingFieldsWarned || !rows || !rows.length) { return; }
+        missingFieldsWarned = true;
+        var missing = DisbUtil.findMissingFields(rows[0], PAGE_CONFIG.expectedFields || []);
+        if (!missing.length) { return; }
+        var parts = [], i;
+        for (i = 0; i < missing.length; i++) {
+            parts.push(missing[i].field + " (SP cần trả " + missing[i].oracleKey + ")");
+        }
+        var msg = "Thiếu field: " + parts.join(", ");
+        log(msg);
+        if (window.console && console.warn) { console.warn("[disb] " + msg, rows[0]); }
+        Toast.warning("Dữ liệu thiếu " + missing.length + " field, xem log/console.", "Sai tên field");
+    }
+
+    /* ---------------- Chi tiết giao dịch ---------------- */
+    function openDetail(row) {
+        var url = DisbUtil.buildDetailUrl(PAGE_CONFIG.detail, row);
+        if (!url) {
+            Toast.error(DISB_CONSTANTS.MESSAGES.NO_DETAIL_URL, "Lỗi");
+            return;
+        }
+        log("View detail: " + row.gntdCode + " -> " + url);
+        if (!DisbUtil.openUrl(url, PAGE_CONFIG.detail.target)) {
+            Toast.error(DISB_CONSTANTS.MESSAGES.UNSAFE_URL, "Lỗi");
+        }
+    }
+
+    /* ---------------- Popup Khởi tạo ---------------- */
+    function openCreatePopup() {
+        var cfg = PAGE_CONFIG.create || {};
+        var types = getCreateTypes();
+        var cols = Math.min(4, Math.max(1, cfg.columns || 3));
+        var i, html;
+
+        if (!types.length) {
+            html = "<div class='disb-type-empty'>" +
+                DisbUtil.escapeHtml(DISB_CONSTANTS.MESSAGES.NO_CREATE_TYPES) + "</div>";
+        } else {
+            html = "<div class='disb-type-grid' style='grid-template-columns:repeat(" + cols + ",minmax(0,1fr))'>";
+            for (i = 0; i < types.length; i++) {
+                html += "<button type='button' class='disb-type-card' data-index='" + i + "'" +
+                    (types[i].disabled ? " disabled" : "") + ">" +
+                    (types[i].iconClass
+                        ? "<i class='disb-type-icon " + DisbUtil.escapeHtml(types[i].iconClass) + "' aria-hidden='true'></i>" : "") +
+                    "<span class='disb-type-label'>" + DisbUtil.escapeHtml(types[i].label) + "</span>" +
+                    (types[i].description
+                        ? "<span class='disb-type-desc'>" + DisbUtil.escapeHtml(types[i].description) + "</span>" : "") +
+                    "</button>";
+            }
+            html += "</div>";
+        }
+
+        Swal.fire({
+            title: cfg.title || "Chọn loại giao dịch",
+            width: 760,
+            position: "top",
+            html: html,
+            showCloseButton: true,
+            showConfirmButton: false,
+            customClass: {
+                container: "disb-swal-container",
+                popup: "disb-swal-popup",
+                title: "disb-swal-title",
+                htmlContainer: "disb-swal-html"
+            },
+            didOpen: function (popup) {
+                var cards = popup.querySelectorAll(".disb-type-card");
+                var n;
+                for (n = 0; n < cards.length; n++) {
+                    cards[n].addEventListener("click", function () {
+                        var type = types[parseInt(this.getAttribute("data-index"), 10)];
+                        var url = DisbUtil.buildCreateUrl(cfg, type);
+                        Swal.close();
+                        log("Create: transactionType1=" + (type.value || "") + " -> " + url);
+                        if (!url || !DisbUtil.openUrl(url, type.target || cfg.target)) {
+                            Toast.error(DISB_CONSTANTS.MESSAGES.UNSAFE_URL, "Lỗi");
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    /* ---------------- Export (thay bằng exporter thật của dự án) ---------------- */
+    function exportExcel(data) {
+        log("Export: " + data.length + " rows");
+    }
+
+    /* ============================================================
+       Khởi động: phân quyền -> config -> table
+    ============================================================ */
+    TableConfigAPI.load(DISB_CONSTANTS.CONFIG_URL, function (error, config) {
+        if (error) { showConfigError(error.message); return; }
+
+        PAGE_CONFIG.create = config.create || null;
+        PAGE_CONFIG.sla = config.sla || null;
+        PAGE_CONFIG.expectedFields = collectExpectedFields(config);
+        if (config.detail) {
+            if (typeof config.detail.url === "string") { PAGE_CONFIG.detail.url = config.detail.url; }
+            if (typeof config.detail.target === "string") { PAGE_CONFIG.detail.target = config.detail.target; }
+        }
+
+        transactionService.getPermissions(function (res) {
+            if (!res || res.error) {
+                Toast.error((res && res.error && res.error.message) || "Không tải được phân quyền", "Lỗi phân quyền");
+            } else {
+                PERMISSIONS.allowBranchs = res.allowBranchs || [];
+                PERMISSIONS.visibleConfig = res.visibleConfig || {};
+                if (!PERMISSIONS.allowBranchs.length) {
+                    Toast.warning(DISB_CONSTANTS.MESSAGES.NO_BRANCH, "Phân quyền");
+                }
+            }
+
+            /* Lọc nút theo visibleConfig; thiếu key thì ẩn */
+            var visible = [], b;
+            for (b = 0; b < (config.buttons || []).length; b++) {
+                var btn = config.buttons[b];
+                if (!btn.visibleKey || PERMISSIONS.visibleConfig[btn.visibleKey] === true) {
+                    visible.push(btn);
+                }
+            }
+            config.buttons = visible;
+
+            try {
+                table = TableRenderer.fromConfig(config, {
+                    containerId: "tableContainer",
+                    searchFunction: function (request, callback) {
+                        transactionService.getDisbursementQueue(request, PERMISSIONS, function (res) {
+                            var mapped = DisbUtil.mapResponse(request, res);
+                            warnMissingFields(mapped.data);
+                            if (mapped.error) {
+                                Toast.error(mapped.error.message || "Có lỗi xảy ra", "Lỗi tải dữ liệu");
+                            }
+                            /* callback -> js-table render body + pagination đồng bộ, nên đo được thời gian render */
+                            var tRender = now();
+                            callback(mapped);
+                            log("Perf: server(mock) " + Math.round(PERF.serverMs) + " ms, render " +
+                                Math.round(now() - tRender) + " ms (" + mapped.data.length + " / " +
+                                mapped.total.toLocaleString() + " rows)");
+                        });
+                    },
+                    optionsProviders: {
+                        branchOptions: function () {
+                            return toOptions(PERMISSIONS.allowBranchs, "CN ");
+                        },
+                        /* Async từ API danh mục; transactionTypes dùng chung với popup Khởi tạo */
+                        flowOptions: catalogProvider("flows"),
+                        transactionType1Options: catalogProvider("transactionTypes"),
+                        statusOptions: catalogProvider("processStates"),
+                        processGroupOptions: catalogProvider("processGroups")
+                    },
+                    renderers: {
+                        sttRenderer: function (value, row, index) {
+                            var st = table && table.state ? table.state : { page: 1, pageSize: 0 };
+                            return String((st.page - 1) * st.pageSize + index + 1);
+                        },
+                        slaRenderer: function (value, row) {
+                            var r = DisbSla.compute(row, PAGE_CONFIG.sla, new Date());
+                            if (!r) { return ""; }
+                            var icon = { ok: "fa-clock", warning: "fa-hourglass-half", overdue: "fa-exclamation-circle" }[r.status];
+                            var text = r.status === "overdue"
+                                ? "Quá " + slaDuration(r.overMinutes)
+                                : "Còn " + slaDuration(r.remainingMinutes);
+                            /* Thanh tiến độ: % thời gian SLA đã dùng (tối đa 100%) */
+                            var pct = Math.min(100, Math.round(r.usedMinutes / r.slaMinutes * 100));
+                            var task = PAGE_CONFIG.sla.tasks[row[PAGE_CONFIG.sla.taskField]] || PAGE_CONFIG.sla.tasks.DEFAULT;
+                            var tip = "Hạn xử lý: " + DisbUtil.formatDateTime(r.deadline) +
+                                "\nSLA: " + (task.label || "") + " (" + slaDuration(r.slaMinutes) + ")" +
+                                "\nĐã dùng: " + slaDuration(r.usedMinutes) + " (" + pct + "%)";
+                            return "<div class='disb-sla disb-sla-" + r.status + "' title='" + DisbUtil.escapeHtml(tip) + "'>" +
+                                "<span class='disb-sla-text'><i class='fas " + icon + "' aria-hidden='true'></i>" +
+                                DisbUtil.escapeHtml(text) + "</span>" +
+                                "<span class='disb-sla-bar'><span style='width:" + pct + "%'></span></span>" +
+                                "</div>";
+                        },
+                        /* Loại giao dịch cấp 1 / Mã PDTD */
+                        transactionRenderer: function (value, row) {
+                            return "<div>" + DisbUtil.escapeHtml(row.transactionType1Name || "") + "</div>" +
+                                subLine("PDTD", row.pdtdCode);
+                        },
+                        /* Phân luồng / Nhóm xử lý */
+                        flowGroupRenderer: function (value, row) {
+                            return "<div>" + DisbUtil.escapeHtml(row.transactionFlowName || row.flowName || "") + "</div>" +
+                                subLine("Nhóm", row.processGroup);
+                        },
+                        customerRenderer: function (value, row) {
+                            return "<div>" + DisbUtil.escapeHtml(row.customerCode) + "</div>" +
+                                "<div class='disb-cell-sub'>" + DisbUtil.escapeHtml(row.customerName) + "</div>";
+                        }
+                    },
+                    handlers: {
+                        openTransactionDetail: function (row) { openDetail(row); },
+                        viewProcessLog: function (row) {
+                            log("Log xử lý: " + row.gntdCode);
+                            Toast.info("Xem log xử lý giao dịch " + row.gntdCode, "Log xử lý");
+                        },
+                        openCreatePopup: function () { openCreatePopup(); },
+                        exportExcel: function (tableInstance, menuItem) {
+                            menuItem.disabled = true;
+                            showLoading();
+                            tableInstance.getAllData(function (data) {
+                                hideLoading();
+                                menuItem.disabled = false;
+                                exportExcel(data);
+                                Toast.success(data.length + " dòng sẵn sàng xuất file.", "Export");
+                            });
+                        },
+                        onRowClick: function (row, index) { /* no-op */ },
+                        onDataLoaded: function (response) {
+                            log("Refresh: " + response.data.length + " / " + response.total + " dòng");
+                        },
+                        onSearchChanged: function (filters) {
+                            log("Search: " + JSON.stringify(filters));
+                        }
+                    }
+                });
+            } catch (e) {
+                Toast.error(e.message, "Lỗi khởi tạo table");
+            }
+        });
+    });
+    </script>
+</body>
+</html>
