@@ -104,7 +104,7 @@ var DisbUtil = (function () {
 
     /* Link chi tiết: cfg = { url, target }, row = dòng được bấm. */
     function buildDetailUrl(cfg, row) {
-        var url = ctg.url || "";
+        var url = (cfg && cfg.url) || "";
         var transactionCode = row.gntdCode;
         if (!url || !transactionCode) {
             return "";

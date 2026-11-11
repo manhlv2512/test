@@ -1,177 +1,217 @@
-/* Tính SLA theo giờ làm việc ở client (ES5, hàm thuần, không phụ thuộc DOM).
-   Cấu hình xem mục "sla" trong table-config.json.
+/* Tính SLA ở client theo logic BPM (disb-sla.js), ES5, không phụ thuộc DOM.
+   Cần nạp trước: moment.js, date-util.js. Cấu hình: mục "sla" trong table-config.json.
 
-   DisbSla.compute(row, cfg, now) -> null (không tính) hoặc
-     { deadline: Date, status: "ok"|"warning"|"overdue",
-       usedMinutes, remainingMinutes, overMinutes, slaMinutes }
-   Thời gian tính theo giờ local của trình duyệt (cfg.timezone chỉ để ghi chú). */
-var DisbSla = (function () {
-    var MAX_DAYS = 400; /* chặn vòng lặp vô hạn khi cấu hình sai */
+   - Chỉ tính cho hồ sơ có trạng thái thuộc activeStates (BPM: DB_STATUS_CODE.CHO_XU_LY)
+     và có đủ yellowFlagDate + redFlagDate (BE trả). Thiếu một trong hai thì không hiển thị.
+   - now trong (yellow, red)  -> "warning", còn = giờ làm việc từ now đến red
+     red < now                -> "overdue", quá = giờ làm việc từ red đến now
+     còn lại                  -> "ok",      còn = giờ làm việc từ now đến red
+   - Giờ làm việc: các phiên trong workingHours theo thứ (workday), bỏ ngày lễ (holidays)
+     và ngày không có phiên nào (vd Chủ nhật).
+       weekDays:     ["Sunday", "Monday", ..., "Saturday"]  (7 phần tử, 0 = Chủ nhật)
+       workingHours: [{ workday: "Monday", startTime: "08:00", endTime: "12:00" }, ...]
+       holidays:     [{ date: "2026-01-01", desc: "Tết Dương lịch" }, ...]
 
-    function pad(n) {
-        return n < 10 ? "0" + n : String(n);
-    }
+   Khác bản BPM (đã sửa lỗi của bản gốc):
+   - Bản gốc so startTimeValue dạng HHmm (800) với số giây trong ngày, và cộng workTime
+     (giờ, "8.5") vào tổng giây cho ngày đủ => sai đơn vị. Ở đây đổi hết về giây từ startTime/endTime.
+   - Bản gốc trừ trọn 86400 giây cho ngày nghỉ kể cả khi khoảng thời gian bắt đầu giữa ngày.
+     Ở đây tính phần giao nhau của [from, to] với từng phiên làm việc nên chính xác tới giây.
+   - formatDate gốc trộn getUTCFullYear với getMonth/getDate local. Ở đây dùng ngày local. */
+var DisbSla = (function (DateUtil) {
+    var MAX_DAYS = 3660; /* ~10 năm, chặn vòng lặp khi dữ liệu sai */
 
-    function dayKey(d) {
-        return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
-    }
+    /* Chuẩn hoá cấu hình một lần, cache trên cfg. */
+    function prepare(cfg) {
+        if (cfg.__slaCache) {
+            return cfg.__slaCache;
+        }
+        var sessions = [[], [], [], [], [], [], []];
+        var holidaySet = {}; /* key = ms đầu ngày (local) */
+        var weekDays = Object.prototype.toString.call(cfg.weekDays) === "[object Array]" ? cfg.weekDays : [];
+        var hours = cfg.workingHours || [];
+        var holidays = cfg.holidays || [];
+        var i, j, idx, from, to, day, perDay = 0, dayTotal;
 
-    function toMinutes(hhmm) {
-        var p = String(hhmm).split(":");
-        return (+p[0]) * 60 + (+p[1] || 0);
-    }
-
-    function atMinutes(day, minutes) {
-        return new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, minutes, 0, 0);
-    }
-
-    function inList(list, value) {
-        var i;
-        for (i = 0; list && i < list.length; i++) {
-            if (list[i] === value) {
-                return true;
+        for (i = 0; i < hours.length; i++) {
+            idx = weekDays.indexOf(hours[i].workday);
+            from = DateUtil.timeToSeconds(hours[i].startTime);
+            to = DateUtil.timeToSeconds(hours[i].endTime);
+            if (idx >= 0 && to > from) {
+                sessions[idx].push({ from: from, to: to });
             }
         }
-        return false;
+        for (i = 0; i < 7; i++) {
+            sessions[i].sort(function (a, b) { return a.from - b.from; });
+            dayTotal = 0;
+            for (j = 0; j < sessions[i].length; j++) {
+                dayTotal += sessions[i][j].to - sessions[i][j].from;
+            }
+            perDay = Math.max(perDay, dayTotal);
+        }
+        for (i = 0; i < holidays.length; i++) {
+            day = DateUtil.startOfDay(holidays[i] && holidays[i].date);
+            if (day) {
+                holidaySet[day.valueOf()] = true;
+            }
+        }
+
+        cfg.__slaCache = {
+            /* weekDays sai thì mọi ngày thành ngày nghỉ => không tính SLA thay vì hiện số sai */
+            valid: weekDays.length === 7,
+            sessions: sessions,
+            holidaySet: holidaySet,
+            perDayMinutes: perDay / 60
+        };
+        return cfg.__slaCache;
     }
 
-    function isWorkingDay(day, cfg) {
-        var key = dayKey(day);
-        if (inList(cfg.workingWeekends, key)) {
-            return true;
-        }
-        if (inList(cfg.holidays, key)) {
-            return false;
-        }
-        return inList(cfg.workingDays, day.getDay());
+    /* Ngày nghỉ: ngày lễ hoặc thứ không có phiên làm việc. */
+    function isDayOff(value, cfg) {
+        var c = prepare(cfg);
+        var day = DateUtil.startOfDay(value);
+        return !day || !!c.holidaySet[day.valueOf()] || !c.sessions[day.day()].length;
     }
 
-    /* Các khung giờ làm việc của một ngày (đã sort), dạng [{from: Date, to: Date}]. */
-    function windowsOf(day, cfg) {
-        if (!isWorkingDay(day, cfg)) {
-            return [];
+    /* Số giây làm việc trong khoảng [from, to). from/to: giá trị bất kỳ DateUtil.parse nhận. */
+    function workSeconds(from, to, cfg) {
+        var a = DateUtil.toMillis(from), b = DateUtil.toMillis(to);
+        if (a === null || b === null || b <= a) {
+            return 0;
         }
-        var out = [];
-        var hours = cfg.workingHours || [];
-        var i;
-        for (i = 0; i < hours.length; i++) {
-            out.push({
-                from: atMinutes(day, toMinutes(hours[i].from)),
-                to: atMinutes(day, toMinutes(hours[i].to))
-            });
-        }
-        out.sort(function (a, b) { return a.from - b.from; });
-        return out;
-    }
+        var c = prepare(cfg);
+        var day = DateUtil.startOfDay(a);
+        var total = 0, n, i, list, base, s, e;
 
-    /* Thời điểm làm việc sớm nhất >= date. Trả về { at: Date, end: Date } (end = hết khung hiện tại). */
-    function nextWorkMoment(date, cfg) {
-        var day = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-        var n, i, wins;
-        for (n = 0; n < MAX_DAYS; n++) {
-            wins = windowsOf(day, cfg);
-            for (i = 0; i < wins.length; i++) {
-                if (date < wins[i].to) {
-                    return { at: date > wins[i].from ? date : wins[i].from, end: wins[i].to };
+        for (n = 0; n < MAX_DAYS && day.valueOf() < b; n++) {
+            base = day.valueOf();
+            list = c.sessions[day.day()];
+            if (list.length && !c.holidaySet[base]) {
+                for (i = 0; i < list.length; i++) {
+                    s = Math.max(base + list[i].from * 1000, a);
+                    e = Math.min(base + list[i].to * 1000, b);
+                    if (e > s) {
+                        total += e - s;
+                    }
                 }
             }
-            day = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1);
+            day.add(1, "day");
         }
-        return null;
+        return total / 1000;
     }
 
-    /* Cộng `minutes` phút làm việc vào start. */
-    function addWorkMinutes(start, minutes, cfg) {
-        var cur = nextWorkMoment(start, cfg);
-        var remaining = minutes;
-        var avail;
-        while (cur) {
-            avail = (cur.end - cur.at) / 60000;
-            if (remaining <= avail) {
-                return new Date(cur.at.getTime() + remaining * 60000);
+    /* Cộng `minutes` phút làm việc vào from (bỏ ngoài giờ, nghỉ trưa, ngày nghỉ).
+       Trả số ms; null nếu from sai, cấu hình sai hoặc không tìm thấy ngày làm việc trong MAX_DAYS. */
+    function addWorkMinutes(from, minutes, cfg) {
+        var a = DateUtil.toMillis(from);
+        var c = prepare(cfg);
+        if (a === null || !c.valid) {
+            return null;
+        }
+        var left = Math.max(0, minutes) * 60000;
+        var day = DateUtil.startOfDay(a);
+        var n, i, list, base, s, e;
+
+        for (n = 0; n < MAX_DAYS; n++) {
+            base = day.valueOf();
+            list = c.sessions[day.day()];
+            if (list.length && !c.holidaySet[base]) {
+                for (i = 0; i < list.length; i++) {
+                    s = Math.max(base + list[i].from * 1000, a);
+                    e = base + list[i].to * 1000;
+                    if (e > s) {
+                        if (left <= e - s) {
+                            return s + left;
+                        }
+                        left -= e - s;
+                    }
+                }
             }
-            remaining -= avail;
-            cur = nextWorkMoment(cur.end, cfg);
+            day.add(1, "day");
         }
         return null;
     }
 
-    /* Số phút làm việc trong khoảng [a, b). */
-    function workMinutesBetween(a, b, cfg) {
-        var total = 0;
-        var cur = nextWorkMoment(a, cfg);
-        var segEnd;
-        while (cur && cur.at < b) {
-            segEnd = cur.end < b ? cur.end : b;
-            total += (segEnd - cur.at) / 60000;
-            cur = nextWorkMoment(cur.end, cfg);
-        }
-        return total;
+    function isActive(row, cfg) {
+        var states = cfg.activeStates;
+        return !states || !states.length || states.indexOf(row[cfg.statusField || "status"]) !== -1;
     }
 
-    function slaMinutesOf(taskCode, cfg) {
-        var tasks = cfg.tasks || {};
-        var t = tasks[taskCode] || tasks.DEFAULT;
-        return t && typeof t.minutes === "number" ? t.minutes : null;
-    }
-
-    /* "1g 20p" / "35p" */
-    function formatMinutes(total) {
-        var m = Math.round(total);
-        var h = Math.floor(m / 60);
-        var r = m % 60;
-        return h > 0 ? h + "g " + pad(r) + "p" : r + "p";
-    }
-
+    /* Kết quả SLA của một hồ sơ, null nếu không hiển thị SLA.
+       { status, deadline (Date, red), warningAt (Date, yellow),
+         remainingMinutes, overMinutes, progress (0-100 | null) } */
     function compute(row, cfg, now) {
-        if (!row || !cfg) {
+        if (!row || !cfg || !prepare(cfg).valid || !isActive(row, cfg)) {
             return null;
         }
-        var taskCode = row[cfg.taskField];
-        var startValue = row[cfg.startField];
-        if (inList(cfg.doneStates, taskCode) || !startValue) {
+        var red = DateUtil.toMillis(row[cfg.redField || "redFlagDate"]);
+        var yellow = DateUtil.toMillis(row[cfg.yellowField || "yellowFlagDate"]);
+        if (red === null || yellow === null) {
             return null;
         }
-        var start = startValue instanceof Date ? startValue : parseDateTime(startValue);
-        var minutes = slaMinutesOf(taskCode, cfg);
-        if (!start || minutes === null) {
-            return null;
-        }
-        now = now || new Date();
+        var t = DateUtil.toMillis(now || DateUtil.now());
 
-        var deadline = addWorkMinutes(start, minutes, cfg);
-        if (!deadline) {
-            return null;
-        }
-        var used = workMinutesBetween(start, now, cfg);
-        var ratio = typeof cfg.warningRatio === "number" ? cfg.warningRatio : 0.8;
-        var status = "ok";
-        var over = 0;
-        if (now > deadline) {
-            status = "overdue";
-            over = workMinutesBetween(deadline, now, cfg);
-        } else if (used >= minutes * ratio) {
+        var status, remaining = 0, over = 0;
+        if (t > yellow && t < red) {
             status = "warning";
+            remaining = workSeconds(t, red, cfg);
+        } else if (red < t) {
+            status = "overdue";
+            over = workSeconds(red, t, cfg);
+        } else {
+            status = "ok";
+            remaining = workSeconds(t, red, cfg);
         }
+
+        /* Tiến độ (tuỳ chọn): % giờ làm việc đã dùng từ lúc bắt đầu task đến hạn */
+        var progress = null;
+        var start = cfg.startField ? DateUtil.toMillis(row[cfg.startField]) : null;
+        if (start !== null && start < red) {
+            var total = workSeconds(start, red, cfg);
+            progress = status === "overdue" || total <= 0
+                ? 100
+                : Math.max(0, Math.min(100, Math.round((total - remaining) / total * 100)));
+        }
+
         return {
-            deadline: deadline,
             status: status,
-            slaMinutes: minutes,
-            usedMinutes: used,
-            remainingMinutes: Math.max(0, minutes - used),
-            overMinutes: over
+            deadline: new Date(red),
+            warningAt: new Date(yellow),
+            remainingMinutes: remaining / 60,
+            overMinutes: over / 60,
+            progress: progress
         };
     }
 
-    function parseDateTime(text) {
-        var m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?/.exec(String(text || ""));
-        return m ? new Date(+m[1], +m[2] - 1, +m[3], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0)) : null;
+    /* Hạn SLA (ms) để sort; null nếu hồ sơ không thuộc diện tính SLA. */
+    function deadlineOf(row, cfg) {
+        if (!row || !cfg || !isActive(row, cfg)) {
+            return null;
+        }
+        return DateUtil.toMillis(row[cfg.redField || "redFlagDate"]);
+    }
+
+    /* Thời lượng gọn, tối đa 2 đơn vị: 45p | 3g 20p | 2n 3g | 125n.
+       1 ngày (n) = tổng giờ làm việc của ngày dài nhất trong workingHours. */
+    function formatDuration(minutes, cfg) {
+        var perDay = cfg ? prepare(cfg).perDayMinutes : 0;
+        perDay = perDay > 0 ? perDay : 480;
+        var m = Math.max(0, Math.round(minutes));
+        var d = Math.floor(m / perDay);
+        var h = Math.floor((m - d * perDay) / 60);
+        var mm = Math.round(m - d * perDay - h * 60);
+        if (d >= 10) { return d.toLocaleString() + "n"; }
+        if (d > 0) { return d + "n" + (h ? " " + h + "g" : ""); }
+        if (h > 0) { return h + "g" + (mm ? " " + mm + "p" : ""); }
+        return mm + "p";
     }
 
     return {
         compute: compute,
+        deadlineOf: deadlineOf,
+        workSeconds: workSeconds,
         addWorkMinutes: addWorkMinutes,
-        workMinutesBetween: workMinutesBetween,
-        formatMinutes: formatMinutes
+        isDayOff: isDayOff,
+        formatDuration: formatDuration
     };
-})();
+})(DateUtil);

@@ -40,14 +40,114 @@
             font-size: 14px;
             font-weight: 600;
         }
-        .disb-cell-sub { color: #665c6d; font-size: 12px; }
+        /* ---- Ô gộp nhiều dòng ----
+           Dòng chính chữ đậm, gần đen; dòng phụ nhỏ hơn nhưng vẫn tương phản cao (~9:1)
+           để đọc rõ trên màn hình 19.5" độ phân giải 1366×768 / 1600×900 (~80-94 PPI). */
+        .disb-cell { line-height: 1.4; }
+        .disb-cell-text { color: #1f1a24; }
+        .disb-cell-sub { margin-top: 2px; color: #4a4352; font-size: 12px; font-variant-numeric: tabular-nums; }
+        .disb-detail-link { font-variant-numeric: tabular-nums; }
+
+        /* Dòng mã có nhãn dạng tag: [PDTD] 2628344, [MÃ KH] 19403229.
+           Nhãn nền tím xám, giá trị đậm gần đen: tách rõ "nhãn" và "mã", không còn chữ xám nhạt. */
+        .disb-meta { display: flex; margin-top: 3px; align-items: center; font-size: 12px; line-height: 18px; white-space: nowrap; }
+        .disb-meta-key {
+            flex: none;
+            margin-right: 5px;
+            padding: 0 5px;
+            border-radius: 3px;
+            background: #ebe6f0;
+            color: #3d3546;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 16px;
+            letter-spacing: 0.2px;
+            text-transform: uppercase;
+        }
+        .disb-meta-value { color: #1f1a24; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+        /* Cả ô Mã GNTD bấm được để mở chi tiết (không chỉ dòng chữ link) */
+        #tableContainer td.disb-col-gntd { cursor: pointer; }
+        #tableContainer td.disb-col-gntd:hover .disb-detail-link { color: var(--purple-dark); text-decoration: underline; }
+
+        /* Chip: user đang claim (lock), nhóm xử lý */
+        .disb-chip {
+            display: inline-flex;
+            max-width: 100%;
+            margin-top: 4px;
+            padding: 0 7px;
+            align-items: center;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 18px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .disb-chip .fas { margin-right: 4px; font-size: 10px; }
+        .disb-chip-lock { border-color: #f1cf8f; background: #fff3dc; color: #8a5300; }
+        .disb-chip-group { border-color: #e0cdef; background: #f1e9f7; color: #5b3780; }
+
+        /* ---- Trạng thái: badge viền + nền theo dải màu (config "statusBadge.tones") ----
+           Bo góc 4px (không bo tròn) để tên trạng thái dài xuống 2 dòng vẫn đẹp.
+           Tương phản chữ/nền: default 11.7, tím 8.6, xanh 5.8, cam 6.1, đỏ 6.6 (:1). */
+        .disb-status {
+            display: inline-block;
+            max-width: 100%;
+            padding: 2px 8px;
+            border: 1px solid;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 17px;
+            text-align: left;
+        }
+        .disb-status-default { border-color: #c3bacb; background: #ffffff; color: #3d3546; }
+        .disb-status-purple  { border-color: #c9a8e6; background: #f3ecfa; color: #5b2a86; }
+        .disb-status-green   { border-color: #9fd5b4; background: #e8f6ee; color: #146c3a; }
+        .disb-status-orange  { border-color: #f2c084; background: #fff1de; color: #8a4b00; }
+        .disb-status-red     { border-color: #efb0b0; background: #fdecec; color: #a61b1b; }
+
+        /* ---- Form tìm kiếm: 7 điều kiện trên 1 hàng ----
+           Flex thay cho float của js-table (chỉ trong trang này). "width" của searchFields trong config
+           là độ rộng gốc: tổng 1.220px + 6 khoảng cách 12px vừa form ở màn 1366px (kể cả thanh cuộn).
+           Màn rộng hơn: các ô giãn đều lấp hết hàng. Màn hẹp hơn: các ô co lại, đến min-width mới xuống hàng.
+           Nút Tìm kiếm / Đặt lại luôn ở hàng riêng bên dưới. */
+        #tableContainer .tr-search-form { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 12px; }
+        #tableContainer .tr-search-form .tr-field { float: none; flex: 1 1 auto; min-width: 110px; margin-right: 0; }
+        #tableContainer .tr-search-form .tr-field-daterange { min-width: 200px; }
+        #tableContainer .tr-search-form .tr-field-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #tableContainer .tr-search-form .tr-search-actions { flex: 0 0 100%; }
+
+        /* ---- Độ rộng cột: 3 nhóm ----
+           - Cố định (width px trong config): STT, SLA, Thời điểm tiếp nhận.
+           - Co theo nội dung (className "disb-col-fit"): mã, số tiền, ĐVKD, user.
+             width 1% => trình duyệt co cột về độ rộng nhỏ nhất vừa nội dung.
+           - Giãn (không đặt width): Loại GD, Khách hàng, Trạng thái, Phân luồng.
+             Phần thừa của bảng chia cho các cột chữ này, không dồn vào cột cuối. */
+        #tableContainer .disb-col-fit { width: 1%; }
+
+        /* Số tiền: chữ thường, chữ số đều cột; loại tiền dạng tag, xuống dòng dưới số khi cột hẹp */
+        .disb-amount { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 3px 5px; }
+        .disb-amount-value { color: #1f1a24; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .disb-amount .disb-meta-key { margin-right: 0; }
+
+        /* Màn hình ≤ 1600px (19.5" HD+): thu padding, cho tiêu đề cột xuống dòng
+           để 12 cột vừa 1366px mà không phải cuộn ngang. */
+        @media (max-width: 1600px) {
+            #tableContainer .tr-th,
+            #tableContainer .tr-td { padding: 8px 10px; }
+            #tableContainer .tr-th { white-space: normal; line-height: 1.3; vertical-align: bottom; }
+        }
 
         /* ---- SLA: chữ + icon theo trạng thái, thanh tiến độ mảnh bên dưới ---- */
-        .disb-sla { display: inline-block; width: 100%; max-width: 104px; text-align: left; cursor: default; }
+        .disb-sla { display: inline-block; width: 100%; text-align: left; cursor: default; }
         .disb-sla-text {
             display: block;
             overflow: hidden;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
             line-height: 18px;
             white-space: nowrap;
@@ -63,11 +163,12 @@
             background: #eee8f2;
         }
         .disb-sla-bar > span { display: block; height: 100%; border-radius: 2px; }
-        .disb-sla-ok { color: #1e8e4e; }
+        /* Màu chữ đậm hơn bản cũ để đạt tương phản ≥ 5:1 (vàng cũ #b7791f chỉ ~3:1) */
+        .disb-sla-ok { color: #157a3f; }
         .disb-sla-ok .disb-sla-bar > span { background: #27ae60; }
-        .disb-sla-warning { color: #b7791f; }
+        .disb-sla-warning { color: #9a6400; }
         .disb-sla-warning .disb-sla-bar > span { background: #f0a500; }
-        .disb-sla-overdue { color: #c0392b; }
+        .disb-sla-overdue { color: #b42318; }
         .disb-sla-overdue .disb-sla-bar > span { background: #e74c3c; }
 
         /* ---- Popup chọn loại giao dịch: thẻ button lớn ---- */
@@ -146,14 +247,16 @@
     <script src="../../js-table/libs/select2/select2.min.js"></script>
     <script src="../../js-table/libs/sweetalerts/sweetalert2.all.min.js"></script>
     <script src="../../js-table/dist/table.min.js"></script>
+    <script src="../../js-table/libs/moment-with-locales.min.js"></script>
+    <script src="date-util.js"></script>
     <script src="constants.js"></script>
-    <script src="model.js"></script>
+    <script src="disb.js"></script>
     <script src="sla.js"></script>
     <script>
     /* ---------------- Logging ---------------- */
     var logEl = document.getElementById("log");
     function log(msg) {
-        logEl.innerHTML = "[" + new Date().toLocaleTimeString() + "] " + DisbUtil.escapeHtml(msg) +
+        logEl.innerHTML = "[" + DateUtil.format(DateUtil.now(), DateUtil.FORMAT.TIME) + "] " + DisbUtil.escapeHtml(msg) +
             "\n" + logEl.innerHTML;
     }
 
@@ -163,11 +266,6 @@
         return s;
     }
 
-    function toIso(d) {
-        return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + " " +
-            pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
-    }
-
     function filterArray(arr, predicate) {
         var out = [], i;
         for (i = 0; i < arr.length; i++) {
@@ -175,6 +273,28 @@
         }
         return out;
     }
+
+    /* ============================================================
+       CẤU HÌNH DEMO: sửa các giá trị dưới đây rồi F5
+    ============================================================ */
+    var DEMO_CONFIG = {
+        rows: 1000000,           /* số hồ sơ mock; URL ?rows=5000 ghi đè giá trị này */
+        seed: 2026,              /* giữ nguyên seed thì F5 vẫn ra cùng bộ dữ liệu; đổi số để ra bộ khác */
+        gapMinutes: 10,          /* hồ sơ sau được tạo sớm hơn hồ sơ trước 10 phút (mới nhất ở đầu) */
+        maxTransferMinutes: 120, /* taskStartTime = createdAt + ngẫu nhiên 0..120 phút (không quá hiện tại) */
+        pendingRatio: 0.5,       /* tỷ lệ hồ sơ ở trạng thái tính SLA (sla.activeStates, vd Chờ xử lý) */
+        yellowMinutes: 60,       /* yellowFlagDate = taskStartTime + 60 phút */
+        redMinutes: 90,          /* redFlagDate    = taskStartTime + 90 phút */
+        workingTime: true,       /* true: cộng theo giờ làm việc (sla.workingHours, holidays); false: cộng thẳng */
+        /* Số tiền mock theo loại giao dịch cấp 1, khoảng [min, max] triệu đồng; loại khác không có số tiền */
+        amountRanges: {
+            Giaingankhoanvay: [50, 5000],
+            Giainganthauchi: [10, 500],
+            Khoitaohanmuc: [500, 20000]
+        },
+        usdRatio: 0.1,           /* tỷ lệ hồ sơ có loại tiền USD, còn lại VND */
+        nameWords: [3, 5]        /* tên KH tiếng Việt ngẫu nhiên từ 3 đến 5 chữ (họ + đệm + tên) */
+    };
 
     /* ============================================================
        Mock dataset
@@ -193,13 +313,38 @@
     ];
     var STATES = [
         { code: "KHOI_TAO", name: "GN - Khởi tạo" },
-        { code: "HACH_TOAN", name: "GN - Hạch toán khoản vay thành công" },
+        { code: "CHO_XU_LY", name: "GN - Chờ xử lý" },
+        { code: "CHO_BO_SUNG", name: "GN - Chờ bổ sung" },
+        { code: "HACH_TOAN_TC", name: "GN - Hạch toán khoản vay thành công" },
+        { code: "LOI_THAU_CHI", name: "GN - Lỗi hạch toán thấu chi" },
+        { code: "LOI_HAN_MUC", name: "GN - Lỗi hạch toán hạn mức" },
+        { code: "LOI_CHUYEN_TIEN", name: "GN - Lỗi chuyển tiền" },
         { code: "HOAN_THANH", name: "GN - Hoàn thành" }
     ];
-    var GROUPS = ["RB.TINH", "RB.HCM", "CB.HN"];
+    var GROUPS = ["RB.TINH", "RB.HCM", "RB.HN", "DS.HN"];
     var BRANCH_CODES = ["441", "360", "310", "520", "274", "810"];
     var USERS = ["LoanTT3", "HongHTD", "GiangNT6", "ThanhHM2", "ThuyNT66", "OanhNTK4"];
-    var STATE_BY_INDEX = [0, 1, 1, 2, 0];
+
+    /* Tên KH tiếng Việt (viết hoa như dữ liệu core). Họ phổ biến lặp lại để xuất hiện nhiều hơn. */
+    var VN_NAME = {
+        surnames: ["NGUYỄN", "NGUYỄN", "NGUYỄN", "NGUYỄN", "TRẦN", "TRẦN", "LÊ", "LÊ", "PHẠM", "HOÀNG",
+            "HUỲNH", "PHAN", "VŨ", "VÕ", "ĐẶNG", "BÙI", "ĐỖ", "HỒ", "NGÔ", "DƯƠNG", "LÝ", "ĐINH",
+            "TRỊNH", "ĐOÀN", "LÂM", "MAI", "CHÂU", "TÔ", "LƯU", "HÀ"],
+        male: {
+            middles: ["VĂN", "HỮU", "ĐỨC", "MINH", "QUANG", "HOÀNG", "CÔNG", "THÀNH", "XUÂN", "ĐÌNH",
+                "TUẤN", "GIA", "BẢO", "NHẬT", "SỸ", "KHẮC", "TRỌNG", "HẢI", "THẾ", "ANH"],
+            givens: ["AN", "BÌNH", "CƯỜNG", "DŨNG", "DUY", "ĐẠT", "HẢI", "HIẾU", "HÙNG", "HUY", "KHANG",
+                "KHOA", "LONG", "LỘC", "MẠNH", "NAM", "NGHĨA", "PHONG", "PHÚC", "QUÂN", "SƠN", "TÀI",
+                "THẮNG", "THỊNH", "TIẾN", "TOÀN", "TRUNG", "TUẤN", "VIỆT", "VINH", "CHIẾN", "HƯNG"]
+        },
+        female: {
+            middles: ["THỊ", "NGỌC", "THU", "THANH", "MINH", "BẢO", "KIM", "HỒNG", "PHƯƠNG", "KHÁNH",
+                "MỸ", "DIỆU", "HOÀI", "THẢO", "NHƯ", "CẨM", "TƯỜNG", "QUỲNH"],
+            givens: ["ANH", "CHI", "DUNG", "GIANG", "HÀ", "HẠNH", "HIỀN", "HOA", "HƯƠNG", "HUYỀN", "LAN",
+                "LINH", "LY", "MAI", "MY", "NGA", "NGÂN", "NHUNG", "OANH", "PHƯƠNG", "QUỲNH", "THẢO",
+                "THƯ", "TRANG", "TRÂM", "UYÊN", "VÂN", "VY", "YẾN", "HÂN"]
+        }
+    };
 
     /* ---------------- Đo hiệu năng ---------------- */
     function now() {
@@ -207,82 +352,142 @@
     }
     var PERF = { genMs: 0, serverMs: 0 };
 
-    /* Số bản ghi mock: mặc định 1.000.000, đổi bằng ?rows=5000 trên URL */
+    /* Số bản ghi mock: DEMO_CONFIG.rows, URL ?rows=5000 ghi đè */
     var ROW_COUNT = (function () {
         var m = /[?&]rows=(\d+)/.exec(window.location.search);
-        return m ? Math.max(1, parseInt(m[1], 10)) : 1000000;
+        return m ? Math.max(1, parseInt(m[1], 10)) : DEMO_CONFIG.rows;
     })();
 
-    var DATASET = (function () {
+    /* Random có seed (mulberry32): cùng seed => cùng chuỗi số, dữ liệu demo ổn định khi F5 */
+    function makeRandom(seed) {
+        var s = seed >>> 0;
+        return function () {
+            s = (s + 0x6D2B79F5) >>> 0;
+            var t = Math.imul(s ^ (s >>> 15), s | 1);
+            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+    }
+
+    /* Sinh dữ liệu mock. Gọi sau khi tải config vì cờ SLA cần sla.workingHours/holidays. */
+    var DATASET = [];
+    function buildDataset(slaCfg) {
         var t0 = now();
+        var rnd = makeRandom(DEMO_CONFIG.seed);
+        function pick(list) { return list[Math.floor(rnd() * list.length)]; }
+
+        /* Tên KH tiếng Việt, số chữ ngẫu nhiên đều trong DEMO_CONFIG.nameWords [min, max], cùng giới tính:
+             3 chữ: HỌ + ĐỆM + TÊN                 (HỒ SỸ THẮNG)
+             4 chữ: HỌ + ĐỆM + ĐỆM + TÊN           (DƯƠNG THỊ HƯƠNG LY)
+             5 chữ: HỌ + HỌ + ĐỆM + ĐỆM + TÊN      (LÊ NGUYỄN NGỌC BẢO TRÂM, họ ghép cha + mẹ)
+           Không chữ nào lặp lại trong một tên. */
+        var nameMin = Math.max(2, DEMO_CONFIG.nameWords[0]), nameMax = Math.max(nameMin, DEMO_CONFIG.nameWords[1]);
+        function pickNew(list, used) {
+            var n = list.length, k = Math.floor(rnd() * n), guard;
+            for (guard = 0; guard < n && used.indexOf(list[k % n]) !== -1; guard++) { k += 7; }
+            return list[k % n];
+        }
+        function mockName() {
+            var g = rnd() < 0.5 ? VN_NAME.male : VN_NAME.female;
+            var words = nameMin + Math.floor(rnd() * (nameMax - nameMin + 1));
+            var parts = [pick(VN_NAME.surnames)], firstMiddle, m;
+            if (words >= 5) { parts.push(pickNew(VN_NAME.surnames, parts)); }
+            firstMiddle = parts.length;
+            for (m = words - parts.length - 1; m > 0; m--) { parts.push(pickNew(g.middles, parts)); }
+            /* "VĂN"/"THỊ" (phần tử đầu danh sách đệm) luôn đứng ngay sau họ: NGUYỄN THỊ NGỌC LAN */
+            m = parts.indexOf(g.middles[0]);
+            if (m > firstMiddle) { parts.splice(m, 1); parts.splice(firstMiddle, 0, g.middles[0]); }
+            parts.push(pickNew(g.givens, parts));
+            return parts.join(" ");
+        }
+
+        /* Trạng thái tính SLA lấy theo sla.activeStates để mock và cột SLA luôn khớp nhau.
+           activeStates rỗng = mọi trạng thái đều tính SLA (giống DisbSla). */
+        var activeCodes = (slaCfg && slaCfg.activeStates) || [];
+        var pending = [], others = [], k;
+        for (k = 0; k < STATES.length; k++) {
+            (activeCodes.indexOf(STATES[k].code) !== -1 ? pending : others).push(STATES[k]);
+        }
+        function pickState() {
+            return pending.length && (!others.length || rnd() < DEMO_CONFIG.pendingRatio)
+                ? pick(pending) : pick(others);
+        }
+        function hasSla(code) {
+            return !activeCodes.length || activeCodes.indexOf(code) !== -1;
+        }
+        function addMinutes(ms, minutes) {
+            return DEMO_CONFIG.workingTime
+                ? DisbSla.addWorkMinutes(ms, minutes, slaCfg)
+                : ms + minutes * 60000;
+        }
+        /* Số tiền mock: loại có trong DEMO_CONFIG.amountRanges; ~usdRatio là USD (quy đổi 1 triệu đồng ≈ 40 USD) */
+        function mockMoney(typeCode) {
+            var range = DEMO_CONFIG.amountRanges[typeCode];
+            if (!range) { return null; }
+            var millions = range[0] + rnd() * (range[1] - range[0]);
+            if (rnd() < DEMO_CONFIG.usdRatio) {
+                return { amount: Math.round(millions * 40 * 100) / 100, currency: "USD" };
+            }
+            return { amount: Math.round(millions) * 1000000, currency: "VND" };
+        }
+
         var rows = new Array(ROW_COUNT), base = new Date().getTime(), i;
         for (i = 1; i <= ROW_COUNT; i++) {
             var type = TYPE_CODES[i % TYPE_CODES.length];
             var flow = FLOWS[i % FLOWS.length];
-            var state = STATES[STATE_BY_INDEX[i % STATE_BY_INDEX.length]];
+            var state = pickState();
             var branch = BRANCH_CODES[i % BRANCH_CODES.length];
             var user = USERS[i % USERS.length];
-            /* mỗi hồ sơ cách nhau 3 phút => 1M bản ghi trải khoảng 5,7 năm */
-            var created = toIso(new Date(base - i * 3 * 60000));
+            var createdMs = base - i * DEMO_CONFIG.gapMinutes * 60000;
+            /* Thời điểm chuyển xử lý task: ngẫu nhiên đều trong [lúc tạo, min(lúc tạo + maxTransferMinutes, hiện tại)].
+               Hồ sơ đang Khởi tạo chưa chuyển xử lý => lấy lúc tạo (như SP: NVL(PROCESSING_DATE, CREATED_DATE)). */
+            var maxTransfer = Math.min(DEMO_CONFIG.maxTransferMinutes, Math.floor((base - createdMs) / 60000));
+            var startMs = state.code === "KHOI_TAO" ? createdMs
+                : createdMs + Math.floor(rnd() * (maxTransfer + 1)) * 60000;
+            var sla = hasSla(state.code);
+            var yellowMs = sla ? addMinutes(startMs, DEMO_CONFIG.yellowMinutes) : null;
+            var redMs = sla ? addMinutes(startMs, DEMO_CONFIG.redMinutes) : null;
+            var money = mockMoney(type.code);
             rows[i - 1] = ({
                 id: i,
                 gntdCode: "GNCN" + branch + "26" + pad(i % 12 + 1) + pad(i % 28 + 1) + pad(i % 1000, 3),
                 pdtdCode: i % 4 === 0 ? "PD" + pad(i * 13 % 100000000, 8) : pad(i * 13 % 10000000, 7),
                 transactionType1: type.code,
                 transactionType1Name: type.name,
-                flow: flow.code,
-                flowName: i % 3 === 0 ? "" : flow.name,
+                amount: money ? money.amount : null,
+                currency: money ? money.currency : null,
+                transactionFlow: flow.code,
+                transactionFlowName: i % 3 === 0 ? "" : flow.name,
                 branchCode: branch,
                 customerCode: pad(i * 7919 % 100000000, 8),
-                customerName: "KHÁCH HÀNG " + i,
-                processStateCode: state.code,
-                processStateName: state.name,
+                customerName: mockName(),
+                status: state.code,
+                statusName: state.name,
+                createdBy: pick(USERS),          /* ngẫu nhiên, có thể khác processUser */
                 processUser: user,
                 assignUser: user.toLowerCase(),
-                lockUser: i % 7 === 0 ? user.toLowerCase() : "",
+                /* User đang claim xử lý: chỉ hồ sơ chưa hoàn thành, ~30% có người claim */
+                lockUser: state.code !== "HOAN_THANH" && rnd() < 0.3 ? pick(USERS).toLowerCase() : "",
                 processGroup: i % 5 === 0 ? GROUPS[i % GROUPS.length] : "",
-                taskStartTime: created,
-                createdAt: created
+                /* Cờ SLA (BE trả): chỉ trạng thái tính SLA; vàng/đỏ = taskStartTime + yellowMinutes/redMinutes */
+                yellowFlagDate: yellowMs === null ? null : DateUtil.toServer(yellowMs),
+                redFlagDate: redMs === null ? null : DateUtil.toServer(redMs),
+                taskStartTime: DateUtil.toServer(startMs),
+                createdAt: DateUtil.toServer(createdMs)
             });
         }
+        DATASET = rows;
         PERF.genMs = now() - t0;
-        return rows;
-    })();
-    log("Mock dataset: " + ROW_COUNT.toLocaleString() + " rows, generated in " + Math.round(PERF.genMs) + " ms");
+        log("Mock dataset: " + ROW_COUNT.toLocaleString() + " rows, generated in " + Math.round(PERF.genMs) +
+            " ms (vàng +" + DEMO_CONFIG.yellowMinutes + "p, đỏ +" + DEMO_CONFIG.redMinutes + "p, " +
+            (DEMO_CONFIG.workingTime ? "theo giờ làm việc" : "cộng thẳng") + ")");
+    }
 
     /* ============================================================
        Mock service (thay bằng gọi API thật)
     ============================================================ */
-    /* Thời lượng gọn, tối đa 2 đơn vị, theo ngày làm việc của config:
-       45p | 3g 20p | 2n 3g | 125n. 1 ngày (n) = tổng phút của workingHours. */
     function slaDuration(minutes) {
-        var cfg = PAGE_CONFIG.sla || {}, perDay = 0, i, p;
-        for (i = 0; i < (cfg.workingHours || []).length; i++) {
-            p = cfg.workingHours[i];
-            perDay += (parseInt(p.to.split(":")[0], 10) * 60 + parseInt(p.to.split(":")[1], 10)) -
-                (parseInt(p.from.split(":")[0], 10) * 60 + parseInt(p.from.split(":")[1], 10));
-        }
-        perDay = perDay > 0 ? perDay : 480;
-        var m = Math.max(0, Math.round(minutes));
-        var d = Math.floor(m / perDay), h = Math.floor((m % perDay) / 60), mm = m % 60;
-        if (d >= 10) { return d.toLocaleString() + "n"; }
-        if (d > 0) { return d + "n" + (h ? " " + h + "g" : ""); }
-        if (h > 0) { return h + "g" + (mm ? " " + mm + "p" : ""); }
-        return mm + "p";
-    }
-
-    /* Hạn xử lý (ms) của một hồ sơ, null nếu không tính SLA. Chỉ cộng phút làm việc từ lúc bắt đầu,
-       không tính thời gian đã dùng, nên đủ nhanh để chạy trên 1M dòng khi sort. */
-    function slaDeadlineOf(row) {
-        var cfg = PAGE_CONFIG.sla;
-        if (!cfg) { return null; }
-        var code = row[cfg.taskField];
-        if ((cfg.doneStates || []).indexOf(code) !== -1) { return null; }
-        var task = (cfg.tasks || {})[code] || (cfg.tasks || {}).DEFAULT;
-        var start = DisbUtil.parseDateTime(row[cfg.startField]);
-        if (!task || !start) { return null; }
-        var dl = DisbSla.addWorkMinutes(start, task.minutes, cfg);
-        return dl ? dl.getTime() : null;
+        return DisbSla.formatDuration(minutes, PAGE_CONFIG.sla);
     }
 
     /* Giả lập gọi API danh mục: trả { error, lists: [{ code, name }] } sau `delay` ms */
@@ -354,20 +559,21 @@
                     data = filterArray(data, function (r) { return r.transactionType1 === f.transactionType1; });
                 }
                 if (f.flow) {
-                    data = filterArray(data, function (r) { return r.flow === f.flow; });
+                    data = filterArray(data, function (r) { return r.transactionFlow === f.flow; });
                 }
-                if (f.processState) {
-                    var states = String(f.processState).split(",");
-                    data = filterArray(data, function (r) { return states.indexOf(r.processStateCode) !== -1; });
+                if (f.status) {
+                    var states = String(f.status).split(",");
+                    data = filterArray(data, function (r) { return states.indexOf(r.status) !== -1; });
                 }
                 if (f.processGroup) {
                     data = filterArray(data, function (r) { return r.processGroup === f.processGroup; });
                 }
+                /* Lọc "Thời điểm" theo thời điểm tiếp nhận (taskStartTime), giống SP */
                 if (f.date_from) {
-                    data = filterArray(data, function (r) { return r.createdAt.slice(0, 10) >= f.date_from; });
+                    data = filterArray(data, function (r) { return r.taskStartTime.slice(0, 10) >= f.date_from; });
                 }
                 if (f.date_to) {
-                    data = filterArray(data, function (r) { return r.createdAt.slice(0, 10) <= f.date_to; });
+                    data = filterArray(data, function (r) { return r.taskStartTime.slice(0, 10) <= f.date_to; });
                 }
 
                 if (request.sort && request.sort.field && request.sort.type) {
@@ -379,7 +585,7 @@
                         sf = "_slaDeadline";
                         for (i = 0; i < data.length; i++) {
                             if (data[i]._slaDeadline === undefined) {
-                                data[i]._slaDeadline = slaDeadlineOf(data[i]);
+                                data[i]._slaDeadline = DisbSla.deadlineOf(data[i], PAGE_CONFIG.sla);
                             }
                         }
                     }
@@ -438,7 +644,58 @@
     /* ============================================================
        Trạng thái trang (nạp từ config + phân quyền)
     ============================================================ */
-    var PAGE_CONFIG = { detail: { url: "", target: "_self" }, create: null, sla: null };
+    var PAGE_CONFIG = { detail: { url: "", target: "_self" }, create: null, sla: null, statusBadge: null, amountDisplay: null };
+
+    /* Số tiền theo locale vi-VN (1.500.000.000); số chữ số thập phân theo amountDisplay.decimals[loại tiền].
+       Cache Intl.NumberFormat theo số chữ số thập phân để không tạo lại mỗi ô. */
+    var AMOUNT_FORMATS = {};
+    function formatAmount(amount, currency) {
+        var dec = (PAGE_CONFIG.amountDisplay && PAGE_CONFIG.amountDisplay.decimals) || {};
+        var digits = dec.hasOwnProperty(currency) ? dec[currency] : (dec.hasOwnProperty("default") ? dec["default"] : 0);
+        if (!AMOUNT_FORMATS[digits]) {
+            AMOUNT_FORMATS[digits] = new Intl.NumberFormat("vi-VN", {
+                minimumFractionDigits: digits,
+                maximumFractionDigits: digits
+            });
+        }
+        return AMOUNT_FORMATS[digits].format(amount);
+    }
+
+    /* Chỉ hiện số tiền cho loại giao dịch trong amountDisplay.types (không khai báo types = mọi loại) */
+    function amountHtml(row) {
+        var cfg = PAGE_CONFIG.amountDisplay || {};
+        var types = cfg.types;
+        if (types && types.length && types.indexOf(row[cfg.typeField || "transactionType1"]) === -1) { return ""; }
+        var amount = row[cfg.amountField || "amount"];
+        if (isBlank(amount) || isNaN(+amount)) { return ""; }
+        var currency = row[cfg.currencyField || "currency"] || "";
+        return "<div class='disb-amount'><span class='disb-amount-value'>" + formatAmount(+amount, currency) + "</span>" +
+            (currency ? "<span class='disb-meta-key'>" + DisbUtil.escapeHtml(currency) + "</span>" : "") + "</div>";
+    }
+
+    /* Dải màu trạng thái hợp lệ (mỗi màu là một class .disb-status-<màu> trong CSS) */
+    var STATUS_TONES = ["default", "purple", "green", "orange", "red"];
+
+    /* Màu badge của một hồ sơ theo statusBadge.tones[mã trạng thái]; sai/thiếu => defaultTone => "default" */
+    function statusTone(row) {
+        var cfg = PAGE_CONFIG.statusBadge || {};
+        var tone = (cfg.tones || {})[row[cfg.codeField || "status"]];
+        if (STATUS_TONES.indexOf(tone) === -1) { tone = cfg.defaultTone; }
+        return STATUS_TONES.indexOf(tone) === -1 ? "default" : tone;
+    }
+
+    /* Báo trong log các mã cấu hình màu không có trong STATUS_TONES */
+    function checkStatusTones(cfg) {
+        var tones = (cfg && cfg.tones) || {}, bad = [], code;
+        for (code in tones) {
+            if (tones.hasOwnProperty(code) && STATUS_TONES.indexOf(tones[code]) === -1) {
+                bad.push(code + "=" + tones[code]);
+            }
+        }
+        if (bad.length) {
+            log("statusBadge: màu không hợp lệ " + bad.join(", ") + " => dùng default. Màu hợp lệ: " + STATUS_TONES.join(", "));
+        }
+    }
     var PERMISSIONS = { allowBranchs: [], visibleConfig: { create: false, export: false } };
     var table = null;
     var tableContainer = document.getElementById("tableContainer");
@@ -537,19 +794,60 @@
         Toast.error(message, "Lỗi tải cấu hình");
     }
 
-    /* Dòng phụ trong ô gộp; bỏ qua nếu không có giá trị */
-    function subLine(label, value) {
-        if (value === null || value === undefined || value === "") { return ""; }
-        return "<div class='disb-cell-sub'>" + (label ? DisbUtil.escapeHtml(label) + ": " : "") +
-            DisbUtil.escapeHtml(value) + "</div>";
+    /* Response API { error, total, count, lists } -> { total, page, data } của js-table.
+       lists được chuẩn hoá key Oracle -> camelCase. Trả thêm error để caller hiển thị Toast. */
+    function mapResponse(request, res) {
+        res = res || {};
+        if (res.error) {
+            return { total: 0, page: request.page, data: [], error: res.error };
+        }
+        var lists = Array.isArray(res.lists) ? res.lists : [];
+        return {
+            total: typeof res.total === "number" ? res.total : lists.length,
+            page: request.page,
+            data: DisbUtil.normalizeRows(lists)
+        };
     }
+
+    function isBlank(value) {
+        return value === null || value === undefined || value === "";
+    }
+
+    /* Dòng mã có nhãn dạng tag ([PDTD] 2628344); bỏ qua nếu không có giá trị */
+    function metaLine(key, value) {
+        if (isBlank(value)) { return ""; }
+        return "<div class='disb-meta'><span class='disb-meta-key'>" + DisbUtil.escapeHtml(key) + "</span>" +
+            "<span class='disb-meta-value'>" + DisbUtil.escapeHtml(value) + "</span></div>";
+    }
+
+    /* Chip nhỏ (lock, nhóm); title là tooltip */
+    function chip(kind, iconClass, text, title) {
+        if (isBlank(text)) { return ""; }
+        return "<div><span class='disb-chip disb-chip-" + kind + "'" +
+            (title ? " title='" + DisbUtil.escapeHtml(title) + "'" : "") + ">" +
+            (iconClass ? "<i class='fas " + iconClass + "' aria-hidden='true'></i>" : "") +
+            DisbUtil.escapeHtml(text) + "</span></div>";
+    }
+
+    /* Click bất kỳ đâu trong ô Mã GNTD (link, chip lock, khoảng trống) => mở chi tiết.
+       Tra dòng theo data-index của link trong ô (index trên trang hiện tại). */
+    tableContainer.addEventListener("click", function (event) {
+        var cell = event.target.closest ? event.target.closest("td.disb-col-gntd") : null;
+        var link = cell ? cell.querySelector(".disb-detail-link") : null;
+        if (!link || !table) { return; }
+        event.preventDefault(); /* link href="#" không nhảy lên đầu trang */
+        /* Đang bôi đen để copy mã thì không mở chi tiết */
+        if (window.getSelection && String(window.getSelection()).length) { return; }
+        var row = (table.currentData || [])[parseInt(link.getAttribute("data-index"), 10)];
+        if (row) { openDetail(row); }
+    });
 
     /* ---------------- Kiểm tra tên field SP trả về ----------------
        SP đặt sai alias (vd TRANSACTIONTYPE1NAME thay vì TRANSACTION_TYPE1_NAME) thì sau toCamel
        field bị thiếu và ô trên bảng trống. Cảnh báo một lần, kèm alias đúng cần trả. */
 
     /* Field dùng trong renderer nhưng không khai báo là "field" của cột */
-    var RENDERER_FIELDS = ["pdtdCode", "customerCode", "processGroup"];
+    var RENDERER_FIELDS = ["pdtdCode", "customerCode", "processGroup", "lockUser"];
 
     function collectExpectedFields(config) {
         var seen = {}, out = [], i, j, cols = config.columns || [];
@@ -560,7 +858,17 @@
             add(cols[i].field);
             for (j = 0; cols[i].actions && j < cols[i].actions.length; j++) { add(cols[i].actions[j].textField); }
         }
-        if (config.sla) { add(config.sla.startField); add(config.sla.taskField); }
+        if (config.sla) {
+            add(config.sla.statusField || "status");
+            add(config.sla.yellowField || "yellowFlagDate");
+            add(config.sla.redField || "redFlagDate");
+            add(config.sla.startField);
+        }
+        if (config.statusBadge) { add(config.statusBadge.codeField || "status"); }
+        if (config.amountDisplay) {
+            add(config.amountDisplay.currencyField || "currency");
+            add(config.amountDisplay.typeField || "transactionType1");
+        }
         for (i = 0; i < RENDERER_FIELDS.length; i++) { add(RENDERER_FIELDS[i]); }
         return out;
     }
@@ -663,6 +971,13 @@
 
         PAGE_CONFIG.create = config.create || null;
         PAGE_CONFIG.sla = config.sla || null;
+        PAGE_CONFIG.statusBadge = config.statusBadge || null;
+        PAGE_CONFIG.amountDisplay = config.amountDisplay || null;
+        checkStatusTones(PAGE_CONFIG.statusBadge);
+        if (PAGE_CONFIG.sla && !(Array.isArray(PAGE_CONFIG.sla.weekDays) && PAGE_CONFIG.sla.weekDays.length === 7)) {
+            Toast.error("sla.weekDays phải có đủ 7 thứ, bắt đầu từ Chủ nhật. Cột SLA sẽ để trống.", "Lỗi cấu hình SLA");
+        }
+        buildDataset(PAGE_CONFIG.sla);
         PAGE_CONFIG.expectedFields = collectExpectedFields(config);
         if (config.detail) {
             if (typeof config.detail.url === "string") { PAGE_CONFIG.detail.url = config.detail.url; }
@@ -695,7 +1010,7 @@
                     containerId: "tableContainer",
                     searchFunction: function (request, callback) {
                         transactionService.getDisbursementQueue(request, PERMISSIONS, function (res) {
-                            var mapped = DisbUtil.mapResponse(request, res);
+                            var mapped = mapResponse(request, res);
                             warnMissingFields(mapped.data);
                             if (mapped.error) {
                                 Toast.error(mapped.error.message || "Có lỗi xảy ra", "Lỗi tải dữ liệu");
@@ -730,35 +1045,69 @@
                             var text = r.status === "overdue"
                                 ? "Quá " + slaDuration(r.overMinutes)
                                 : "Còn " + slaDuration(r.remainingMinutes);
-                            /* Thanh tiến độ: % thời gian SLA đã dùng (tối đa 100%) */
-                            var pct = Math.min(100, Math.round(r.usedMinutes / r.slaMinutes * 100));
-                            var task = PAGE_CONFIG.sla.tasks[row[PAGE_CONFIG.sla.taskField]] || PAGE_CONFIG.sla.tasks.DEFAULT;
-                            var tip = "Hạn xử lý: " + DisbUtil.formatDateTime(r.deadline) +
-                                "\nSLA: " + (task.label || "") + " (" + slaDuration(r.slaMinutes) + ")" +
-                                "\nĐã dùng: " + slaDuration(r.usedMinutes) + " (" + pct + "%)";
+                            /* Thanh tiến độ: % giờ làm việc đã dùng (null nếu thiếu thời điểm bắt đầu) */
+                            var pct = r.progress === null ? (r.status === "overdue" ? 100 : 0) : r.progress;
+                            var tip = "Cảnh báo từ: " + DateUtil.format(r.warningAt) +
+                                "\nHạn xử lý: " + DateUtil.format(r.deadline) +
+                                (r.progress === null ? "" : "\nĐã dùng: " + r.progress + "%");
                             return "<div class='disb-sla disb-sla-" + r.status + "' title='" + DisbUtil.escapeHtml(tip) + "'>" +
                                 "<span class='disb-sla-text'><i class='fas " + icon + "' aria-hidden='true'></i>" +
                                 DisbUtil.escapeHtml(text) + "</span>" +
                                 "<span class='disb-sla-bar'><span style='width:" + pct + "%'></span></span>" +
                                 "</div>";
                         },
+                        /* Mã GNTD (link mở chi tiết) + user đang claim xử lý (lockUser) */
+                        gntdRenderer: function (value, row, index) {
+                            return "<div class='disb-cell'>" +
+                                "<a href='#' class='tr-action-link tr-transaction-link disb-detail-link'" +
+                                " data-index='" + index + "' title='Xem chi tiết giao dịch'>" +
+                                DisbUtil.escapeHtml(row.gntdCode) + "</a>" +
+                                chip("lock", "fa-lock", row.lockUser, "Đang claim xử lý: " + row.lockUser) +
+                                "</div>";
+                        },
                         /* Loại giao dịch cấp 1 / Mã PDTD */
                         transactionRenderer: function (value, row) {
-                            return "<div>" + DisbUtil.escapeHtml(row.transactionType1Name || "") + "</div>" +
-                                subLine("PDTD", row.pdtdCode);
+                            return "<div class='disb-cell'>" +
+                                "<div class='disb-cell-text'>" + DisbUtil.escapeHtml(row.transactionType1Name || "") + "</div>" +
+                                metaLine("PDTD", row.pdtdCode) +
+                                "</div>";
                         },
                         /* Phân luồng / Nhóm xử lý */
                         flowGroupRenderer: function (value, row) {
-                            return "<div>" + DisbUtil.escapeHtml(row.transactionFlowName || row.flowName || "") + "</div>" +
-                                subLine("Nhóm", row.processGroup);
+                            var flowName = row.transactionFlowName || row.flowName;
+                            return "<div class='disb-cell'>" +
+                                (isBlank(flowName) ? "" : "<div class='disb-cell-text'>" + DisbUtil.escapeHtml(flowName) + "</div>") +
+                                chip("group", "fa-users", row.processGroup, "Nhóm xử lý: " + row.processGroup) +
+                                "</div>";
                         },
+                        /* Số tiền + loại tiền (config amountDisplay) */
+                        amountRenderer: function (value, row) {
+                            return amountHtml(row);
+                        },
+                        /* Trạng thái: badge màu theo mã trạng thái (config statusBadge) */
+                        statusRenderer: function (value, row) {
+                            if (isBlank(value)) { return ""; }
+                            return "<span class='disb-status disb-status-" + statusTone(row) + "'>" +
+                                DisbUtil.escapeHtml(value) + "</span>";
+                        },
+                        /* Khách hàng: tên KH / [MÃ KH] mã */
                         customerRenderer: function (value, row) {
-                            return "<div>" + DisbUtil.escapeHtml(row.customerCode) + "</div>" +
-                                "<div class='disb-cell-sub'>" + DisbUtil.escapeHtml(row.customerName) + "</div>";
+                            return "<div class='disb-cell'>" +
+                                (isBlank(row.customerName) ? "" : "<div class='disb-cell-text'>" + DisbUtil.escapeHtml(row.customerName) + "</div>") +
+                                metaLine("Mã KH", row.customerCode) +
+                                "</div>";
+                        },
+                        /* Thời điểm: ngày / giờ hai dòng cho cột hẹp */
+                        dateTimeRenderer: function (value) {
+                            var m = DateUtil.parse(value);
+                            if (!m) { return DisbUtil.escapeHtml(value); }
+                            return "<div class='disb-cell'>" +
+                                "<div class='disb-cell-text'>" + m.format(DateUtil.FORMAT.DISPLAY_DATE) + "</div>" +
+                                "<div class='disb-cell-sub'>" + m.format(DateUtil.FORMAT.TIME) + "</div>" +
+                                "</div>";
                         }
                     },
                     handlers: {
-                        openTransactionDetail: function (row) { openDetail(row); },
                         viewProcessLog: function (row) {
                             log("Log xử lý: " + row.gntdCode);
                             Toast.info("Xem log xử lý giao dịch " + row.gntdCode, "Log xử lý");

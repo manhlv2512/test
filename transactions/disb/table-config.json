@@ -42,51 +42,153 @@
       }
     ]
   },
+  "amountDisplay": {
+    "amountField": "amount",
+    "currencyField": "currency",
+    "typeField": "transactionType1",
+    "types": [
+      "Giaingankhoanvay",
+      "Giainganthauchi",
+      "Khoitaohanmuc"
+    ],
+    "decimals": {
+      "VND": 0,
+      "default": 2
+    }
+  },
+  "statusBadge": {
+    "codeField": "status",
+    "defaultTone": "default",
+    "tones": {
+      "KHOI_TAO": "default",
+      "CHO_XU_LY": "orange",
+      "CHO_BO_SUNG": "orange",
+      "HACH_TOAN_TC": "purple",
+      "LOI_THAU_CHI": "red",
+      "LOI_HAN_MUC": "red",
+      "LOI_CHUYEN_TIEN": "red",
+      "HOAN_THANH": "green"
+    }
+  },
   "sla": {
-    "timezone": "Asia/Ho_Chi_Minh",
-    "workingDays": [
-      1,
-      2,
-      3,
-      4,
-      5
+    "statusField": "status",
+    "activeStates": [
+      "CHO_XU_LY"
+    ],
+    "yellowField": "yellowFlagDate",
+    "redField": "redFlagDate",
+    "startField": "taskStartTime",
+    "weekDays": [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
     ],
     "workingHours": [
       {
-        "from": "08:00",
-        "to": "12:00"
+        "workday": "Monday",
+        "startTime": "08:00",
+        "endTime": "12:00"
       },
       {
-        "from": "13:30",
-        "to": "17:30"
+        "workday": "Monday",
+        "startTime": "13:00",
+        "endTime": "17:30"
+      },
+      {
+        "workday": "Tuesday",
+        "startTime": "08:00",
+        "endTime": "12:00"
+      },
+      {
+        "workday": "Tuesday",
+        "startTime": "13:00",
+        "endTime": "17:30"
+      },
+      {
+        "workday": "Wednesday",
+        "startTime": "08:00",
+        "endTime": "12:00"
+      },
+      {
+        "workday": "Wednesday",
+        "startTime": "13:00",
+        "endTime": "17:30"
+      },
+      {
+        "workday": "Thursday",
+        "startTime": "08:00",
+        "endTime": "12:00"
+      },
+      {
+        "workday": "Thursday",
+        "startTime": "13:00",
+        "endTime": "17:30"
+      },
+      {
+        "workday": "Friday",
+        "startTime": "08:00",
+        "endTime": "12:00"
+      },
+      {
+        "workday": "Friday",
+        "startTime": "13:00",
+        "endTime": "17:30"
+      },
+      {
+        "workday": "Saturday",
+        "startTime": "08:00",
+        "endTime": "12:00"
       }
     ],
     "holidays": [
-      "2026-01-01",
-      "2026-04-30",
-      "2026-05-01",
-      "2026-09-02"
-    ],
-    "workingWeekends": [],
-    "warningRatio": 0.8,
-    "startField": "taskStartTime",
-    "taskField": "status",
-    "tasks": {
-      "KHOI_TAO": {
-        "label": "GN - Khởi tạo",
-        "minutes": 120
+      {
+        "date": "2026-01-01",
+        "desc": "Tết Dương lịch"
       },
-      "HACH_TOAN": {
-        "label": "GN - Hạch toán",
-        "minutes": 60
+      {
+        "date": "2026-02-16",
+        "desc": "Tết Nguyên đán"
       },
-      "DEFAULT": {
-        "label": "Mặc định",
-        "minutes": 240
+      {
+        "date": "2026-02-17",
+        "desc": "Tết Nguyên đán"
+      },
+      {
+        "date": "2026-02-18",
+        "desc": "Tết Nguyên đán"
+      },
+      {
+        "date": "2026-02-19",
+        "desc": "Tết Nguyên đán"
+      },
+      {
+        "date": "2026-02-20",
+        "desc": "Tết Nguyên đán"
+      },
+      {
+        "date": "2026-04-27",
+        "desc": "Giỗ Tổ Hùng Vương (nghỉ bù)"
+      },
+      {
+        "date": "2026-04-30",
+        "desc": "Ngày Giải phóng miền Nam"
+      },
+      {
+        "date": "2026-05-01",
+        "desc": "Quốc tế Lao động"
+      },
+      {
+        "date": "2026-09-01",
+        "desc": "Quốc khánh"
+      },
+      {
+        "date": "2026-09-02",
+        "desc": "Quốc khánh"
       }
-    },
-    "doneStates": [
-      "HOAN_THANH"
     ]
   },
   "sort": {
@@ -126,76 +228,70 @@
     {
       "field": "_sla",
       "title": "SLA",
-      "width": 120,
       "align": "center",
       "renderer": "slaRenderer"
     },
     {
-      "type": "actions",
+      "field": "gntdCode",
       "title": "Mã GNTD",
-      "minWidth": 160,
-      "align": "left",
-      "separator": false,
-      "actions": [
-        {
-          "textField": "gntdCode",
-          "href": "#",
-          "title": "Xem chi tiết giao dịch",
-          "className": "tr-transaction-link",
-          "handler": "openTransactionDetail"
-        }
-      ]
+      "className": "disb-col-gntd disb-col-fit",
+      "renderer": "gntdRenderer"
     },
     {
       "field": "transactionType1Name",
       "title": "Loại giao dịch / PDTD",
-      "minWidth": 170,
+      "minWidth": 160,
       "renderer": "transactionRenderer"
+    },
+    {
+      "field": "amount",
+      "title": "Số tiền",
+      "align": "right",
+      "className1": "disb-col-fit",
+      "renderer": "amountRenderer"
     },
     {
       "field": "branchCode",
       "title": "ĐVKD",
-      "width": 80,
-      "align": "center"
+      "align": "center",
+      "className": "disb-col-fit"
     },
     {
       "field": "customerName",
       "title": "Khách hàng",
-      "minWidth": 180,
+      "minWidth": 140,
       "renderer": "customerRenderer"
     },
     {
       "field": "statusName",
       "title": "Trạng thái",
-      "minWidth": 150
-    },
-    {
-      "field": "processUser",
-      "title": "User xử lý",
-      "minWidth": 100
-    },
-    {
-      "field": "assignUser",
-      "title": "User phân công",
-      "minWidth": 110
-    },
-    {
-      "field": "lockUser",
-      "title": "User lock",
-      "minWidth": 90
+      "minWidth": 140,
+      "maxWidth": 220,
+      "renderer": "statusRenderer"
     },
     {
       "field": "transactionFlowName",
       "title": "Phân luồng / Nhóm xử lý",
-      "minWidth": 130,
+      "className": "disb-col-fit",
       "renderer": "flowGroupRenderer"
+    },
+    {
+      "field": "assignUser",
+      "title": "User phân công",
+      "className": "disb-col-fit"
+    },
+    {
+      "field": "processUser",
+      "title": "User xử lý",
+      "className": "disb-col-fit"
     },
     {
       "field": "taskStartTime",
       "title": "Thời điểm tiếp nhận",
-      "minWidth": 150,
+      "width": 110,
       "align": "right",
-      "sortable": true
+      "sortable": true,
+      "renderer": "dateTimeRenderer"
     }
   ],
   "searchFields": [
@@ -203,14 +299,14 @@
       "name": "keyword",
       "label": "Từ khoá",
       "type": "text",
-      "width": 400,
-      "placeholder": "Mã GNTD, mã PDTD, mã/tên KH, user xử lý"
+      "width": 200,
+      "placeholder": "GNTD, PDTD, mã/tên KH, user xử lý"
     },
     {
       "name": "branch",
       "label": "ĐVKD",
       "type": "select",
-      "width": 180,
+      "width": 50,
       "placeholder": "Tất cả",
       "optionsProvider": "branchOptions"
     },
@@ -218,7 +314,7 @@
       "name": "flow",
       "label": "Phân luồng",
       "type": "select",
-      "width": 180,
+      "width": 50,
       "placeholder": "Tất cả",
       "options": [
         {
@@ -239,7 +335,7 @@
       "name": "processGroup",
       "label": "Nhóm xử lý",
       "type": "select",
-      "width": 180,
+      "width": 50,
       "placeholder": "Tất cả",
       "optionsProvider": "processGroupOptions"
     },
@@ -247,7 +343,7 @@
       "name": "date",
       "label": "Thời điểm",
       "type": "daterange",
-      "width": 360,
+      "width": 220,
       "fromPlaceholder": "Từ ngày",
       "toPlaceholder": "Đến ngày"
     },
@@ -255,7 +351,7 @@
       "name": "transactionType1",
       "label": "Loại giao dịch cấp 1",
       "type": "select",
-      "width": 260,
+      "width": 140,
       "placeholder": "Tất cả",
       "optionsProvider": "transactionType1Options"
     },
@@ -263,7 +359,7 @@
       "name": "status",
       "label": "Trạng thái",
       "type": "select",
-      "width": 260,
+      "width": 170,
       "placeholder": "Tất cả",
       "multiple": true,
       "optionsProvider": "statusOptions",

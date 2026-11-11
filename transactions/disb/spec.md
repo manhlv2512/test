@@ -28,8 +28,10 @@ transactions/
 └── disb/
     ├── index.html          # trang, runtime (renderers, handlers, optionsProviders)
     ├── table-config.json   # cấu hình table, search, buttons, create
+    ├── date-util.js        # DateUtil: parse/format/tính ngày giờ, bọc moment.js
+    ├── sla.js              # DisbSla: tính SLA theo giờ làm việc
     ├── constants.js        # mã quyền, URL, trạng thái
-    ├── model.js            # mapping response API
+    ├── disb.js             # DisbUtil: chuẩn hoá key Oracle, dựng/mở link, escapeHtml
     └── spec.md
 ```
 
@@ -70,15 +72,17 @@ Cấu hình toolbar:
 
 Nguyên tắc: chỉ giữ riêng ô **select** và **date**. Mọi điều kiện dạng nhập text trong giao diện cũ (Mã GNTD, Mã PDTD, Mã khách hàng, Tên khách hàng, User xử lý) gộp vào **một ô Từ khoá** (`keyword`), ưu tiên tìm theo keyword.
 
-- Placeholder gợi ý: "Mã GNTD, mã PDTD, mã/tên KH, user xử lý".
+- Placeholder gợi ý: "GNTD, PDTD, mã/tên KH, user xử lý" (rút gọn để vừa ô 240px).
 - Server tìm `keyword` (không phân biệt hoa/thường, khớp một phần) trên các cột: `gntdCode`, `pdtdCode`, `customerCode`, `customerName`, `processUser`.
-- Ô Từ khoá đặt đầu tiên trong form, độ rộng lớn hơn các ô khác (khoảng 300-400px), nhấn Enter để tìm.
+- Ô Từ khoá đặt đầu tiên trong form, rộng nhất (240px), nhấn Enter để tìm.
+
+Bố cục form: 7 điều kiện trên **1 hàng** từ màn 1280px trở lên. `width` của từng searchField là độ rộng gốc (Từ khoá 240, ĐVKD 120, Phân luồng 130, Nhóm xử lý 130, Thời điểm 220, Loại giao dịch cấp 1 210, Trạng thái 170; tổng 1.220px + 6 khoảng cách 12px vừa màn 1366px). `index.html` đổi form sang flex: màn rộng hơn thì các ô giãn đều, màn hẹp hơn thì co lại tới `min-width` (110px, Thời điểm 200px) rồi mới xuống hàng. Nút Tìm kiếm / Đặt lại ở hàng riêng.
 
 Cấu hình:
 
 ```json
-{ "name": "keyword", "label": "Từ khoá", "type": "text", "width": 400,
-  "placeholder": "Mã GNTD, mã PDTD, mã/tên KH, user xử lý" }
+{ "name": "keyword", "label": "Từ khoá", "type": "text", "width": 240,
+  "placeholder": "GNTD, PDTD, mã/tên KH, user xử lý" }
 ```
 
 Ghi chú:
@@ -124,24 +128,42 @@ Danh sách ĐVKD của user hiện tại bị giới hạn theo phân quyền, �
 |-----|-------|---------|
 | STT | `_stt` | `sttRenderer`, tính theo `(page - 1) * pageSize + index + 1` |
 | SLA | `_sla` | tính ở client (mục 6.3), `slaRenderer` hiển thị trạng thái hạn xử lý. **Sortable** theo hạn xử lý (mục 6.1.1). |
-| Mã GNTD | `gntdCode` | cột riêng để dễ thao tác (copy, bấm). Link tím, bấm mở chi tiết (`openTransactionDetail`). |
-| Loại giao dịch / PDTD | `transactionType1Name`, `pdtdCode` | `transactionRenderer`: dòng 1 loại giao dịch cấp 1, dòng 2 "PDTD: …". |
+| Mã GNTD | `gntdCode`, `lockUser` | `gntdRenderer`: dòng 1 Mã GNTD (link tím); dòng 2 chip 🔒 user đang claim xử lý hồ sơ (ẩn nếu chưa ai claim). Bấm **bất kỳ đâu trong ô** để mở chi tiết (`className: disb-col-gntd`). |
+| Loại giao dịch / PDTD | `transactionType1Name`, `pdtdCode` | `transactionRenderer`: dòng 1 loại giao dịch cấp 1, dòng 2 tag `PDTD` + mã (đậm). |
+| Số tiền | `amount`, `currency` | `amountRenderer`: số tiền (chữ thường, `vi-VN`: `1.500.000.000`) + tag loại tiền; căn phải. Chỉ hiện với loại giao dịch trong `amountDisplay.types` (mục 6.1.2), loại khác để trống. |
 | ĐVKD | `branchCode` | căn giữa |
-| Khách hàng | `customerCode`, `customerName` | `customerRenderer`: dòng 1 mã KH, dòng 2 tên KH |
-| Trạng thái | `processStateName` | cho phép xuống dòng |
+| Khách hàng | `customerName`, `customerCode` | `customerRenderer`: dòng 1 tên KH (chữ thường), dòng 2 tag `MÃ KH` + mã (đậm). |
+| Trạng thái | `statusName`, `status` | `statusRenderer`: badge viền + nền, màu theo mã trạng thái (mục 6.1.3); tên dài được xuống dòng. |
 | User xử lý | `processUser` | user khởi tạo và chuyển phê duyệt hồ sơ |
 | User phân công | `assignUser` | user được gợi ý xử lý hồ sơ |
-| User lock | `lockUser` | |
-| Phân luồng / Nhóm xử lý | `flowName`, `processGroup` | `flowGroupRenderer`: dòng 1 phân luồng, dòng 2 "Nhóm: …" (ẩn nếu trống) |
-| Thời điểm tiếp nhận | `createdDate` | căn phải, format `dd/MM/yyyy HH:mm:ss`. **Sortable**, sort mặc định `DESC`. |
-| Thao tác | | chỉ có **Log xử lý** |
+| Phân luồng / Nhóm xử lý | `transactionFlowName`, `processGroup` | `flowGroupRenderer`: dòng 1 phân luồng, dòng 2 chip nhóm xử lý (ẩn nếu trống) |
+| Thời điểm tiếp nhận | `taskStartTime` | `dateTimeRenderer`: dòng 1 `DD/MM/YYYY`, dòng 2 `HH:mm:ss`; căn phải. **Sortable**. |
 
 Nguyên tắc gộp cột:
-- Gộp các thông tin cùng nhóm nghĩa vào một ô nhiều dòng (dòng chính đậm thường, dòng phụ chữ nhỏ xám) để bảng gọn, không phải cuộn ngang.
-- **Không gộp** User xử lý, User phân công, User lock vì khác ý nghĩa nghiệp vụ.
-- Dòng phụ trống thì không hiển thị.
+
+- Gộp các thông tin cùng nhóm nghĩa vào một ô nhiều dòng để bảng gọn, không phải cuộn ngang.
+- **User lock** là user đang claim xử lý hồ sơ, gộp vào ô Mã GNTD dạng chip có icon khoá; không còn cột riêng.
+- **Không gộp** User xử lý và User phân công vì khác ý nghĩa nghiệp vụ.
+- Dòng phụ hoặc chip trống thì không hiển thị.
 - Export (`getAllData`) vẫn xuất đủ từng field riêng.
-- Mã GNTD **không gộp**: là mã thao tác chính (bấm mở chi tiết, copy, đối chiếu), để cột riêng dùng action link của `js-table`.
+- Mã GNTD dùng renderer riêng; click trong ô `td.disb-col-gntd` bắt bằng event delegation trên container, tra dòng theo `data-index` của link trong ô. Đang bôi đen chữ (để copy mã) thì không mở chi tiết. Hover ô thì link gạch chân, con trỏ dạng bàn tay.
+
+Hiển thị cho màn hình 19.5" (1366×768 / 1600×900):
+
+- Chữ chính (loại giao dịch, tên KH, phân luồng) 13px chữ thường, màu gần đen `#1f1a24`.
+- Mã phụ (PDTD, Mã KH) dạng tag: nhãn 11px đậm 700 viết hoa, nền `#ebe6f0` chữ `#3d3546`; giá trị 12px đậm 600 `#1f1a24`, chữ số đều cột, không cắt chữ.
+- Giờ trong cột Thời điểm: 12px `#4a4352` (tương phản ~9:1).
+- Chip lock: nền `#fff3dc`, chữ `#8a5300`; chip nhóm: nền `#f1e9f7`, chữ `#5b3780` (tương phản ≥ 5:1).
+- Chữ SLA 13px, màu xanh `#157a3f` / vàng `#9a6400` / đỏ `#b42318` (tương phản ≥ 5:1).
+- Khi màn hình ≤ 1600px: padding ô 8px 10px, tiêu đề cột được xuống dòng.
+
+Độ rộng cột chia 3 nhóm, để phần thừa của bảng không dồn vào các cột cuối:
+
+| Nhóm | Cột | Cách khai báo |
+|------|-----|---------------|
+| Cố định | STT (50), SLA (110), Thời điểm tiếp nhận (100) | `width` (px) |
+| Co theo nội dung | Mã GNTD, Số tiền, ĐVKD, User xử lý, User phân công | `className: "disb-col-fit"` (CSS `width: 1%`, trình duyệt co về độ rộng nhỏ nhất vừa nội dung) |
+| Giãn | Loại giao dịch / PDTD (≥160), Khách hàng (≥140), Trạng thái (≥130), Phân luồng / Nhóm xử lý (≥110) | chỉ đặt `minWidth`; phần thừa chia cho các cột chữ này |
 
 Danh sách cột cuối cùng theo response API giải ngân. Tên field ở trên là tên đề xuất.
 
@@ -157,6 +179,67 @@ Nghiệp vụ chỉ cần sort theo mốc thời gian, nên chỉ hai cột đư
 - Hồ sơ không tính SLA (đã hoàn thành, thiếu thời điểm bắt đầu) có deadline rỗng và luôn nằm cuối, bất kể chiều sort.
 - Sort phía server (dữ liệu phân trang). Với `_sla`, BE cần tính deadline theo cùng quy tắc mục 6.3 (hoặc lưu sẵn cột `slaDeadline`) rồi sort; client chỉ hiển thị.
 - Mock trong `index.html` tính deadline bằng `DisbSla.addWorkMinutes` và cache trên từng dòng (`_slaDeadline`), lần sort SLA đầu tiên chậm hơn các lần sau.
+
+### 6.1.2 Số tiền
+
+Cấu hình trong `table-config.json`, mục `amountDisplay`:
+
+```json
+"amountDisplay": {
+  "amountField": "amount",
+  "currencyField": "currency",
+  "typeField": "transactionType1",
+  "types": ["Giaingankhoanvay", "Giainganthauchi", "Khoitaohanmuc"],
+  "decimals": { "VND": 0, "default": 2 }
+}
+```
+
+| Thuộc tính | Ý nghĩa |
+|------------|---------|
+| `amountField`, `currencyField` | Field số tiền và loại tiền trong dòng dữ liệu. SP trả `AMOUNT`, `CURRENCY` (toCamel ra `amount`, `currency`). |
+| `typeField`, `types` | Chỉ hiện số tiền khi `row[typeField]` thuộc `types` (Giải ngân khoản vay, Giải ngân thấu chi, Khởi tạo hạn mức). Bỏ `types` thì hiện cho mọi loại có số tiền. |
+| `decimals` | Số chữ số thập phân theo loại tiền; loại không khai báo dùng `default`. |
+
+- Định dạng theo `vi-VN`: VND `1.500.000.000`, USD `25.000,50`. Giá trị trống hoặc không phải số thì để trống ô.
+- Số tiền dạng chuỗi từ SP (`"20000000000"`) vẫn được đổi sang số trước khi định dạng.
+
+### 6.1.3 Màu trạng thái
+
+Cấu hình trong `table-config.json`, mục `statusBadge`:
+
+```json
+"statusBadge": {
+  "codeField": "status",
+  "defaultTone": "default",
+  "tones": {
+    "KHOI_TAO": "default",
+    "CHO_XU_LY": "orange",
+    "HACH_TOAN_TC": "purple",
+    "LOI_THAU_CHI": "red",
+    "HOAN_THANH": "green"
+  }
+}
+```
+
+| Thuộc tính | Ý nghĩa |
+|------------|---------|
+| `codeField` | Field chứa mã trạng thái trong dòng dữ liệu, mặc định `status`. Chữ hiển thị lấy từ `statusName`. |
+| `tones` | Map mã trạng thái → màu. |
+| `defaultTone` | Màu cho mã không có trong `tones`, mặc định `default`. |
+
+Màu hợp lệ (mỗi màu là một class `.disb-status-<màu>` trong `index.html`):
+
+| Màu | Ý nghĩa gợi ý | Viền / nền / chữ | Tương phản chữ |
+|-----|---------------|------------------|----------------|
+| `default` | mới tạo, trung tính | `#c3bacb` / `#ffffff` / `#3d3546` | 11.7:1 |
+| `purple` | đang trong luồng xử lý | `#c9a8e6` / `#f3ecfa` / `#5b2a86` | 8.6:1 |
+| `green` | hoàn thành | `#9fd5b4` / `#e8f6ee` / `#146c3a` | 5.8:1 |
+| `orange` | chờ xử lý, cần chú ý | `#f2c084` / `#fff1de` / `#8a4b00` | 6.1:1 |
+| `red` | lỗi | `#efb0b0` / `#fdecec` / `#a61b1b` | 6.6:1 |
+
+- Màu sai chính tả hoặc không có trong danh sách: dùng `defaultTone` rồi `default`, và ghi cảnh báo vào khung log khi load trang.
+- Thêm màu mới: thêm một class `.disb-status-<màu>` và thêm tên vào `STATUS_TONES` trong `index.html`.
+- Mã trạng thái trong ví dụ là mã mock; khi có mã thật của BE (vd `GNCN_HOAN_THANH`) thì đổi key trong `tones`.
 
 ### 6.2 Phân trang (server-side)
 
@@ -203,7 +286,7 @@ Lỗi:
 { "error": { "code": "DISB_001", "message": "Mô tả lỗi" }, "total": 0, "count": 0, "lists": [] }
 ```
 
-Mapping sang `js-table`: component đọc `{ total, page, data }`, nên `searchFunction` (trong `model.js` hoặc service) chuyển đổi response trước khi gọi callback:
+Mapping sang `js-table`: component đọc `{ total, page, data }`, nên `searchFunction` trong `index.html` chuyển đổi response trước khi gọi callback (hàm cục bộ `mapResponse`, `lists` qua `DisbUtil.normalizeRows`):
 
 ```javascript
 function mapDisbResponse(request, res) {
@@ -228,81 +311,49 @@ function mapDisbResponse(request, res) {
 
 ### 6.3 Tính SLA ở client
 
-API không trả SLA. Client tính từ thời điểm bắt đầu task, thời gian SLA cấu hình theo từng task, lịch ngày làm việc và danh sách ngày nghỉ. Mọi tham số đều đọc từ config (mục `sla` trong `table-config.json`), không hard-code.
+Theo logic BPM (`disb-sla.js`). BE trả sẵn hai mốc của từng hồ sơ: `yellowFlagDate` (bắt đầu cảnh báo) và `redFlagDate` (hạn SLA). Client chỉ so với thời điểm hiện tại và đổi khoảng cách ra **giờ làm việc**, dựa trên `workingHours` và `holidays` trong mục `sla` của `table-config.json`.
 
 #### Cấu hình
 
-```json
-{
-  "sla": {
-    "timezone": "Asia/Ho_Chi_Minh",
-    "workingDays": [1, 2, 3, 4, 5],
-    "workingHours": [
-      { "from": "08:00", "to": "12:00" },
-      { "from": "13:30", "to": "17:30" }
-    ],
-    "holidays": ["2026-01-01", "2026-04-30", "2026-05-01", "2026-09-02"],
-    "workingWeekends": [],
-    "warningRatio": 0.8,
-    "startField": "taskStartTime",
-    "taskField": "processStateCode",
-    "tasks": {
-      "KHOI_TAO":   { "label": "GN - Khởi tạo",            "minutes": 120 },
-      "HACH_TOAN":  { "label": "GN - Hạch toán",           "minutes": 60 },
-      "DEFAULT":    { "label": "Mặc định",                 "minutes": 240 }
-    },
-    "doneStates": ["HOAN_THANH"]
-  }
-}
-```
-
 | Thuộc tính | Ý nghĩa |
 |------------|---------|
-| `timezone` | Múi giờ tính SLA. Mặc định theo trình duyệt nếu bỏ trống. |
-| `workingDays` | Ngày làm việc trong tuần (0 = Chủ nhật, 1 = Thứ hai, ...). |
-| `workingHours` | Các khung giờ làm việc trong ngày (có thể nhiều khung, ví dụ nghỉ trưa). |
-| `holidays` | Ngày nghỉ lễ `yyyy-mm-dd`, không tính thời gian. |
-| `workingWeekends` | (tuỳ chọn) Ngày cuối tuần làm bù, vẫn tính thời gian làm việc. |
-| `warningRatio` | Tỷ lệ thời gian đã dùng để chuyển sang cảnh báo (0.8 = còn 20%). |
-| `startField` | Field thời điểm bắt đầu task trong dòng dữ liệu. |
-| `taskField` | Field xác định task/trạng thái hiện tại để tra `tasks`. |
-| `tasks[code].minutes` | Thời gian SLA (phút làm việc) của task. Không có code thì dùng `DEFAULT`. |
-| `doneStates` | Trạng thái đã hoàn thành: không tính SLA, ô để trống. |
+| `statusField`, `activeStates` | Chỉ tính SLA khi `row[statusField]` thuộc `activeStates` (BPM: `DB_STATUS_CODE.CHO_XU_LY`). |
+| `yellowField`, `redField` | Field mốc cảnh báo và hạn SLA, mặc định `yellowFlagDate`, `redFlagDate`. |
+| `startField` | (tuỳ chọn) Thời điểm bắt đầu task, chỉ dùng cho thanh tiến độ. |
+| `weekDays` | Tên 7 thứ theo thứ tự `Date.getDay()`, phần tử đầu là Chủ nhật: `["Sunday", "Monday", …, "Saturday"]`. Bắt buộc đủ 7 phần tử, sai thì cột SLA để trống và trang báo lỗi cấu hình. |
+| `workingHours` | Danh sách phiên làm việc: `{ "workday": "Monday", "startTime": "08:00", "endTime": "12:00" }`. `workday` phải trùng một tên trong `weekDays`. Một thứ có thể có nhiều phiên (sáng, chiều). Thứ không có phiên nào là ngày nghỉ. |
+| `holidays` | Danh sách ngày lễ: `{ "date": "2026-01-01", "desc": "Tết Dương lịch" }`. `date` dạng `yyyy-MM-dd`, `desc` chỉ để ghi chú. |
+
+Dữ liệu mẫu trong config: Thứ 2–6 làm 08:00–12:00 và 13:00–17:30 (8,5 giờ), Thứ 7 làm 08:00–12:00, Chủ nhật nghỉ; 11 ngày lễ năm 2026. Danh sách ngày lễ là mẫu, cần đối chiếu thông báo nghỉ chính thức.
 
 #### Thuật toán
 
-1. Bỏ qua dòng nếu `taskField` thuộc `doneStates` hoặc thiếu `startField`.
-2. Tra `minutes` theo `tasks[row[taskField]]`, nếu không có thì lấy `DEFAULT`.
-3. **Hạn xử lý (deadline)**: bắt đầu từ `start` (nếu ngoài giờ làm việc thì dời tới đầu khung giờ làm việc kế tiếp), cộng dần `minutes` chỉ trong các khung `workingHours` của ngày làm việc. Ngày không thuộc `workingDays`, hoặc thuộc `holidays` (trừ `workingWeekends`), thì bỏ qua cả ngày.
-4. **Trạng thái** theo thời điểm hiện tại `now`:
-   - `ok`: đã dùng dưới `warningRatio` thời gian SLA.
-   - `warning`: đã dùng từ `warningRatio` đến hết hạn.
-   - `overdue`: `now` vượt `deadline`; hiển thị số thời gian quá hạn.
-5. Tính thời gian đã dùng và còn lại bằng phút làm việc (không tính đêm, nghỉ trưa, ngày nghỉ).
+1. Không hiển thị nếu trạng thái không thuộc `activeStates`, hoặc thiếu `yellowFlagDate`/`redFlagDate`.
+2. `yellow < now < red` → `warning`, còn = giờ làm việc từ `now` đến `red`.
+3. `red < now` → `overdue`, quá = giờ làm việc từ `red` đến `now`.
+4. Còn lại → `ok`, còn = giờ làm việc từ `now` đến `red`.
+5. Giờ làm việc giữa hai mốc = tổng phần giao của khoảng đó với từng phiên trong `workingHours` của mỗi ngày, bỏ qua ngày lễ và ngày không có phiên.
+
+Các lỗi của bản BPM được sửa khi chuyển sang `sla.js`:
+- So `startTimeValue` dạng HHmm (`800`) với số giây trong ngày, và cộng `workTime` (giờ) vào tổng giây: sai đơn vị. Bản mới đổi hết về giây từ `startTime`/`endTime`.
+- Trừ trọn 86400 giây cho ngày nghỉ kể cả khi mốc bắt đầu giữa ngày. Bản mới tính phần giao từng phiên nên chính xác tới giây.
+- `formatDate` trộn `getUTCFullYear` với `getMonth/getDate` local. Bản mới dùng ngày local.
 
 #### Hiển thị (`slaRenderer`)
 
-- Màu chữ và icon theo trạng thái (không dùng badge nền): `ok` xanh lá `fa-clock`, `warning` vàng `fa-hourglass-half`, `overdue` đỏ `fa-exclamation-circle`.
-- Dưới chữ là thanh tiến độ mảnh (4px) thể hiện % thời gian SLA đã dùng, tối đa 100%.
-- Nội dung ngắn, tối đa 2 đơn vị, tính theo ngày làm việc (1n = tổng phút `workingHours`): "Còn 45p", "Còn 3g 20p", "Quá 2n 3g", từ 10 ngày trở lên chỉ hiện số ngày ("Quá 125n").
-- Tooltip: hạn xử lý (`dd/MM/yyyy HH:mm`), SLA của task, thời gian đã dùng.
-- Tính trong `renderer` mỗi lần render bảng; tuỳ chọn làm mới mỗi 60 giây để cập nhật badge.
-- Có thể sort theo `deadline` nếu cần (sort ở client trên trang hiện tại; sort server-side cần BE hỗ trợ).
+- Màu chữ và icon theo trạng thái: `ok` xanh lá `fa-clock`, `warning` vàng `fa-hourglass-half`, `overdue` đỏ `fa-exclamation-circle`.
+- Thanh tiến độ 4px: % giờ làm việc đã dùng từ `startField` đến `red` (quá hạn = 100%).
+- Chữ tối đa 2 đơn vị, 1n = số giờ làm việc của ngày dài nhất: "Còn 45p", "Còn 3g 20p", "Quá 2n 3g", từ 10 ngày chỉ hiện số ngày.
+- Tooltip: thời điểm bắt đầu cảnh báo, hạn xử lý, % đã dùng.
+- Sort SLA theo `redFlagDate` (server: `RED_FLAG_DATE`); hồ sơ không thuộc diện tính SLA luôn nằm cuối.
 
-#### Tách module
+#### API của `sla.js`
 
-- Logic tính nằm trong `sla.js` riêng (ES5, hàm thuần, không phụ thuộc DOM), nhận `(row, config, now)` và trả về `{ deadline, status, usedMinutes, remainingMinutes }`.
-- `index.html` nạp `config.sla` cùng lúc với `config.detail` và `config.create`, truyền vào renderer.
-- Dễ kiểm thử: các trường hợp qua đêm, qua cuối tuần, qua ngày lễ, bắt đầu ngoài giờ, task không có cấu hình.
+Phụ thuộc `moment.js` (`js-table/libs/moment-with-locales.min.js`) qua `DateUtil` (`date-util.js`). Thứ tự nạp: moment → `date-util.js` → `constants.js` → `disb.js` → `sla.js`.
 
-#### Thông tin cần bổ sung
-
-Các giá trị trong ví dụ trên là mẫu. Cần bạn cung cấp:
-- Thời gian SLA cho từng task (mã task, số phút hoặc giờ).
-- Danh sách ngày nghỉ lễ (và ngày làm bù nếu có).
-- Khung giờ làm việc trong ngày và ngày làm việc trong tuần.
-- Field nào là thời điểm bắt đầu task, field nào xác định task; trạng thái nào xem là đã hoàn thành.
-- Ngưỡng cảnh báo (mặc định 80%).
+- `compute(row, cfg, now)` → `{ status, deadline, warningAt, remainingMinutes, overMinutes, progress }` hoặc `null`.
+- `deadlineOf(row, cfg)`, `workSeconds(from, to, cfg)`, `addWorkMinutes(from, minutes, cfg)`, `isDayOff(date, cfg)`, `formatDuration(minutes, cfg)`.
+- Dữ liệu demo trong `index.html` dùng `addWorkMinutes` để sinh `yellowFlagDate`/`redFlagDate` = `taskStartTime` + số phút cấu hình trong `DEMO_CONFIG` (mặc định 60 và 90 phút làm việc).
 
 ## 7. Nút Khởi tạo: popup chọn loại giao dịch cấp 1
 
@@ -377,7 +428,7 @@ Quy tắc dựng URL:
 ```json
 {
   "detail": {
-    "url": "/transactions/disb/detail?gntdCode={gntdCode}&type={transactionType1}",
+    "url": "/transactions/disb/detail?gntdCode=",
     "target": "_blank"
   }
 }
@@ -385,12 +436,12 @@ Quy tắc dựng URL:
 
 | Thuộc tính | Ý nghĩa |
 |------------|---------|
-| `url` | Template URL chi tiết. Placeholder `{field}` được thay bằng giá trị `field` của dòng được bấm. |
+| `url` | URL chi tiết, kết thúc bằng tên param và dấu `=`. Mã GNTD của dòng được bấm nối vào cuối. |
 | `target` | `_self` (cùng tab) hoặc `_blank` (tab mới). Mặc định `_self`. |
 
 ### 8.2 Quy tắc dựng URL
 
-- Mỗi `{field}` thay bằng `encodeURIComponent(row[field])`. Field không tồn tại hoặc `null` thì thay bằng chuỗi rỗng.
+- `DisbUtil.buildDetailUrl(cfg, row)` trả `cfg.url + encodeURIComponent(row.gntdCode)`. Thiếu `url` hoặc `gntdCode` thì trả chuỗi rỗng.
 - Chỉ cho phép URL `http(s)` hoặc đường dẫn cùng origin; chặn scheme khác (ví dụ `javascript:`).
 - `target = "_blank"` thì dùng `window.open(url, "_blank", "noopener")`, ngược lại dùng `window.location.href`.
 - Thiếu `detail.url` trong config thì hiển thị Toast lỗi "Chưa cấu hình link chi tiết", không điều hướng.
@@ -408,13 +459,13 @@ TableConfigAPI.load("table-config.json", function (error, config) {
     }
     table = TableRenderer.fromConfig(config, {
         handlers: {
-            openTransactionDetail: function (row) { openLink(DETAIL_CONFIG, row); }
+            openTransactionDetail: function (row) { openDetail(row); }
         }
     });
 });
 ```
 
-`openLink(cfg, row)` là hàm dùng chung dựng URL theo mục 8.2.
+`openDetail(row)` dựng URL bằng `DisbUtil.buildDetailUrl` (mục 8.2) rồi mở bằng `DisbUtil.openUrl`.
 
 Cả link **Khởi tạo** (mục 7.2) và link chi tiết dùng chung cơ chế: nạp từ `table-config.json` khi load `index.html`, truyền vào handler qua runtime của `fromConfig`.
 
@@ -464,7 +515,8 @@ Log theo chuẩn của module transaction: Search, View detail, Export, Refresh 
 ## 11. Tiêu chí nghiệm thu
 
 ### Functional
-- Hiển thị danh sách giao dịch giải ngân với 13 cột như mục 6.1 (gộp Loại giao dịch / PDTD và Phân luồng / Nhóm xử lý).
+- Hiển thị danh sách giao dịch giải ngân với 12 cột như mục 6.1 (gộp Mã GNTD / User lock, Loại giao dịch / PDTD, Số tiền / loại tiền, Phân luồng / Nhóm xử lý).
+- Số tiền chỉ hiển thị với Giải ngân khoản vay, Giải ngân thấu chi, Khởi tạo hạn mức.
 - Search, filter, sort, phân trang hoạt động chính xác (server-side).
 - Đặt lại và Áp dụng hoạt động đúng, luôn về trang 1.
 - Nút **Khởi tạo** mở popup với đúng các thẻ loại giao dịch cấp 1 theo config.
