@@ -4,16 +4,7 @@
    Các rule ghi đè js-table giới hạn trong #tableContainer (id container truyền vào fromConfig);
    trang khác dùng id khác thì đổi "#tableContainer" cho khớp.
    Build: ./build.sh -> dist/disb.min.css */
-
-.table-config-error {
-    padding: 14px 16px;
-    border: 1px solid #f0b8b8;
-    border-radius: 6px;
-    background: #fff2f2;
-    color: #b42318;
-    font-size: 14px;
-    font-weight: 600;
-}
+   
 /* ---- Ô gộp nhiều dòng ----
    Dòng chính chữ đậm, gần đen; dòng phụ nhỏ hơn nhưng vẫn tương phản cao (~9:1)
    để đọc rõ trên màn hình 19.5" độ phân giải 1366×768 / 1600×900 (~80-94 PPI). */
