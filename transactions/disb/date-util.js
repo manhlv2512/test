@@ -1,5 +1,5 @@
 /* Tiện ích ngày giờ dùng chung (ES5), bọc moment.js (js-table/libs/moment-with-locales.min.js).
-   Nạp sau moment, trước disb.js và sla.js.
+   Nạp sau moment, trước disb-util.js và disb-sla.js.
 
    Quy ước:
    - Mọi giá trị ngày đều tính theo giờ local của trình duyệt.

@@ -29,9 +29,12 @@ transactions/
     ├── index.html          # trang, runtime (renderers, handlers, optionsProviders)
     ├── table-config.json   # cấu hình table, search, buttons, create
     ├── date-util.js        # DateUtil: parse/format/tính ngày giờ, bọc moment.js
-    ├── sla.js              # DisbSla: tính SLA theo giờ làm việc
+    ├── disb-sla.js         # DisbSla: tính SLA theo giờ làm việc
     ├── constants.js        # mã quyền, URL, trạng thái
-    ├── disb.js             # DisbUtil: chuẩn hoá key Oracle, dựng/mở link, escapeHtml
+    ├── disb-util.js        # DisbUtil: chuẩn hoá key Oracle, dựng/mở link, escapeHtml
+    ├── disb.css            # style màn hình (ô gộp, chip, badge trạng thái, SLA, form tìm kiếm, popup Khởi tạo)
+    ├── build.sh            # minify date-util.js, disb.css, disb-*.js/css -> dist/*.min.*, đóng gói disb.zip
+    ├── dist/               # kết quả build (không sửa tay)
     └── spec.md
 ```
 
@@ -334,7 +337,7 @@ Dữ liệu mẫu trong config: Thứ 2–6 làm 08:00–12:00 và 13:00–17:30
 4. Còn lại → `ok`, còn = giờ làm việc từ `now` đến `red`.
 5. Giờ làm việc giữa hai mốc = tổng phần giao của khoảng đó với từng phiên trong `workingHours` của mỗi ngày, bỏ qua ngày lễ và ngày không có phiên.
 
-Các lỗi của bản BPM được sửa khi chuyển sang `sla.js`:
+Các lỗi của bản BPM được sửa khi chuyển sang `disb-sla.js`:
 - So `startTimeValue` dạng HHmm (`800`) với số giây trong ngày, và cộng `workTime` (giờ) vào tổng giây: sai đơn vị. Bản mới đổi hết về giây từ `startTime`/`endTime`.
 - Trừ trọn 86400 giây cho ngày nghỉ kể cả khi mốc bắt đầu giữa ngày. Bản mới tính phần giao từng phiên nên chính xác tới giây.
 - `formatDate` trộn `getUTCFullYear` với `getMonth/getDate` local. Bản mới dùng ngày local.
@@ -347,9 +350,13 @@ Các lỗi của bản BPM được sửa khi chuyển sang `sla.js`:
 - Tooltip: thời điểm bắt đầu cảnh báo, hạn xử lý, % đã dùng.
 - Sort SLA theo `redFlagDate` (server: `RED_FLAG_DATE`); hồ sơ không thuộc diện tính SLA luôn nằm cuối.
 
-#### API của `sla.js`
+#### API của `disb-sla.js`
 
-Phụ thuộc `moment.js` (`js-table/libs/moment-with-locales.min.js`) qua `DateUtil` (`date-util.js`). Thứ tự nạp: moment → `date-util.js` → `constants.js` → `disb.js` → `sla.js`.
+Phụ thuộc `moment.js` (`js-table/libs/moment-with-locales.min.js`) qua `DateUtil` (`date-util.js`). Thứ tự nạp: moment → `date-util.js` → `constants.js` → `disb-util.js` → `disb-sla.js`.
+
+Build: `./build.sh` minify `date-util.js`, `disb.css` và mọi file `disb-*.js` / `disb-*.css` ra `dist/<tên>.min.*` (esbuild; JS dùng `--target=es5` nên báo lỗi nếu có cú pháp mới hơn ES5), rồi đóng gói `disb.zip`. `constants.js` không nằm trong `dist`.
+
+Nạp trên trang thật (bản build), theo thứ tự: `table.min.css` → `disb.min.css`; moment → `date-util.min.js` → `disb-util.min.js` → `disb-sla.min.js`.
 
 - `compute(row, cfg, now)` → `{ status, deadline, warningAt, remainingMinutes, overMinutes, progress }` hoặc `null`.
 - `deadlineOf(row, cfg)`, `workSeconds(from, to, cfg)`, `addWorkMinutes(from, minutes, cfg)`, `isDayOff(date, cfg)`, `formatDuration(minutes, cfg)`.
