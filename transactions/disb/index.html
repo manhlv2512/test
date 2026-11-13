@@ -330,7 +330,7 @@
                 callback({
                     error: null,
                     allowBranchs: ["441", "360", "310", "520", "274"],
-                    visibleConfig: { create: true, export: true }
+                    visibleConfig: { create: true, exportData: true }
                 });
             }, 100);
         },
@@ -508,7 +508,7 @@
             log("statusBadge: màu không hợp lệ " + bad.join(", ") + " => dùng default. Màu hợp lệ: " + STATUS_TONES.join(", "));
         }
     }
-    var PERMISSIONS = { allowBranchs: [], visibleConfig: { create: false, export: false } };
+    var PERMISSIONS = { allowBranchs: [], visibleConfig: { create: false, exportData: false } };
     var table = null;
     var tableContainer = document.getElementById("tableContainer");
 
