@@ -60,20 +60,23 @@
     "codeField": "status",
     "defaultTone": "default",
     "tones": {
-      "KHOI_TAO": "default",
-      "CHO_XU_LY": "orange",
-      "CHO_BO_SUNG": "orange",
-      "HACH_TOAN_TC": "purple",
-      "LOI_THAU_CHI": "red",
-      "LOI_HAN_MUC": "red",
-      "LOI_CHUYEN_TIEN": "red",
-      "HOAN_THANH": "green"
+      "GNCN_KHOI_TAO": "default",
+      "GNCN_HUY": "default",
+      "GNCN_CHO_XU_LY": "orange",
+      "GNCN_CHO_BO_SUNG": "orange",
+      "GNCN_DA_PHE_DUYET": "purple",
+      "GNCN_LOI_HACH_TOAN_HAN_MUC": "red",
+      "GNCN_LOI_HACH_TOAN_KHOAN_VAY": "red",
+      "GNCN_LOI_HACH_TOAN_THAU_CHI": "red",
+      "GNCN_LOI_CHUYEN_TIEN": "red",
+      "GNCN_HOAN_TAT_KHOAN_VAY": "purple",
+      "GNCN_HOAN_THANH": "green"
     }
   },
   "sla": {
     "statusField": "status",
     "activeStates": [
-      "CHO_XU_LY"
+      "GNCN_CHO_XU_LY"
     ],
     "yellowField": "yellowFlagDate",
     "redField": "redFlagDate",
@@ -192,7 +195,7 @@
     ]
   },
   "sort": {
-    "field": "createdDate",
+    "field": "taskStartTime",
     "type": "DESC"
   },
   "pageSize": 10,
@@ -371,6 +374,7 @@
       "text": "Khởi tạo",
       "title": "Khởi tạo giao dịch giải ngân",
       "iconClass": "fas fa-plus",
+      "className": "tr-btn-default",
       "handler": "openCreatePopup",
       "visibleKey": "create"
     },
@@ -378,7 +382,7 @@
       "text": "Tải xuống",
       "title": "Export Excel",
       "iconClass": "fas fa-file-download",
-      "className": "tr-btn-default",
+      "className": "tr-btn-export",
       "handler": "exportExcel",
       "visibleKey": "exportData"
     }

@@ -119,15 +119,20 @@
         { code: "DVKD", name: "VH ĐVKD" }
     ];
     var STATES = [
-        { code: "KHOI_TAO", name: "GN - Khởi tạo" },
-        { code: "CHO_XU_LY", name: "GN - Chờ xử lý" },
-        { code: "CHO_BO_SUNG", name: "GN - Chờ bổ sung" },
-        { code: "HACH_TOAN_TC", name: "GN - Hạch toán khoản vay thành công" },
-        { code: "LOI_THAU_CHI", name: "GN - Lỗi hạch toán thấu chi" },
-        { code: "LOI_HAN_MUC", name: "GN - Lỗi hạch toán hạn mức" },
-        { code: "LOI_CHUYEN_TIEN", name: "GN - Lỗi chuyển tiền" },
-        { code: "HOAN_THANH", name: "GN - Hoàn thành" }
+        { code: "GNCN_KHOI_TAO", name: "GN - Khởi tạo" },
+        { code: "GNCN_HUY", name: "GN - Hủy giao dịch" },
+        { code: "GNCN_CHO_XU_LY", name: "GN - Chờ xử lý" },
+        { code: "GNCN_CHO_BO_SUNG", name: "GN - Chờ bổ sung" },
+        { code: "GNCN_DA_PHE_DUYET", name: "GN - Đã phê duyệt" },
+        { code: "GNCN_LOI_HACH_TOAN_HAN_MUC", name: "GN - Lỗi hạch toán hạn mức" },
+        { code: "GNCN_LOI_HACH_TOAN_KHOAN_VAY", name: "GN - Lỗi hạch toán khoản vay" },
+        { code: "GNCN_LOI_HACH_TOAN_THAU_CHI", name: "GN - Lỗi hạch toán thấu chi" },
+        { code: "GNCN_LOI_CHUYEN_TIEN", name: "GN - Lỗi chuyển tiền" },
+        { code: "GNCN_HOAN_TAT_KHOAN_VAY", name: "GN - Hạch toán khoản vay thành công" },
+        { code: "GNCN_HOAN_THANH", name: "GN - Hoàn thành" }
     ];
+    /* Trạng thái kết thúc (như C_FINISHED_STATUS trong SP): không còn ai claim xử lý */
+    var FINISHED_STATES = ["GNCN_HUY", "GNCN_HOAN_THANH"];
     var GROUPS = ["RB.TINH", "RB.HCM", "RB.HN", "DS.HN"];
     var BRANCH_CODES = ["441", "360", "310", "520", "274", "810"];
     var USERS = ["LoanTT3", "HongHTD", "GiangNT6", "ThanhHM2", "ThuyNT66", "OanhNTK4"];
@@ -249,7 +254,7 @@
             /* Thời điểm chuyển xử lý task: ngẫu nhiên đều trong [lúc tạo, min(lúc tạo + maxTransferMinutes, hiện tại)].
                Hồ sơ đang Khởi tạo chưa chuyển xử lý => lấy lúc tạo (như SP: NVL(PROCESSING_DATE, CREATED_DATE)). */
             var maxTransfer = Math.min(DEMO_CONFIG.maxTransferMinutes, Math.floor((base - createdMs) / 60000));
-            var startMs = state.code === "KHOI_TAO" ? createdMs
+            var startMs = state.code === "GNCN_KHOI_TAO" ? createdMs
                 : createdMs + Math.floor(rnd() * (maxTransfer + 1)) * 60000;
             var sla = hasSla(state.code);
             var yellowMs = sla ? addMinutes(startMs, DEMO_CONFIG.yellowMinutes) : null;
@@ -273,8 +278,8 @@
                 createdBy: pick(USERS),          /* ngẫu nhiên, có thể khác processUser */
                 processUser: user,
                 assignUser: user.toLowerCase(),
-                /* User đang claim xử lý: chỉ hồ sơ chưa hoàn thành, ~30% có người claim */
-                lockUser: state.code !== "HOAN_THANH" && rnd() < 0.3 ? pick(USERS).toLowerCase() : "",
+                /* User đang claim xử lý: chỉ hồ sơ chưa kết thúc, ~30% có người claim */
+                lockUser: FINISHED_STATES.indexOf(state.code) === -1 && rnd() < 0.3 ? pick(USERS).toLowerCase() : "",
                 processGroup: i % 5 === 0 ? GROUPS[i % GROUPS.length] : "",
                 /* Cờ SLA (BE trả): chỉ trạng thái tính SLA; vàng/đỏ = taskStartTime + yellowMinutes/redMinutes */
                 yellowFlagDate: yellowMs === null ? null : DateUtil.toServer(yellowMs),

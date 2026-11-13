@@ -215,11 +215,17 @@ Cấu hình trong `table-config.json`, mục `statusBadge`:
   "codeField": "status",
   "defaultTone": "default",
   "tones": {
-    "KHOI_TAO": "default",
-    "CHO_XU_LY": "orange",
-    "HACH_TOAN_TC": "purple",
-    "LOI_THAU_CHI": "red",
-    "HOAN_THANH": "green"
+    "GNCN_KHOI_TAO": "default",
+    "GNCN_HUY": "default",
+    "GNCN_CHO_XU_LY": "orange",
+    "GNCN_CHO_BO_SUNG": "orange",
+    "GNCN_DA_PHE_DUYET": "purple",
+    "GNCN_LOI_HACH_TOAN_HAN_MUC": "red",
+    "GNCN_LOI_HACH_TOAN_KHOAN_VAY": "red",
+    "GNCN_LOI_HACH_TOAN_THAU_CHI": "red",
+    "GNCN_LOI_CHUYEN_TIEN": "red",
+    "GNCN_HOAN_TAT_KHOAN_VAY": "purple",
+    "GNCN_HOAN_THANH": "green"
   }
 }
 ```
@@ -242,7 +248,25 @@ Màu hợp lệ (mỗi màu là một class `.disb-status-<màu>` trong `index.h
 
 - Màu sai chính tả hoặc không có trong danh sách: dùng `defaultTone` rồi `default`, và ghi cảnh báo vào khung log khi load trang.
 - Thêm màu mới: thêm một class `.disb-status-<màu>` và thêm tên vào `STATUS_TONES` trong `index.html`.
-- Mã trạng thái trong ví dụ là mã mock; khi có mã thật của BE (vd `GNCN_HOAN_THANH`) thì đổi key trong `tones`.
+- Key trong `tones` là mã trạng thái thật của BE (`GNCN_*`). Mã mới chưa khai báo sẽ dùng `defaultTone`.
+
+Danh sách trạng thái:
+
+| Mã | Tên | Màu |
+|----|-----|-----|
+| `GNCN_KHOI_TAO` | GN - Khởi tạo | default |
+| `GNCN_HUY` | GN - Hủy giao dịch | default |
+| `GNCN_CHO_XU_LY` | GN - Chờ xử lý | orange (tính SLA, `sla.activeStates`) |
+| `GNCN_CHO_BO_SUNG` | GN - Chờ bổ sung | orange |
+| `GNCN_DA_PHE_DUYET` | GN - Đã phê duyệt | purple |
+| `GNCN_LOI_HACH_TOAN_HAN_MUC` | GN - Lỗi hạch toán hạn mức | red |
+| `GNCN_LOI_HACH_TOAN_KHOAN_VAY` | GN - Lỗi hạch toán khoản vay | red |
+| `GNCN_LOI_HACH_TOAN_THAU_CHI` | GN - Lỗi hạch toán thấu chi | red |
+| `GNCN_LOI_CHUYEN_TIEN` | GN - Lỗi chuyển tiền | red |
+| `GNCN_HOAN_TAT_KHOAN_VAY` | GN - Hạch toán khoản vay thành công | purple |
+| `GNCN_HOAN_THANH` | GN - Hoàn thành | green |
+
+`GNCN_HUY` và `GNCN_HOAN_THANH` là trạng thái kết thúc (khớp `C_FINISHED_STATUS` trong SP): mặc định bị ẩn khi không lọc trạng thái, và không có user claim.
 
 ### 6.2 Phân trang (server-side)
 
@@ -320,7 +344,7 @@ Theo logic BPM (`disb-sla.js`). BE trả sẵn hai mốc của từng hồ sơ: 
 
 | Thuộc tính | Ý nghĩa |
 |------------|---------|
-| `statusField`, `activeStates` | Chỉ tính SLA khi `row[statusField]` thuộc `activeStates` (BPM: `DB_STATUS_CODE.CHO_XU_LY`). |
+| `statusField`, `activeStates` | Chỉ tính SLA khi `row[statusField]` thuộc `activeStates`: `["GNCN_CHO_XU_LY"]` (BPM: `DB_STATUS_CODE.CHO_XU_LY`). |
 | `yellowField`, `redField` | Field mốc cảnh báo và hạn SLA, mặc định `yellowFlagDate`, `redFlagDate`. |
 | `startField` | (tuỳ chọn) Thời điểm bắt đầu task, chỉ dùng cho thanh tiến độ. |
 | `weekDays` | Tên 7 thứ theo thứ tự `Date.getDay()`, phần tử đầu là Chủ nhật: `["Sunday", "Monday", …, "Saturday"]`. Bắt buộc đủ 7 phần tử, sai thì cột SLA để trống và trang báo lỗi cấu hình. |

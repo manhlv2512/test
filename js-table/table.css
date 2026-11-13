@@ -1,41 +1,58 @@
 /* TableRenderer styles - plain CSS, no preprocessor. */
 :root {
     /* ── Purple scale ───────────────────────────────── */
-    --purple-color:       #7b35ba;   /* primary action, headers       */
-    --purple-dark:        #6a299f;   /* hover / active state          */
-    --select-color:       #a774cc;   /* select border, mid-tone       */
-    --select-hover-color: #f1e9f7;   /* option bg on hover            */
-    --hover-color:        #e6daf2;   /* row/button hover bg           */
-    --surface-purple:     #f6effc;   /* very light purple bg          */
-    --border-purple:      #ccb7df;   /* input borders, dividers       */
+    --purple-color: #7b35ba;
+    /* primary action, headers       */
+    --purple-dark: #6a299f;
+    /* hover / active state          */
+    --select-color: #a774cc;
+    /* select border, mid-tone       */
+    --select-hover-color: #f1e9f7;
+    /* option bg on hover            */
+    --hover-color: #e6daf2;
+    /* row/button hover bg           */
+    --surface-purple: #f6effc;
+    /* very light purple bg          */
+    --border-purple: #ccb7df;
+    /* input borders, dividers       */
 
     /* ── Text ───────────────────────────────────────── */
-    --text-primary:       #2f2834;   /* headings                      */
-    --text-body:          #403746;   /* default body text             */
-    --text-secondary:     #5b456d;   /* labels, secondary info        */
-    --text-muted:         #665c6d;   /* helper / placeholder text     */
-    --text-disabled:      #aaa3af;   /* disabled controls             */
-    --placeholder-color:  #757575;   /* input placeholder             */
+    --text-primary: #2f2834;
+    /* headings                      */
+    --text-body: #403746;
+    /* default body text             */
+    --text-secondary: #5b456d;
+    /* labels, secondary info        */
+    --text-muted: #665c6d;
+    /* helper / placeholder text     */
+    --text-disabled: #aaa3af;
+    /* disabled controls             */
+    --placeholder-color: #757575;
+    /* input placeholder             */
 
     /* ── Neutral / layout ──────────────────────────── */
-    --white-color:        #fff;
-    --form-color:         #eef0f2;
-    --border-color:       #ccd1d8;
+    --white-color: #fff;
+    --form-color: #eef0f2;
+    --border-color: #ccd1d8;
 
     /* ── Toast status ───────────────────────────────── */
     --toast-success-color: #2e9d62;
-    --toast-error-color:   #d64545;
-    --toast-info-color:    #3978d4;
+    --toast-error-color: #d64545;
+    --toast-info-color: #3978d4;
     --toast-warning-color: #d99016;
 
     /* ── Status surfaces ────────────────────────────── */
-    --surface-error:      #fcebea;
+    --surface-error: #fcebea;
 
     /* ── Badge ──────────────────────────────────────── */
-    --badge-default-bg:   #888;      /* badge default background      */
-    --badge-success-bg:   #27ae60;   /* open / success                */
-    --badge-danger-bg:    #c0392b;   /* closed / danger               */
-    --badge-warning-bg:   #f39c12;   /* pending / warning             */
+    --badge-default-bg: #888;
+    /* badge default background      */
+    --badge-success-bg: #27ae60;
+    /* open / success                */
+    --badge-danger-bg: #c0392b;
+    /* closed / danger               */
+    --badge-warning-bg: #f39c12;
+    /* pending / warning             */
 }
 
 .tr-root {
@@ -81,7 +98,8 @@
     background: #f7f8fa;
     border: 1px solid #e3e6ea;
     border-radius: 6px;
-    overflow: hidden; /* contain floats */
+    overflow: hidden;
+    /* contain floats */
 }
 
 .tr-field {
@@ -95,7 +113,7 @@
     width: 380px;
 }
 
-.tr-field > .tr-input,
+.tr-field>.tr-input,
 .tr-field-select .select2-container {
     width: 100% !important;
 }
@@ -574,6 +592,11 @@
     color: var(--purple-color);
 }
 
+.tr-btn-export {
+    border-color: var(--badge-success-bg);
+    color: var(--badge-success-bg);
+}
+
 .tr-btn-primary:hover {
     background: var(--hover-color);
 }
@@ -796,7 +819,8 @@
 .tr-table-wrap {
     position: relative;
     width: 100%;
-    overflow-x: auto; /* basic responsiveness */
+    overflow-x: auto;
+    /* basic responsiveness */
     border: 1px solid #e3e6ea;
     border-radius: 6px;
 }
@@ -974,6 +998,7 @@
     background: #eafaf0;
     color: var(--toast-success-color);
 }
+
 .tr-action-link.tr-action-success:hover {
     background: #d8f3e2;
     border-color: #27ae60;
@@ -985,6 +1010,7 @@
     background: #fdeeec;
     color: var(--toast-error-color);
 }
+
 .tr-action-link.tr-action-danger:hover {
     background: #fbddd9;
     border-color: #c0392b;
@@ -996,6 +1022,7 @@
     background: #fdf4e3;
     color: #b9790f;
 }
+
 .tr-action-link.tr-action-warning:hover {
     background: #fbe9c6;
     border-color: #d99016;
@@ -1007,6 +1034,7 @@
     background: #eef4fd;
     color: var(--toast-info-color);
 }
+
 .tr-action-link.tr-action-info:hover {
     background: #dde9fa;
     border-color: #3978d4;
@@ -1043,9 +1071,17 @@
     background: var(--badge-default-bg);
 }
 
-.badge-open { background: var(--badge-success-bg); }
-.badge-closed { background: var(--badge-danger-bg); }
-.badge-pending { background: var(--badge-warning-bg); }
+.badge-open {
+    background: var(--badge-success-bg);
+}
+
+.badge-closed {
+    background: var(--badge-danger-bg);
+}
+
+.badge-pending {
+    background: var(--badge-warning-bg);
+}
 
 /* ------------- Spinner (dùng bởi Loading toàn trang) ------------- */
 
@@ -1065,11 +1101,15 @@
 }
 
 @-webkit-keyframes tr-spin {
-    to { -webkit-transform: rotate(360deg); }
+    to {
+        -webkit-transform: rotate(360deg);
+    }
 }
 
 @keyframes tr-spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* --------------------------- Pagination --------------------------- */
@@ -1337,6 +1377,7 @@
         opacity: 0;
         transform: translate3d(24px, 0, 0);
     }
+
     to {
         opacity: 1;
         transform: translate3d(0, 0, 0);
@@ -1348,6 +1389,7 @@
         opacity: 1;
         transform: translate3d(0, 0, 0);
     }
+
     to {
         opacity: 0;
         transform: translate3d(24px, 0, 0);
@@ -1355,11 +1397,17 @@
 }
 
 @keyframes tr-toast-progress {
-    from { transform: scaleX(1); }
-    to { transform: scaleX(0); }
+    from {
+        transform: scaleX(1);
+    }
+
+    to {
+        transform: scaleX(0);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
+
     .tr-toast,
     .tr-toast-hide,
     .tr-toast-progress {

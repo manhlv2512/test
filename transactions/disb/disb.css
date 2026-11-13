@@ -196,7 +196,7 @@
 .disb-type-card:focus-visible { outline: 2px solid #7b35ba; outline-offset: 2px; }
 .disb-type-card:disabled { opacity: 0.5; cursor: not-allowed; }
 .disb-type-icon { margin-bottom: 10px; color: #7b35ba; font-size: 30px; }
-.disb-type-label { font-size: 15px; font-weight: 700; }
+.disb-type-label { font-size: 15px; font-weight: 600; }
 .disb-type-desc { margin-top: 4px; color: #665c6d; font-size: 12px; }
 .disb-type-empty { padding: 20px 0; color: #665c6d; text-align: center; }
 @media (max-width: 760px) { .disb-type-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
