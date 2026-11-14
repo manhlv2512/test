@@ -10,7 +10,8 @@
      và ngày không có phiên nào (vd Chủ nhật).
        weekDays:     ["Sunday", "Monday", ..., "Saturday"]  (7 phần tử, 0 = Chủ nhật)
        workingHours: [{ workday: "Monday", startTime: "08:00", endTime: "12:00" }, ...]
-       holidays:     [{ date: "2026-01-01", desc: "Tết Dương lịch" }, ...]
+       holidays:     [{ day: "2026-01-01", description: "Tết Dương lịch" }, ...]
+                     (key trùng alias cột SQL, gán thẳng kết quả query, không cần đổi key)
 
    Khác bản BPM (đã sửa lỗi của bản gốc):
    - Bản gốc so startTimeValue dạng HHmm (800) với số giây trong ngày, và cộng workTime
@@ -50,7 +51,7 @@ var DisbSla = (function (DateUtil) {
             perDay = Math.max(perDay, dayTotal);
         }
         for (i = 0; i < holidays.length; i++) {
-            day = DateUtil.startOfDay(holidays[i] && holidays[i].date);
+            day = DateUtil.startOfDay(holidays[i] && holidays[i].day);
             if (day) {
                 holidaySet[day.valueOf()] = true;
             }

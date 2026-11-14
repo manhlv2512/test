@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 1,
+  "key": "transactions-disb",
+  "header": {
+    "title": "Danh sách giao dịch giải ngân"
+  },
+  "create": {
+    "title": "Chọn loại giao dịch",
+    "url": "/teamworks/executecf?processApp=GN_KHCN&serviceName=",
+    "target": "_blank",
+    "columns": 3,
+    "types": [
+      {
+        "value": "Giaingankhoanvay",
+        "label": "Giải ngân khoản vay",
+        "iconClass": "fas fa-hand-holding-usd",
+        "serviceName": "GNCN.Loan.Main"
+      },
+      {
+        "value": "Giainganthauchi",
+        "label": "Giải ngân thấu chi",
+        "iconClass": "fas fa-credit-card",
+        "serviceName": "GNCN.Overdraft.Main"
+      },
+      {
+        "value": "Khoitaohanmuc",
+        "label": "Khởi tạo hạn mức",
+        "iconClass": "fas fa-file-signature",
+        "serviceName": "GNCN.Limit.Main"
+      },
+      {
+        "value": "NhapvaduyetFCC",
+        "label": "Nhập và duyệt bút toán FCC",
+        "iconClass": "fas fa-file-invoice-dollar",
+        "serviceName": "GNCN.ApproveFcc.Main"
+      },
+      {
+        "value": "Khac",
+        "label": "Khác",
+        "iconClass": "fas fa-ellipsis-h",
+        "serviceName": "GNCN.Other.Main"
+      }
+    ]
+  },
+  "amountDisplay": {
+    "amountField": "amount",
+    "currencyField": "currency",
+    "typeField": "transactionType1",
+    "types": [
+      "Giaingankhoanvay",
+      "Giainganthauchi",
+      "Khoitaohanmuc"
+    ],
+    "decimals": {
+      "VND": 0,
+      "default": 2
+    }
+  },
+  "statusBadge": {
+    "codeField": "status",
+    "defaultTone": "default",
+    "tones": {
+      "GNCN_KHOI_TAO": "default",
+      "GNCN_HUY": "default",
+      "GNCN_CHO_XU_LY": "orange",
+      "GNCN_CHO_BO_SUNG": "orange",
+      "GNCN_DA_PHE_DUYET": "purple",
+      "GNCN_LOI_HACH_TOAN_HAN_MUC": "red",
+      "GNCN_LOI_HACH_TOAN_KHOAN_VAY": "red",
+      "GNCN_LOI_HACH_TOAN_THAU_CHI": "red",
+      "GNCN_LOI_CHUYEN_TIEN": "red",
+      "GNCN_HOAN_TAT_KHOAN_VAY": "purple",
+      "GNCN_HOAN_THANH": "green"
+    }
+  },
+  "sla": {
+    "statusField": "status",
+    "activeStates": [
+      "GNCN_CHO_XU_LY"
+    ],
+    "yellowField": "yellowFlagDate",
+    "redField": "redFlagDate",
+    "startField": "taskStartTime",
+    "weekDays": [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
+    ]
+  },
+  "sort": {
+    "field": "taskStartTime",
+    "type": "DESC"
+  },
+  "pageSize": 10,
+  "pageSizeOptions": [
+    10,
+    20,
+    50,
+    100
+  ],
+  "pageSizeSelect2Options": {
+    "width": "72px"
+  },
+  "select2Options": {
+    "minimumResultsForSearch": 6,
+    "width": "resolve",
+    "allowClear": true
+  },
+  "datepickerOptions": {
+    "dateFormat": "dd-mm-yy",
+    "searchDateFormat": "yy-mm-dd",
+    "showButtonPanel": true,
+    "changeMonth": true,
+    "changeYear": true
+  },
+  "columns": [
+    {
+      "field": "_stt",
+      "title": "STT",
+      "width": 50,
+      "align": "center",
+      "renderer": "sttRenderer"
+    },
+    {
+      "field": "_sla",
+      "title": "SLA",
+      "align": "center",
+      "renderer": "slaRenderer",
+      "className": "disb-col-fit"
+    },
+    {
+      "field": "gntdCode",
+      "title": "Mã GNTD",
+      "className": "disb-col-gntd",
+      "renderer": "gntdRenderer"
+    },
+    {
+      "field": "transactionType1Name",
+      "title": "Thông tin giao dịch",
+      "minWidth": 160,
+      "renderer": "transactionRenderer"
+    },
+    {
+      "field": "branchCode",
+      "title": "ĐVKD",
+      "align": "center",
+      "className": "disb-col-fit"
+    },
+    {
+      "field": "customerName",
+      "title": "Khách hàng",
+      "minWidth": 140,
+      "renderer": "customerRenderer"
+    },
+    {
+      "field": "statusName",
+      "title": "Trạng thái",
+      "minWidth": 140,
+      "maxWidth": 220,
+      "renderer": "statusRenderer"
+    },
+    {
+      "field": "transactionFlowName",
+      "title": "Phân luồng xử lý",
+      "className": "disb-col-fit",
+      "renderer": "flowGroupRenderer"
+    },
+    {
+      "field": "assignUser",
+      "title": "User phân công",
+      "className": "disb-col-fit"
+    },
+    {
+      "field": "processUser",
+      "title": "User xử lý",
+      "className": "disb-col-fit"
+    },
+    {
+      "field": "taskStartTime",
+      "title": "Thời điểm tiếp nhận",
+      "width": 110,
+      "align": "right",
+      "sortable": true,
+      "renderer": "dateTimeRenderer"
+    }
+  ],
+  "searchFields": [
+    {
+      "name": "keyword",
+      "label": "Từ khoá",
+      "type": "text",
+      "width": 200,
+      "placeholder": "GNTD, PDTD, mã/tên KH, user xử lý"
+    },
+    {
+      "name": "branch",
+      "label": "ĐVKD",
+      "type": "select",
+      "width": 100,
+      "placeholder": "Tất cả",
+      "optionsProvider": "branchOptions"
+    },
+    {
+      "name": "flow",
+      "label": "Phân luồng",
+      "type": "select",
+      "width": 100,
+      "placeholder": "Tất cả",
+      "options": [
+        {
+          "value": "TT",
+          "label": "Tập trung"
+        },
+        {
+          "value": "GD_DVKD",
+          "label": "GĐ ĐVKD"
+        },
+        {
+          "value": "DVKD",
+          "label": "VH ĐVKD"
+        }
+      ]
+    },
+    {
+      "name": "processGroup",
+      "label": "Nhóm xử lý",
+      "type": "select",
+      "width": 100,
+      "placeholder": "Tất cả",
+      "optionsProvider": "processGroupOptions"
+    },
+    {
+      "name": "date",
+      "label": "Thời điểm",
+      "type": "daterange",
+      "width": 220,
+      "fromPlaceholder": "Từ ngày",
+      "toPlaceholder": "Đến ngày"
+    },
+    {
+      "name": "transactionType1",
+      "label": "Loại giao dịch cấp 1",
+      "type": "select",
+      "width": 160,
+      "placeholder": "Tất cả",
+      "optionsProvider": "transactionType1Options"
+    },
+    {
+      "name": "status",
+      "label": "Trạng thái",
+      "type": "select",
+      "width": 160,
+      "placeholder": "Tất cả",
+      "multiple": true,
+      "optionsProvider": "statusOptions",
+      "joinWith": ","
+    }
+  ],
+  "buttons": [
+    {
+      "text": "Khởi tạo",
+      "title": "Khởi tạo giao dịch giải ngân",
+      "iconClass": "fas fa-plus",
+      "className": "tr-btn-default",
+      "handler": "openCreatePopup",
+      "visibleKey": "create"
+    },
+    {
+      "text": "Tải xuống",
+      "title": "Export Excel",
+      "iconClass": "fas fa-file-download",
+      "className": "tr-btn-export",
+      "handler": "exportExcel",
+      "visibleKey": "exportData"
+    }
+  ],
+  "events": {
+    "onRowClick": "onRowClick",
+    "onDataLoaded": "onDataLoaded",
+    "onSearchChanged": "onSearchChanged"
+  }
+}

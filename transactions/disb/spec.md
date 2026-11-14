@@ -349,7 +349,7 @@ Theo logic BPM (`disb-sla.js`). BE trả sẵn hai mốc của từng hồ sơ: 
 | `startField` | (tuỳ chọn) Thời điểm bắt đầu task, chỉ dùng cho thanh tiến độ. |
 | `weekDays` | Tên 7 thứ theo thứ tự `Date.getDay()`, phần tử đầu là Chủ nhật: `["Sunday", "Monday", …, "Saturday"]`. Bắt buộc đủ 7 phần tử, sai thì cột SLA để trống và trang báo lỗi cấu hình. |
 | `workingHours` | Danh sách phiên làm việc: `{ "workday": "Monday", "startTime": "08:00", "endTime": "12:00" }`. `workday` phải trùng một tên trong `weekDays`. Một thứ có thể có nhiều phiên (sáng, chiều). Thứ không có phiên nào là ngày nghỉ. |
-| `holidays` | Danh sách ngày lễ: `{ "date": "2026-01-01", "desc": "Tết Dương lịch" }`. `date` dạng `yyyy-MM-dd`, `desc` chỉ để ghi chú. |
+| `holidays` | Danh sách ngày lễ: `{ "day": "2026-01-01", "description": "Tết Dương lịch" }`. Tên key trùng alias cột khi lấy từ SQL (không dùng `date`/`desc` vì là từ khoá SQL), nên gán thẳng kết quả query vào config, không cần đổi key. `day` nhận `yyyy-MM-dd`, ISO có múi giờ hoặc `DD/MM/YYYY`; `description` chỉ để ghi chú. |
 
 Dữ liệu mẫu trong config: Thứ 2–6 làm 08:00–12:00 và 13:00–17:30 (8,5 giờ), Thứ 7 làm 08:00–12:00, Chủ nhật nghỉ; 11 ngày lễ năm 2026. Danh sách ngày lễ là mẫu, cần đối chiếu thông báo nghỉ chính thức.
 

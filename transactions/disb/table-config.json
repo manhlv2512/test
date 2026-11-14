@@ -149,48 +149,48 @@
     ],
     "holidays": [
       {
-        "date": "2026-01-01",
-        "desc": "Tết Dương lịch"
+        "day": "2026-01-01",
+        "description": "Tết Dương lịch"
       },
       {
-        "date": "2026-02-16",
-        "desc": "Tết Nguyên đán"
+        "day": "2026-02-16",
+        "description": "Tết Nguyên đán"
       },
       {
-        "date": "2026-02-17",
-        "desc": "Tết Nguyên đán"
+        "day": "2026-02-17",
+        "description": "Tết Nguyên đán"
       },
       {
-        "date": "2026-02-18",
-        "desc": "Tết Nguyên đán"
+        "day": "2026-02-18",
+        "description": "Tết Nguyên đán"
       },
       {
-        "date": "2026-02-19",
-        "desc": "Tết Nguyên đán"
+        "day": "2026-02-19",
+        "description": "Tết Nguyên đán"
       },
       {
-        "date": "2026-02-20",
-        "desc": "Tết Nguyên đán"
+        "day": "2026-02-20",
+        "description": "Tết Nguyên đán"
       },
       {
-        "date": "2026-04-27",
-        "desc": "Giỗ Tổ Hùng Vương (nghỉ bù)"
+        "day": "2026-04-27",
+        "description": "Giỗ Tổ Hùng Vương (nghỉ bù)"
       },
       {
-        "date": "2026-04-30",
-        "desc": "Ngày Giải phóng miền Nam"
+        "day": "2026-04-30",
+        "description": "Ngày Giải phóng miền Nam"
       },
       {
-        "date": "2026-05-01",
-        "desc": "Quốc tế Lao động"
+        "day": "2026-05-01",
+        "description": "Quốc tế Lao động"
       },
       {
-        "date": "2026-09-01",
-        "desc": "Quốc khánh"
+        "day": "2026-09-01",
+        "description": "Quốc khánh"
       },
       {
-        "date": "2026-09-02",
-        "desc": "Quốc khánh"
+        "day": "2026-09-02",
+        "description": "Quốc khánh"
       }
     ]
   },
@@ -232,7 +232,8 @@
       "field": "_sla",
       "title": "SLA",
       "align": "center",
-      "renderer": "slaRenderer"
+      "renderer": "slaRenderer",
+      "className": "disb-col-fit"
     },
     {
       "field": "gntdCode",
@@ -242,7 +243,7 @@
     },
     {
       "field": "transactionType1Name",
-      "title": "Loại giao dịch / PDTD",
+      "title": "Thông tin giao dịch",
       "minWidth": 160,
       "renderer": "transactionRenderer"
     },
@@ -250,7 +251,7 @@
       "field": "amount",
       "title": "Số tiền",
       "align": "right",
-      "className1": "disb-col-fit",
+      "className": "disb-col-fit",
       "renderer": "amountRenderer"
     },
     {
@@ -274,7 +275,7 @@
     },
     {
       "field": "transactionFlowName",
-      "title": "Phân luồng / Nhóm xử lý",
+      "title": "Phân luồng xử lý",
       "className": "disb-col-fit",
       "renderer": "flowGroupRenderer"
     },
@@ -309,7 +310,7 @@
       "name": "branch",
       "label": "ĐVKD",
       "type": "select",
-      "width": 50,
+      "width": 100,
       "placeholder": "Tất cả",
       "optionsProvider": "branchOptions"
     },
@@ -317,7 +318,7 @@
       "name": "flow",
       "label": "Phân luồng",
       "type": "select",
-      "width": 50,
+      "width": 100,
       "placeholder": "Tất cả",
       "options": [
         {
@@ -338,7 +339,7 @@
       "name": "processGroup",
       "label": "Nhóm xử lý",
       "type": "select",
-      "width": 50,
+      "width": 100,
       "placeholder": "Tất cả",
       "optionsProvider": "processGroupOptions"
     },
@@ -354,7 +355,7 @@
       "name": "transactionType1",
       "label": "Loại giao dịch cấp 1",
       "type": "select",
-      "width": 140,
+      "width": 160,
       "placeholder": "Tất cả",
       "optionsProvider": "transactionType1Options"
     },
@@ -362,7 +363,7 @@
       "name": "status",
       "label": "Trạng thái",
       "type": "select",
-      "width": 170,
+      "width": 160,
       "placeholder": "Tất cả",
       "multiple": true,
       "optionsProvider": "statusOptions",
