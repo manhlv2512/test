@@ -1,0 +1,107 @@
+[
+  {
+    "key": "stt",
+    "value": "STT",
+    "align": "center",
+    "width": 7,
+    "fillColor": null
+  },
+  {
+    "key": "gntdCode",
+    "value": "Mã GNTD",
+    "align": "left",
+    "width": 23,
+    "fillColor": null
+  },
+  {
+    "key": "pdtdCode",
+    "value": "Mã PDTD",
+    "align": "left",
+    "width": 22,
+    "fillColor": null
+  },
+  {
+    "key": "transactionType1Name",
+    "value": "Loại giao dịch cấp 1",
+    "align": "left",
+    "width": 28,
+    "fillColor": null
+  },
+  {
+    "key": "transactionFlowName",
+    "value": "Phân luồng",
+    "align": "left",
+    "width": 14,
+    "fillColor": null
+  },
+  {
+    "key": "branchCode",
+    "value": "ĐVKD",
+    "align": "center",
+    "width": 10,
+    "fillColor": null
+  },
+  {
+    "key": "customerCode",
+    "value": "Mã khách hàng",
+    "align": "left",
+    "width": 18,
+    "fillColor": null
+  },
+  {
+    "key": "customerName",
+    "value": "Tên khách hàng",
+    "align": "left",
+    "width": 30,
+    "fillColor": null
+  },
+  {
+    "key": "statusName",
+    "value": "Trạng thái",
+    "align": "left",
+    "width": 35,
+    "fillColor": null
+  },
+  {
+    "key": "processGroup",
+    "value": "Nhóm xử lý",
+    "align": "center",
+    "width": 14,
+    "fillColor": null
+  },
+  {
+    "key": "assignUser",
+    "value": "User phân công",
+    "align": "center",
+    "width": 18,
+    "fillColor": null
+  },
+  {
+    "key": "processUser",
+    "value": "User xử lý",
+    "align": "center",
+    "width": 14,
+    "fillColor": null
+  },
+  {
+    "key": "lockUser",
+    "value": "User lock",
+    "align": "center",
+    "width": 14,
+    "fillColor": null
+  },
+  {
+    "key": "taskStartTime",
+    "value": "Thời điểm tiếp nhận",
+    "align": "center",
+    "width": 23,
+    "fillColor": null
+  },
+  {
+    "key": "redFlagDate",
+    "value": "Thời hạn xử lý (SLA)",
+    "align": "center",
+    "width": 23,
+    "fillColor": null
+  }
+]
