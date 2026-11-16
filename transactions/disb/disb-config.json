@@ -193,7 +193,7 @@
       "name": "keyword",
       "label": "Từ khoá",
       "type": "text",
-      "width": 200,
+      "width": 220,
       "placeholder": "GNTD, PDTD, mã/tên KH, user xử lý"
     },
     {
@@ -265,7 +265,7 @@
       "text": "Khởi tạo",
       "title": "Khởi tạo giao dịch giải ngân",
       "iconClass": "fas fa-plus",
-      "className": "tr-btn-default",
+      "className": "tr-btn-primary",
       "handler": "openCreatePopup",
       "visibleKey": "create"
     },
