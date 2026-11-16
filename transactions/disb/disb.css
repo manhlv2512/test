@@ -58,12 +58,9 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Cả ô Mã GNTD bấm được để mở chi tiết (không chỉ dòng chữ link) */
-#tableContainer td.disb-col-gntd {
-  cursor: pointer;
-}
-
-#tableContainer td.disb-col-gntd:hover .disb-detail-link {
+/* Chỉ link Mã GNTD bấm được để mở chi tiết; hover gạch chân cho rõ là link
+   (ghi đè text-decoration: none của .tr-transaction-link trong table.css) */
+#tableContainer .disb-detail-link:hover {
   color: var(--purple-dark);
   text-decoration: underline;
 }
@@ -105,7 +102,7 @@
 /* ---- Trạng thái: badge viền + nền theo dải màu (config "statusBadge.tones") ----
    Bo góc 4px (không bo tròn) để tên trạng thái dài xuống 2 dòng vẫn đẹp.
    Tương phản chữ/nền: default 11.7, tím 8.6, xanh 5.8, cam 6.1, đỏ 6.6 (:1). */
-.disb-status {
+/* .disb-status {
   display: inline-block;
   max-width: 100%;
   padding: 2px 8px;
@@ -145,6 +142,43 @@
   border-color: #efb0b0;
   background: #fdecec;
   color: #a61b1b;
+} */
+
+.disb-status {
+  display: inline-block;
+  max-width: 100%;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 17px;
+  text-align: left;
+}
+
+.disb-status-default {
+  border: 1px solid;
+  border-color: #c3bacb;
+  background: #ffffff;
+  color: #3d3546;
+}
+
+.disb-status-purple {
+  color: var(--white-color);
+  background: var(--purple-color);
+}
+
+.disb-status-green {
+  color: var(--white-color);
+  background: var(--badge-success-bg);
+}
+
+.disb-status-orange {
+  color: var(--white-color);
+  background: var(--badge-warning-bg);
+}
+
+.disb-status-red {
+  color: var(--white-color);
+  background: var(--badge-danger-bg);
 }
 
 /* ---- Form tìm kiếm: 7 điều kiện trên 1 hàng ----
