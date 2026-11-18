@@ -131,7 +131,7 @@ Danh sách ĐVKD của user hiện tại bị giới hạn theo phân quyền, �
 |-----|-------|---------|
 | STT | `_stt` | `sttRenderer`, tính theo `(page - 1) * pageSize + index + 1` |
 | SLA | `_sla` | tính ở client (mục 6.3), `slaRenderer` hiển thị trạng thái hạn xử lý. **Sortable** theo hạn xử lý (mục 6.1.1). |
-| Mã GNTD | `gntdCode`, `lockUser` | `gntdRenderer`: dòng 1 Mã GNTD (link tím); dòng 2 chip 🔒 user đang claim xử lý hồ sơ (ẩn nếu chưa ai claim). Bấm **bất kỳ đâu trong ô** để mở chi tiết (`className: disb-col-gntd`). |
+| Mã GNTD | `gntdCode`, `lockUser` | `gntdRenderer`: dòng 1 Mã GNTD (link tím); dòng 2 chip 🔒 user đang claim xử lý hồ sơ (ẩn nếu chưa ai claim). Chỉ bấm vào **link Mã GNTD** mới mở chi tiết; bấm liên tục chỉ mở 1 lần. |
 | Loại giao dịch / PDTD | `transactionType1Name`, `pdtdCode` | `transactionRenderer`: dòng 1 loại giao dịch cấp 1, dòng 2 tag `PDTD` + mã (đậm). |
 | Số tiền | `amount`, `currency` | `amountRenderer`: số tiền (chữ thường, `vi-VN`: `1.500.000.000`) + tag loại tiền; căn phải. Chỉ hiện với loại giao dịch trong `amountDisplay.types` (mục 6.1.2), loại khác để trống. |
 | ĐVKD | `branchCode` | căn giữa |
@@ -149,7 +149,9 @@ Nguyên tắc gộp cột:
 - **Không gộp** User xử lý và User phân công vì khác ý nghĩa nghiệp vụ.
 - Dòng phụ hoặc chip trống thì không hiển thị.
 - Export (`getAllData`) vẫn xuất đủ từng field riêng.
-- Mã GNTD dùng renderer riêng; click trong ô `td.disb-col-gntd` bắt bằng event delegation trên container, tra dòng theo `data-index` của link trong ô. Đang bôi đen chữ (để copy mã) thì không mở chi tiết. Hover ô thì link gạch chân, con trỏ dạng bàn tay.
+- Mã GNTD dùng renderer riêng (`gntdRenderer`). Link có `onclick` inline gọi hàm global `disbOpenDetail(event, index)`, chỉ truyền số thứ tự dòng (không ghi dữ liệu dòng vào HTML); hàm lấy dòng từ `table.currentData[index]`. Chỉ link bấm được, chip lock và khoảng trống trong ô thì không. Hover link thì gạch chân.
+- Chặn bấm trùng: sau mỗi lần mở chi tiết, mọi click Mã GNTD trong `DISB_CONSTANTS.DETAIL_CLICK_LOCK_MS` (mặc định 1000 ms, `constants.js`) bị bỏ qua, nên double-click hay bấm dồn chỉ mở 1 lần. Khoá áp dụng chung cho mọi dòng.
+- Lưu ý môi trường: nếu trang chạy dưới CSP chặn inline event handler (kể cả khi script trang được phép theo nonce), link sẽ không mở chi tiết. Khi đó chuyển sang gắn click bằng JS sau khi render.
 
 Hiển thị cho màn hình 19.5" (1366×768 / 1600×900):
 

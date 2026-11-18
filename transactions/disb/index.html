@@ -641,18 +641,24 @@
             DisbUtil.escapeHtml(text) + "</span></div>";
     }
 
-    /* Click bất kỳ đâu trong ô Mã GNTD (link, chip lock, khoảng trống) => mở chi tiết.
-       Tra dòng theo data-index của link trong ô (index trên trang hiện tại). */
-    tableContainer.addEventListener("click", function (event) {
-        var cell = event.target.closest ? event.target.closest("td.disb-col-gntd") : null;
-        var link = cell ? cell.querySelector(".disb-detail-link") : null;
-        if (!link || !table) { return; }
-        event.preventDefault(); /* link href="#" không nhảy lên đầu trang */
-        /* Đang bôi đen để copy mã thì không mở chi tiết */
-        if (window.getSelection && String(window.getSelection()).length) { return; }
-        var row = (table.currentData || [])[parseInt(link.getAttribute("data-index"), 10)];
-        if (row) { openDetail(row); }
-    });
+    /* Bấm link Mã GNTD: onclick inline trong gntdRenderer gọi hàm này với số thứ tự dòng trên
+       trang hiện tại (js-table render lại body mỗi khi dữ liệu đổi, nên index luôn khớp currentData).
+       Chỉ link bấm được, chip lock và khoảng trống trong ô thì không.
+       Bấm liên tục (double-click, bấm dồn) chỉ mở 1 lần: sau mỗi lần mở, bỏ qua mọi click
+       Mã GNTD trong DISB_CONSTANTS.DETAIL_CLICK_LOCK_MS (áp dụng chung cho mọi dòng).
+       Gán vào window vì onclick inline chỉ gọi được hàm global. */
+    var detailTimeLock = 0;
+    var detailMsTimeLock = DISB_CONSTANTS.DETAIL_CLICK_LOCK_MS || 1000;
+    window.onclickTransaction = function (event, index) {
+        if (event && event.preventDefault) { event.preventDefault(); } /* href="#" không nhảy lên đầu trang */
+        var row = table && table.currentData ? table.currentData[index] : null;
+        var t = new Date().getTime();
+        if (row && t >= detailTimeLock) {
+            detailTimeLock = t + detailMsTimeLock;
+            openDetail(row);
+        }
+        return false;
+    };
 
     /* ---------------- Kiểm tra tên field SP trả về ----------------
        SP đặt sai alias (vd TRANSACTIONTYPE1NAME thay vì TRANSACTION_TYPE1_NAME) thì sau toCamel
@@ -868,13 +874,15 @@
                                 "<span class='disb-sla-bar'><span style='width:" + pct + "%'></span></span>" +
                                 "</div>";
                         },
-                        /* Mã GNTD (link mở chi tiết) + user đang claim xử lý (lockUser) */
+                        /* Mã GNTD (link mở chi tiết) + user đang claim xử lý (lockUser).
+                           onclick chỉ chứa số thứ tự dòng (ép kiểu số), không chứa dữ liệu dòng. */
                         gntdRenderer: function (value, row, index) {
                             return "<div class='disb-cell'>" +
                                 "<a href='#' class='tr-action-link tr-transaction-link disb-detail-link'" +
-                                " data-index='" + index + "' title='Xem chi tiết giao dịch'>" +
+                                " onclick='return onclickTransaction(event, " + (index | 0) + ")'" +
+                                " title='Xem chi tiết giao dịch'>" +
                                 DisbUtil.escapeHtml(row.gntdCode) + "</a>" +
-                                chip("lock", "fa-lock", row.lockUser, "Đang claim xử lý: " + row.lockUser) +
+                                chip("lock", "fa-lock", row.lockUser, "Đang xử lý bởi: " + row.lockUser) +
                                 "</div>";
                         },
                         /* Loại giao dịch cấp 1 / Mã PDTD */

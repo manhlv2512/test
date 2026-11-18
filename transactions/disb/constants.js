@@ -11,6 +11,8 @@ var DISB_CONSTANTS = {
         FORBIDDEN_BRANCH: "DISB_403"
     },
     CONFIG_URL: "table-config.json",
+    /* Bấm Mã GNTD: sau mỗi lần mở chi tiết, bỏ qua mọi click Mã GNTD tiếp theo trong khoảng này (ms) */
+    DETAIL_CLICK_LOCK_MS: 1000,
     MESSAGES: {
         NO_DETAIL_URL: "Chưa cấu hình link chi tiết",
         NO_CREATE_TYPES: "Không có loại giao dịch khả dụng",
