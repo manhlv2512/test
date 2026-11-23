@@ -22,36 +22,19 @@
     "codeField": "status",
     "defaultTone": "default",
     "tones": {
-      "GNCN_KHOI_TAO": "default",
-      "GNCN_HUY": "default",
-      "GNCN_CHO_XU_LY": "orange",
-      "GNCN_CHO_BO_SUNG": "orange",
-      "GNCN_DA_PHE_DUYET": "purple",
-      "GNCN_LOI_HACH_TOAN_HAN_MUC": "red",
-      "GNCN_LOI_HACH_TOAN_KHOAN_VAY": "red",
-      "GNCN_LOI_HACH_TOAN_THAU_CHI": "red",
-      "GNCN_LOI_CHUYEN_TIEN": "red",
-      "GNCN_HOAN_TAT_KHOAN_VAY": "purple",
-      "GNCN_HOAN_THANH": "green"
+      "CHUA_HAU_KIEM": "default",
+      "CHO_BO_SUNG": "orange",
+      "CHO_XU_LY": "orange",
+      "HOAN_THANH": "green"
     }
   },
   "sla": {
     "statusField": "status",
     "activeStates": [
-      "GNCN_CHO_XU_LY"
+      "CHUA_HAU_KIEM", "CHO_XU_LY", "CHO_BO_SUNG"
     ],
-    "yellowField": "yellowFlagDate",
-    "redField": "redFlagDate",
-    "startField": "taskStartTime",
-    "weekDays": [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday"
-    ]
+    "dueField": "paExpiryDate",
+    "yellowDays": 3
   },
   "sort": {
     "field": "taskStartTime",
@@ -92,7 +75,7 @@
       "title": "SLA",
       "align": "center",
       "renderer": "slaRenderer",
-      "className": "disb-col-fit"
+      "className": "disb-col-fit hk-col-sla"
     },
     {
       "type": "actions",
@@ -130,7 +113,14 @@
       "renderer": "customerRenderer"
     },
     {
-      "field": "taskStartTime",
+      "field": "statusName",
+      "title": "Trạng thái",
+      "minWidth": 140,
+      "maxWidth": 220,
+      "renderer": "statusRenderer"
+    },
+    {
+      "field": "paExpiryDate",
       "title": "Thời điểm hậu kiểm",
       "width": 110,
       "align": "center",
@@ -145,13 +135,6 @@
       "field": "processUser",
       "title": "User xử lý",
       "className": "disb-col-fit"
-    },
-    {
-      "field": "statusName",
-      "title": "Trạng thái",
-      "minWidth": 140,
-      "maxWidth": 220,
-      "renderer": "statusRenderer"
     },
     {
       "field": "taskStartTime",

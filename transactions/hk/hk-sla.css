@@ -1,0 +1,54 @@
+/* SLA màn hậu kiểm (transactions/hk), tách riêng với SLA màn giải ngân (.disb-sla-* trong disb.css).
+   Nạp sau js-table/dist/table.min.css: dùng biến --white-color, --badge-*-bg của table.css.
+   Nhãn bo tròn chữ trắng, nền cùng màu badge trạng thái, cùng kích thước với .disb-status:
+     .hk-sla-ok       còn hạn       xanh lá (--badge-success-bg)
+     .hk-sla-warning  sắp đến hạn   cam     (--badge-warning-bg)
+     .hk-sla-overdue  quá hạn       đỏ      (--badge-danger-bg)
+   Nhãn là block nên chiếm hết độ rộng ô: các nhãn trong cột rộng bằng nhau. */
+
+/* Cột SLA co vừa nhãn (config: className "hk-col-sla" của cột _sla).
+   width 1% => trình duyệt co cột về độ rộng nhỏ nhất vừa nội dung; nhãn nowrap nên không xuống dòng.
+   Không phụ thuộc id container như rule #tableContainer .disb-col-fit của disb.css. */
+.tr-th.hk-col-sla,
+.tr-td.hk-col-sla {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* min-width = nhãn dài nhất thường gặp ("Hạn hôm nay" 106px; "Còn 4 ngày" chỉ 96px), để cột giữ
+   một độ rộng (130px gồm padding ô) khi chuyển trang. Chỉ "Quá 100 ngày" trở lên mới rộng thêm vài px. */
+.hk-sla {
+  box-sizing: border-box;
+  min-width: 106px;
+  display: block;
+  overflow: hidden;
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: var(--white-color);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 17px;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+
+.hk-sla .fas {
+  width: 14px;
+  margin-right: 4px;
+  font-size: 11px;
+  text-align: center;
+}
+
+.hk-sla-ok {
+  background: var(--badge-success-bg);
+}
+
+.hk-sla-warning {
+  background: var(--badge-warning-bg);
+}
+
+.hk-sla-overdue {
+  background: var(--badge-danger-bg);
+}

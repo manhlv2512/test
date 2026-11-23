@@ -911,11 +911,17 @@
                                 DisbUtil.escapeHtml(value) + "</span>";
                         },
                         /* Khách hàng: tên KH / [MÃ KH] mã */
-                        customerRenderer: function (value, row) {
+                        customerRenderer1: function (value, row) {
                             return "<div class='disb-cell'>" +
                                 (isBlank(row.customerName) ? "" : "<div class='disb-cell-text'>" + DisbUtil.escapeHtml(row.customerName) + "</div>") +
                                 metaLine("Mã KH", row.customerCode) +
                                 "</div>";
+                        },
+                        customerRenderer: function (value, row) {
+                            return "<div class='disb-cell'>"
+                                + "<div class='disb-cell-text disb-meta-value'>" + DisbUtil.escapeHtml(row.customerCode) + "</div>"
+                                + "<div class='disb-cell-text'>" + DisbUtil.escapeHtml(row.customerName) + "</div>"
+                                + "</div>";
                         },
                         /* Thời điểm: ngày / giờ hai dòng cho cột hẹp */
                         dateTimeRenderer: function (value) {

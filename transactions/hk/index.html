@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Danh sách giao dịch giải ngân</title>
+    <title>Danh sách giao dịch hậu kiểm giải ngân</title>
     <link rel="stylesheet" href="../../js-table/libs/font-awesome-5/css/all.min.css">
     <link rel="stylesheet" href="../../js-table/libs/jquery-ui/jquery-ui.min.css">
     <link rel="stylesheet" href="../../js-table/libs/select2/select2.min.css">
-    <link rel="stylesheet" href="../../js-table/libs/sweetalerts/sweetalert2.min.css">
     <link rel="stylesheet" href="../../js-table/dist/table.min.css">
-    <!-- Style màn hình giải ngân; nạp sau table.min.css. Bản build: dist/disb.min.css -->
+    <!-- Style dùng chung với màn giải ngân; nạp sau table.min.css. Bản build: ../disb/dist/disb.min.css -->
     <link rel="stylesheet" href="../disb/disb.css">
+    <!-- SLA riêng của màn hậu kiểm (class .hk-sla-*) -->
+    <link rel="stylesheet" href="hk-sla.css">
     <!-- Chỉ dùng cho trang demo local -->
     <style>
         body {
@@ -46,19 +47,17 @@
     </style>
 </head>
 <body>
-    <div id="tableContainer"></div>
+    <div id="tableContainer1"></div>
     <div class="page-log" id="log"></div>
 
     <script src="../../js-table/libs/jquery-3.6.0.min.js"></script>
     <script src="../../js-table/libs/jquery-ui/jquery-ui.min.js"></script>
     <script src="../../js-table/libs/select2/select2.min.js"></script>
-    <script src="../../js-table/libs/sweetalerts/sweetalert2.all.min.js"></script>
     <script src="../../js-table/dist/table.min.js"></script>
     <script src="../../js-table/libs/moment-with-locales.min.js"></script>
     <script src="../disb/date-util.js"></script>
     <script src="../disb/constants.js"></script>
     <script src="../disb/disb-util.js"></script>
-    <script src="../disb/disb-sla.js"></script>
     <script>
     /* ---------------- Logging ---------------- */
     var logEl = document.getElementById("log");
@@ -73,33 +72,28 @@
         return s;
     }
 
-    function filterArray(arr, predicate) {
-        var out = [], i;
-        for (i = 0; i < arr.length; i++) {
-            if (predicate(arr[i])) { out.push(arr[i]); }
-        }
-        return out;
-    }
-
     /* ============================================================
        CẤU HÌNH DEMO: sửa các giá trị dưới đây rồi F5
     ============================================================ */
     var DEMO_CONFIG = {
-        rows: 10000,           /* số hồ sơ mock; URL ?rows=5000 ghi đè giá trị này */
-        seed: 2026,              /* giữ nguyên seed thì F5 vẫn ra cùng bộ dữ liệu; đổi số để ra bộ khác */
-        gapMinutes: 10,          /* hồ sơ sau được tạo sớm hơn hồ sơ trước 10 phút (mới nhất ở đầu) */
-        maxTransferMinutes: 120, /* taskStartTime = createdAt + ngẫu nhiên 0..120 phút (không quá hiện tại) */
-        pendingRatio: 0.5,       /* tỷ lệ hồ sơ ở trạng thái tính SLA (sla.activeStates, vd Chờ xử lý) */
-        yellowMinutes: 60,       /* yellowFlagDate = taskStartTime + 60 phút */
-        redMinutes: 90,          /* redFlagDate    = taskStartTime + 90 phút */
-        workingTime: true,       /* true: cộng theo giờ làm việc (sla.workingHours, holidays); false: cộng thẳng */
-        /* Số tiền mock theo loại giao dịch cấp 1, khoảng [min, max] triệu đồng; loại khác không có số tiền */
+        rows: 10000,             /* số hồ sơ mock; URL ?rows=5000 ghi đè giá trị này */
+        seed: 2027,              /* giữ nguyên seed thì F5 vẫn ra cùng bộ dữ liệu; đổi số để ra bộ khác */
+        gapMinutes: 10,          /* CREATED_DATE: hồ sơ sau được tạo sớm hơn hồ sơ trước 10 phút (mới nhất ở đầu) */
+        maxSubmitMinutes: 120,   /* SUBMIT_DATE (thời điểm tiếp nhận) = CREATED_DATE + ngẫu nhiên 0..120 phút, không quá hiện tại */
+        /* PA_EXPIRY_DATE (thời điểm hậu kiểm) = ngày tạo + ngẫu nhiên [min, max] ngày (âm: hồ sơ về đã quá hạn),
+           để trang đầu có đủ cờ SLA xanh/vàng/đỏ */
+        paExpiryDays: [-3, 7],
+        /* Tỷ lệ PA_STATUS theo trọng số (không cần tổng = 100; 0 = không sinh trạng thái đó) */
+        statusWeights: { CHUA_HAU_KIEM: 35, CHO_XU_LY: 30, CHO_BO_SUNG: 15, HOAN_THANH: 20 },
+        /* Trạng thái chưa tiếp nhận: SUBMIT_DATE, USER_PA, UPDATED_BY/UPDATED_DATE để null
+           (SP sort "taskStartTime" theo NVL(SUBMIT_DATE, CREATED_DATE)) */
+        unsubmittedStates: ["CHUA_HAU_KIEM"],
+        /* AMOUNT (VND) theo loại giao dịch cấp 1, khoảng [min, max] triệu đồng; loại khác để null */
         amountRanges: {
             Giaingankhoanvay: [50, 5000],
             Giainganthauchi: [10, 500],
             Khoitaohanmuc: [500, 20000]
         },
-        usdRatio: 0.1,           /* tỷ lệ hồ sơ có loại tiền USD, còn lại VND */
         nameWords: [3, 5]        /* tên KH tiếng Việt ngẫu nhiên từ 3 đến 5 chữ (họ + đệm + tên) */
     };
 
@@ -114,20 +108,19 @@
         { code: "Khac", name: "Khác" },
     ];
     var STATES = [
-        { code: "GNCN_KHOI_TAO", name: "GN - Khởi tạo" },
-        { code: "GNCN_HUY", name: "GN - Hủy giao dịch" },
-        { code: "GNCN_CHO_XU_LY", name: "GN - Chờ xử lý" },
-        { code: "GNCN_CHO_BO_SUNG", name: "GN - Chờ bổ sung" },
-        { code: "GNCN_DA_PHE_DUYET", name: "GN - Đã phê duyệt" },
-        { code: "GNCN_LOI_HACH_TOAN_HAN_MUC", name: "GN - Lỗi hạch toán hạn mức" },
-        { code: "GNCN_LOI_HACH_TOAN_KHOAN_VAY", name: "GN - Lỗi hạch toán khoản vay" },
-        { code: "GNCN_LOI_HACH_TOAN_THAU_CHI", name: "GN - Lỗi hạch toán thấu chi" },
-        { code: "GNCN_LOI_CHUYEN_TIEN", name: "GN - Lỗi chuyển tiền" },
-        { code: "GNCN_HOAN_TAT_KHOAN_VAY", name: "GN - Hạch toán khoản vay thành công" },
-        { code: "GNCN_HOAN_THANH", name: "GN - Hoàn thành" }
+        { code: "CHUA_HAU_KIEM", name: "HK - Chưa hậu kiểm" },
+        { code: "CHO_XU_LY", name: "HK - Chờ xử lý" },
+        { code: "CHO_BO_SUNG", name: "HK - Chờ bổ sung" },
+        { code: "HOAN_THANH", name: "HK- Hoàn thành" }
     ];
-    /* Trạng thái kết thúc (như C_FINISHED_STATUS trong SP): không còn ai claim xử lý */
-    var FINISHED_STATES = ["GNCN_HUY", "GNCN_HOAN_THANH"];
+    /* Luồng giao dịch (TRANSACTION_FLOW, tên lấy từ GNCN_CONFIG_COMMONS scope TRAN_FLOW) */
+    var FLOWS = [
+        { code: "TT", name: "Tập trung" },
+        { code: "GD_DVKD", name: "GĐ ĐVKD" },
+        { code: "DVKD", name: "VH ĐVKD" }
+    ];
+    var GROUPS = ["RB.TINH", "RB.HCM", "RB.HN", "DS.HN"];   /* GROUP_PROCESS: nhóm xử lý */
+    var GN_APPROVERS = ["ngocnt5", "ducvm7", "lanpth2"];   /* GN_APPROVAL_BY: người duyệt giải ngân */
     var BRANCH_CODES = ["441", "360", "310", "520", "274", "810"];
     var USERS = ["LoanTT3", "HongHTD", "GiangNT6", "ThanhHM2", "ThuyNT66", "OanhNTK4"];
 
@@ -175,12 +168,15 @@
         };
     }
 
-    /* Sinh dữ liệu mock. Gọi sau khi tải config vì cờ SLA cần sla.workingHours/holidays. */
-    var DATASET = [];
-    function buildDataset(slaCfg) {
+    /* Bảng mock HKCN_TRANSACTION: mỗi phần tử là một dòng, key = tên cột trong bảng,
+       cột DATE lưu số ms (giờ local). Chỉ SP mock bên dưới đọc bảng này. */
+    var HKCN_TRANSACTION = [];
+    function buildDataset() {
         var t0 = now();
         var rnd = makeRandom(DEMO_CONFIG.seed);
         function pick(list) { return list[Math.floor(rnd() * list.length)]; }
+        /* Số nguyên ngẫu nhiên đều trong [min, max] */
+        function randInt(min, max) { return min + Math.floor(rnd() * (max - min + 1)); }
 
         /* Tên KH tiếng Việt, số chữ ngẫu nhiên đều trong DEMO_CONFIG.nameWords [min, max], cùng giới tính:
              3 chữ: HỌ + ĐỆM + TÊN                 (HỒ SỸ THẮNG)
@@ -207,100 +203,220 @@
             return parts.join(" ");
         }
 
-        /* Trạng thái tính SLA lấy theo sla.activeStates để mock và cột SLA luôn khớp nhau.
-           activeStates rỗng = mọi trạng thái đều tính SLA (giống DisbSla). */
-        var activeCodes = (slaCfg && slaCfg.activeStates) || [];
-        var pending = [], others = [], k;
+        /* PA_STATUS theo trọng số DEMO_CONFIG.statusWeights */
+        var weights = [], totalWeight = 0, k;
         for (k = 0; k < STATES.length; k++) {
-            (activeCodes.indexOf(STATES[k].code) !== -1 ? pending : others).push(STATES[k]);
+            weights.push(Math.max(0, Number(DEMO_CONFIG.statusWeights[STATES[k].code]) || 0));
+            totalWeight += weights[k];
         }
-        function pickState() {
-            return pending.length && (!others.length || rnd() < DEMO_CONFIG.pendingRatio)
-                ? pick(pending) : pick(others);
-        }
-        function hasSla(code) {
-            return !activeCodes.length || activeCodes.indexOf(code) !== -1;
-        }
-        function addMinutes(ms, minutes) {
-            return DEMO_CONFIG.workingTime
-                ? DisbSla.addWorkMinutes(ms, minutes, slaCfg)
-                : ms + minutes * 60000;
-        }
-        /* Số tiền mock: loại có trong DEMO_CONFIG.amountRanges; ~usdRatio là USD (quy đổi 1 triệu đồng ≈ 40 USD) */
-        function mockMoney(typeCode) {
-            var range = DEMO_CONFIG.amountRanges[typeCode];
-            if (!range) { return null; }
-            var millions = range[0] + rnd() * (range[1] - range[0]);
-            if (rnd() < DEMO_CONFIG.usdRatio) {
-                return { amount: Math.round(millions * 40 * 100) / 100, currency: "USD" };
+        function pickStatus() {
+            var x = rnd() * totalWeight, j;
+            for (j = 0; j < STATES.length; j++) {
+                x -= weights[j];
+                if (x < 0) { return STATES[j].code; }
             }
-            return { amount: Math.round(millions) * 1000000, currency: "VND" };
+            return pick(STATES).code;   /* mọi trọng số = 0: chọn đều */
         }
 
         var rows = new Array(ROW_COUNT), base = new Date().getTime(), i;
         for (i = 1; i <= ROW_COUNT; i++) {
-            var type = TYPE_CODES[i % TYPE_CODES.length];
-            var state = pickState();
+            var type = TYPE_CODES[i % TYPE_CODES.length].code;
+            var status = pickStatus();
             var branch = BRANCH_CODES[i % BRANCH_CODES.length];
             var user = USERS[i % USERS.length];
-            var createdMs = base - i * DEMO_CONFIG.gapMinutes * 60000;
-            /* Thời điểm chuyển xử lý task: ngẫu nhiên đều trong [lúc tạo, min(lúc tạo + maxTransferMinutes, hiện tại)].
-               Hồ sơ đang Khởi tạo chưa chuyển xử lý => lấy lúc tạo (như SP: NVL(PROCESSING_DATE, CREATED_DATE)). */
-            var maxTransfer = Math.min(DEMO_CONFIG.maxTransferMinutes, Math.floor((base - createdMs) / 60000));
-            var startMs = state.code === "GNCN_KHOI_TAO" ? createdMs
-                : createdMs + Math.floor(rnd() * (maxTransfer + 1)) * 60000;
-            var sla = hasSla(state.code);
-            var yellowMs = sla ? addMinutes(startMs, DEMO_CONFIG.yellowMinutes) : null;
-            var redMs = sla ? addMinutes(startMs, DEMO_CONFIG.redMinutes) : null;
-            var money = mockMoney(type.code);
-            rows[i - 1] = ({
-                id: i,
-                gntdCode: "GNCN" + branch + "26" + pad(i % 12 + 1) + pad(i % 28 + 1) + pad(i % 1000, 3),
-                pdtdCode: i % 4 === 0 ? "PD" + pad(i * 13 % 100000000, 8) : pad(i * 13 % 10000000, 7),
-                transactionType1: type.code,
-                transactionType1Name: type.name,
-                amount: money ? money.amount : null,
-                currency: money ? money.currency : null,
-                branchCode: branch,
-                customerCode: pad(i * 7919 % 100000000, 8),
-                customerName: mockName(),
-                status: state.code,
-                statusName: state.name,
-                createdBy: pick(USERS),          /* ngẫu nhiên, có thể khác processUser */
-                processUser: user,
-                assignUser: user.toLowerCase(),
-                /* User đang claim xử lý: chỉ hồ sơ chưa kết thúc, ~30% có người claim */
-                lockUser: FINISHED_STATES.indexOf(state.code) === -1 && rnd() < 0.3 ? pick(USERS).toLowerCase() : "",
-                /* Cờ SLA (BE trả): chỉ trạng thái tính SLA; vàng/đỏ = taskStartTime + yellowMinutes/redMinutes */
-                yellowFlagDate: yellowMs === null ? null : DateUtil.toServer(yellowMs),
-                redFlagDate: redMs === null ? null : DateUtil.toServer(redMs),
-                taskStartTime: DateUtil.toServer(startMs),
-                createdAt: DateUtil.toServer(createdMs)
+            var amountRange = DEMO_CONFIG.amountRanges[type];
+            var created = base - i * DEMO_CONFIG.gapMinutes * 60000;
+            var createdDay = new Date(created);
+            /* Đã tiếp nhận: SUBMIT_DATE ngẫu nhiên trong [lúc tạo, min(lúc tạo + maxSubmitMinutes, hiện tại)],
+               cập nhật lần cuối 0..maxSubmitMinutes phút sau đó (không quá hiện tại) */
+            var submitted = DEMO_CONFIG.unsubmittedStates.indexOf(status) === -1;
+            var maxSubmit = Math.min(DEMO_CONFIG.maxSubmitMinutes, Math.floor((base - created) / 60000));
+            var submit = submitted ? created + randInt(0, maxSubmit) * 60000 : null;
+            rows[i - 1] = {
+                ID: i,
+                GNTD_CODE: "GNCN" + branch + "26" + pad(i % 12 + 1) + pad(i % 28 + 1) + pad(i % 1000, 3),
+                PDTD_CODE: i % 4 === 0 ? "PD" + pad(i * 13 % 100000000, 8) : pad(i * 13 % 10000000, 7),
+                BRANCH_CODE: branch,
+                TRANSACTION_FLOW: pick(FLOWS).code,
+                TRANS_LEVEL_CODE_1: type,
+                TRANSACTION_TYPE2: null,
+                TRANSACTION_TYPE3: null,
+                CUSTOMER_CODE: pad(i * 7919 % 100000000, 8),
+                CUSTOMER_NAME: mockName(),
+                AMOUNT: amountRange ? randInt(amountRange[0], amountRange[1]) * 1000000 : null,
+                PA_STATUS: status,
+                USER_PA: submitted ? user : null,
+                USER_ASSIGN: user.toLowerCase(),
+                GROUP_PROCESS: pick(GROUPS),
+                /* Hạn hậu kiểm: 00:00 của ngày tạo + paExpiryDays */
+                PA_EXPIRY_DATE: new Date(createdDay.getFullYear(), createdDay.getMonth(), createdDay.getDate() +
+                    randInt(DEMO_CONFIG.paExpiryDays[0], DEMO_CONFIG.paExpiryDays[1])).getTime(),
+                /* Giao dịch được duyệt giải ngân 5..120 phút trước khi sang hậu kiểm */
+                GN_APPROVAL_BY: pick(GN_APPROVERS),
+                GN_APPROVAL_DATE: created - randInt(5, 120) * 60000,
+                CREATED_DATE: created,
+                UPDATED_BY: submitted ? user : null,
+                UPDATED_DATE: submitted ? Math.min(base, submit + randInt(0, DEMO_CONFIG.maxSubmitMinutes) * 60000) : null,
+                SUBMIT_DATE: submit
+            };
+        }
+        HKCN_TRANSACTION = rows;
+        PERF.genMs = now() - t0;
+        log("Mock HKCN_TRANSACTION: " + ROW_COUNT.toLocaleString() + " rows, generated in " +
+            Math.round(PERF.genMs) + " ms");
+    }
+
+    /* ============================================================
+       Mock SP_GET_HK_TRANSACTION_PAGING trên bảng HKCN_TRANSACTION.
+       Làm theo đúng thứ tự trong SP: đọc JSON -> WHERE -> COUNT (P_TOTAL) -> ORDER BY -> OFFSET/FETCH,
+       rồi SELECT các cột của trang với alias và định dạng ngày như SP. Sửa SP thì sửa theo ở đây.
+    ============================================================ */
+    /* Field sort SP chấp nhận; giá trị khác về createdDate */
+    var SP_SORT_FIELDS = ["createdDate", "taskStartTime", "_sla"];
+
+    /* LEFT JOIN danh mục: { mã: tên }, không có mã thì tên = null */
+    function nameMap(list) {
+        var map = {}, i;
+        for (i = 0; i < list.length; i++) { map[list[i].code] = list[i].name; }
+        return map;
+    }
+    var TYPE_NAMES = nameMap(TYPE_CODES), STATUS_NAMES = nameMap(STATES), FLOW_NAMES = nameMap(FLOWS);
+    function joinName(map, code) {
+        return map.hasOwnProperty(code) ? map[code] : null;
+    }
+
+    /* TRIM(GET_STRING(...)): Oracle coi chuỗi rỗng là NULL */
+    function spText(value) {
+        var s = value === null || value === undefined ? "" : String(value).trim();
+        return s === "" ? null : s;
+    }
+
+    /* NVL(GET_NUMBER(...), dflt) */
+    function spNumber(value, dflt) {
+        var n = Number(value);
+        return value === null || value === undefined || isNaN(n) ? dflt : n;
+    }
+
+    /* TO_DATE(text, 'YYYY-MM-DD') + days -> số ms (00:00 giờ local) */
+    function spDate(text, days) {
+        var m = text === null ? null : DateUtil.parse(text);
+        return m ? m.add(days, "days").valueOf() : null;
+    }
+
+    /* TO_CHAR(cột DATE, 'YYYY-MM-DD' | 'YYYY-MM-DD HH24:MI:SS'); NULL vẫn là null */
+    function spChar(ms, dateOnly) {
+        if (ms === null || ms === undefined) { return null; }
+        var s = DateUtil.toServer(ms);
+        return dateOnly ? s.slice(0, 10) : s;
+    }
+
+    /* So sánh như ORDER BY của Oracle: NULL lớn hơn mọi giá trị (ASC xuống cuối, DESC lên đầu) */
+    function spCompare(a, b) {
+        if (a === null || b === null) { return a === b ? 0 : a === null ? 1 : -1; }
+        return a - b;
+    }
+
+    /* P_JSON_OBJECT (chuỗi JSON) -> { total: P_TOTAL, rows: OUT_DATA } */
+    function mockSpGetHkTransactionPaging(jsonText) {
+        var obj = jsonText ? JSON.parse(jsonText) : {};
+        var sort = obj.sort && typeof obj.sort === "object" ? obj.sort : {};
+        var f = obj.filters && typeof obj.filters === "object" ? obj.filters : {};
+        var i, r, d;
+
+        var page = Math.max(Math.floor(spNumber(obj.page, 1)), 1);
+        var pageSize = Math.max(Math.floor(spNumber(obj.pageSize, 10)), 1);
+        var sortField = spText(sort.field);
+        var sortType = (spText(sort.type) || "").toUpperCase();
+        if (SP_SORT_FIELDS.indexOf(sortField) === -1) { sortField = "createdDate"; }
+        if (sortType !== "ASC" && sortType !== "DESC") { sortType = "DESC"; }
+
+        var keyword = spText(f.keyword);
+        var kw = keyword === null ? null : keyword.toUpperCase();
+        var branch = spText(f.branch);
+        var branchList = branch === null ? null : "," + branch.replace(/ /g, "") + ",";
+        var type1 = spText(f.transactionType1);
+        var status = spText(f.status);
+        var statusList = status === null ? null : "," + status + ",";
+        var dateFrom = spDate(spText(f.date_from), 0);
+        var dateTo = spDate(spText(f.date_to), 1);   /* date_to + 1, so sánh < */
+
+        function like(value) {   /* UPPER(cột) LIKE '%' || UPPER(V_KEYWORD) || '%' */
+            return value !== null && String(value).toUpperCase().indexOf(kw) !== -1;
+        }
+
+        /* WHERE */
+        var data = [];
+        for (i = 0; i < HKCN_TRANSACTION.length; i++) {
+            r = HKCN_TRANSACTION[i];
+            if (kw !== null && !(like(r.GNTD_CODE) || like(r.PDTD_CODE) || like(r.CUSTOMER_CODE) ||
+                    like(r.CUSTOMER_NAME) || like(r.USER_ASSIGN))) { continue; }
+            if (branchList !== null && branchList.indexOf("," + r.BRANCH_CODE + ",") === -1) { continue; }
+            if (type1 !== null && r.TRANS_LEVEL_CODE_1 !== type1) { continue; }
+            if (statusList !== null && statusList.indexOf("," + r.PA_STATUS + ",") === -1) { continue; }
+            d = r.PA_EXPIRY_DATE === null ? r.CREATED_DATE : r.PA_EXPIRY_DATE;   /* NVL(PA_EXPIRY_DATE, CREATED_DATE) */
+            if (dateFrom !== null && d < dateFrom) { continue; }
+            if (dateTo !== null && d >= dateTo) { continue; }
+            data.push(r);
+        }
+
+        /* ORDER BY: taskStartTime -> NVL(SUBMIT_DATE, CREATED_DATE), createdDate -> PA_EXPIRY_DATE,
+           _sla chưa có CASE nên không sort; sau cùng luôn CREATED_DATE DESC, ID DESC */
+        var sortKey = sortField === "taskStartTime"
+            ? function (row) { return row.SUBMIT_DATE === null ? row.CREATED_DATE : row.SUBMIT_DATE; }
+            : sortField === "createdDate"
+                ? function (row) { return row.PA_EXPIRY_DATE; }
+                : function () { return null; };
+        var dir = sortType === "ASC" ? 1 : -1;
+        data.sort(function (a, b) {
+            return spCompare(sortKey(a), sortKey(b)) * dir || b.CREATED_DATE - a.CREATED_DATE || b.ID - a.ID;
+        });
+
+        /* OFFSET / FETCH, rồi SELECT với alias của SP */
+        var offset = (page - 1) * pageSize;
+        var pageRows = data.slice(offset, offset + pageSize), out = [];
+        for (i = 0; i < pageRows.length; i++) {
+            r = pageRows[i];
+            out.push({
+                ID: r.ID,
+                STATUS: r.PA_STATUS,
+                STATUS_NAME: joinName(STATUS_NAMES, r.PA_STATUS),
+                GNTD_CODE: r.GNTD_CODE,
+                PDTD_CODE: r.PDTD_CODE,
+                BRANCH_CODE: r.BRANCH_CODE,
+                TRANSACTION_FLOW: r.TRANSACTION_FLOW,
+                TRANSACTION_FLOW_NAME: joinName(FLOW_NAMES, r.TRANSACTION_FLOW),
+                TRANSACTION_TYPE1: r.TRANS_LEVEL_CODE_1,
+                TRANSACTION_TYPE1_NAME: joinName(TYPE_NAMES, r.TRANS_LEVEL_CODE_1),
+                TRANSACTION_TYPE2: r.TRANSACTION_TYPE2,
+                TRANSACTION_TYPE3: r.TRANSACTION_TYPE3,
+                CUSTOMER_CODE: r.CUSTOMER_CODE,
+                CUSTOMER_NAME: r.CUSTOMER_NAME,
+                AMOUNT: r.AMOUNT,
+                PROCESS_USER: r.USER_PA,
+                ASSIGN_USER: r.USER_ASSIGN,
+                GROUP_PROCESS: r.GROUP_PROCESS,
+                PA_EXPIRY_DATE: spChar(r.PA_EXPIRY_DATE, true),
+                GN_APPROVAL_BY: r.GN_APPROVAL_BY,
+                GN_APPROVAL_DATE: spChar(r.GN_APPROVAL_DATE),
+                CREATED_AT: spChar(r.CREATED_DATE),
+                UPDATED_BY: r.UPDATED_BY,
+                MODIFIED_AT: spChar(r.UPDATED_DATE),
+                TASK_START_TIME: spChar(r.SUBMIT_DATE)
             });
         }
-        DATASET = rows;
-        PERF.genMs = now() - t0;
-        log("Mock dataset: " + ROW_COUNT.toLocaleString() + " rows, generated in " + Math.round(PERF.genMs) +
-            " ms (vàng +" + DEMO_CONFIG.yellowMinutes + "p, đỏ +" + DEMO_CONFIG.redMinutes + "p, " +
-            (DEMO_CONFIG.workingTime ? "theo giờ làm việc" : "cộng thẳng") + ")");
+        return { total: data.length, rows: out };
     }
 
     /* ============================================================
        Mock service (thay bằng gọi API thật)
     ============================================================ */
-    function slaDuration(minutes) {
-        return DisbSla.formatDuration(minutes, PAGE_CONFIG.sla);
-    }
-
     /* Giả lập gọi API danh mục: trả { error, lists: [{ code, name }] } sau `delay` ms */
     function mockCatalogApi(source, delay) {
         return function (callback) {
             setTimeout(function () {
                 var lists = [], i;
                 for (i = 0; i < source.length; i++) {
-                    lists.push(typeof source[i] === "string"
-                        ? { code: source[i], name: source[i] }
-                        : { code: source[i].code, name: source[i].name });
+                    lists.push({ code: source[i].code, name: source[i].name });
                 }
                 callback({ error: null, lists: lists });
             }, delay);
@@ -318,86 +434,45 @@
                 callback({
                     error: null,
                     allowBranchs: ["441", "360", "310", "520", "274"],
-                    visibleConfig: { create: true, exportData: true }
+                    visibleConfig: { exportData: true }
                 });
             }, 100);
         },
 
-        /* Response: { error, total, count, lists } */
-        getDisbursementQueue: function (request, permissions, callback) {
+        /* Giả lập BE gọi SP_GET_HK_TRANSACTION_PAGING. Response: { error, total, count, lists },
+           lists giữ key Oracle như SP (ID, GNTD_CODE...), client đổi sang camelCase trong mapResponse. */
+        getHkTransactionPaging: function (request, permissions, callback) {
             setTimeout(function () {
                 var t0 = now();
-                var f = request.filters || {};
+                var json = JSON.parse(JSON.stringify(request || {}));   /* P_JSON_OBJECT */
                 var allowed = permissions.allowBranchs || [];
-                var branchList = f.branch ? String(f.branch).split(",") : null;
-                var i;
+                json.filters = json.filters || {};
+                var branchList = json.filters.branch ? String(json.filters.branch).split(",") : [];
+                var i, res;
 
                 /* Server kiểm tra lại quyền ĐVKD */
-                if (branchList) {
-                    for (i = 0; i < branchList.length; i++) {
-                        if (allowed.indexOf(branchList[i]) === -1) {
-                            callback({
-                                error: { code: DISB_CONSTANTS.ERRORS.FORBIDDEN_BRANCH,
-                                         message: "Bạn không có quyền với ĐVKD " + branchList[i] },
-                                total: 0, count: 0, lists: []
-                            });
-                            return;
-                        }
+                for (i = 0; i < branchList.length; i++) {
+                    if (allowed.indexOf(branchList[i]) === -1) {
+                        callback({
+                            error: { code: DISB_CONSTANTS.ERRORS.FORBIDDEN_BRANCH,
+                                     message: "Bạn không có quyền với ĐVKD " + branchList[i] },
+                            total: 0, count: 0, lists: []
+                        });
+                        return;
                     }
                 }
-                var scope = branchList || allowed;
-                var data = filterArray(DATASET, function (r) { return scope.indexOf(r.branchCode) !== -1; });
-
-                if (f.keyword) {
-                    var kw = String(f.keyword).toLowerCase();
-                    data = filterArray(data, function (r) {
-                        return (r.gntdCode + " " + r.pdtdCode + " " + r.customerCode + " " +
-                            r.customerName + " " + r.processUser).toLowerCase().indexOf(kw) !== -1;
-                    });
-                }
-                if (f.transactionType1) {
-                    data = filterArray(data, function (r) { return r.transactionType1 === f.transactionType1; });
-                }
-                if (f.status) {
-                    var states = String(f.status).split(",");
-                    data = filterArray(data, function (r) { return states.indexOf(r.status) !== -1; });
-                }
-                /* Lọc "Thời điểm" theo thời điểm tiếp nhận (taskStartTime), giống SP */
-                if (f.date_from) {
-                    data = filterArray(data, function (r) { return r.taskStartTime.slice(0, 10) >= f.date_from; });
-                }
-                if (f.date_to) {
-                    data = filterArray(data, function (r) { return r.taskStartTime.slice(0, 10) <= f.date_to; });
-                }
-
-                if (request.sort && request.sort.field && request.sort.type) {
-                    var sf = request.sort.field, dir = request.sort.type === "DESC" ? -1 : 1;
-                    /* Sort SLA = sort theo hạn xử lý (deadline). ASC: gấp/quá hạn lên đầu.
-                       Hồ sơ không tính SLA (đã hoàn thành) để null => luôn xuống cuối.
-                       BE thật cần trả/tính field slaDeadline để sort phía server. */
-                    if (sf === "_sla") {
-                        sf = "_slaDeadline";
-                        for (i = 0; i < data.length; i++) {
-                            if (data[i]._slaDeadline === undefined) {
-                                data[i]._slaDeadline = DisbSla.deadlineOf(data[i], PAGE_CONFIG.sla);
-                            }
-                        }
+                /* SP coi branch rỗng là không lọc ĐVKD, nên BE truyền danh sách ĐVKD được phân quyền */
+                if (!branchList.length) {
+                    if (!allowed.length) {
+                        callback({ error: null, total: 0, count: 0, lists: [] });
+                        return;
                     }
-                    /* data đã là mảng mới (từ filterArray) nên sort tại chỗ, không copy thêm */
-                    data.sort(function (a, b) {
-                        var av = a[sf], bv = b[sf];
-                        /* null/rỗng luôn xuống cuối, bất kể chiều sort */
-                        var an = av === null || av === undefined || av === "";
-                        var bn = bv === null || bv === undefined || bv === "";
-                        if (an || bn) { return an === bn ? 0 : an ? 1 : -1; }
-                        return av < bv ? -dir : av > bv ? dir : 0;
-                    });
+                    json.filters.branch = allowed.join(",");
                 }
 
-                var start = (request.page - 1) * request.pageSize;
-                var lists = data.slice(start, start + request.pageSize);
+                res = mockSpGetHkTransactionPaging(JSON.stringify(json));
                 PERF.serverMs = now() - t0;
-                callback({ error: null, total: data.length, count: lists.length, lists: lists });
+                callback({ error: null, total: res.total, count: res.rows.length, lists: res.rows });
             }, 20);
         }
     };
@@ -438,34 +513,7 @@
     /* ============================================================
        Trạng thái trang (nạp từ config + phân quyền)
     ============================================================ */
-    var PAGE_CONFIG = { detail: { url: "", target: "_self" }, create: null, sla: null, statusBadge: null, amountDisplay: null };
-
-    /* Số tiền theo locale vi-VN (1.500.000.000); số chữ số thập phân theo amountDisplay.decimals[loại tiền].
-       Cache Intl.NumberFormat theo số chữ số thập phân để không tạo lại mỗi ô. */
-    var AMOUNT_FORMATS = {};
-    function formatAmount(amount, currency) {
-        var dec = (PAGE_CONFIG.amountDisplay && PAGE_CONFIG.amountDisplay.decimals) || {};
-        var digits = dec.hasOwnProperty(currency) ? dec[currency] : (dec.hasOwnProperty("default") ? dec["default"] : 0);
-        if (!AMOUNT_FORMATS[digits]) {
-            AMOUNT_FORMATS[digits] = new Intl.NumberFormat("vi-VN", {
-                minimumFractionDigits: digits,
-                maximumFractionDigits: digits
-            });
-        }
-        return AMOUNT_FORMATS[digits].format(amount);
-    }
-
-    /* Chỉ hiện số tiền cho loại giao dịch trong amountDisplay.types (không khai báo types = mọi loại) */
-    function amountHtml(row) {
-        var cfg = PAGE_CONFIG.amountDisplay || {};
-        var types = cfg.types;
-        if (types && types.length && types.indexOf(row[cfg.typeField || "transactionType1"]) === -1) { return ""; }
-        var amount = row[cfg.amountField || "amount"];
-        if (isBlank(amount) || isNaN(+amount)) { return ""; }
-        var currency = row[cfg.currencyField || "currency"] || "";
-        return "<div class='disb-amount'><span class='disb-amount-value'>" + formatAmount(+amount, currency) + "</span>" +
-            (currency ? "<span class='disb-meta-key'>" + DisbUtil.escapeHtml(currency) + "</span>" : "") + "</div>";
-    }
+    var PAGE_CONFIG = { detail: { url: "", target: "_self" }, sla: null, statusBadge: null };
 
     /* Dải màu trạng thái hợp lệ (mỗi màu là một class .disb-status-<màu> trong CSS) */
     var STATUS_TONES = ["default", "purple", "green", "orange", "red"];
@@ -490,9 +538,29 @@
             log("statusBadge: màu không hợp lệ " + bad.join(", ") + " => dùng default. Màu hợp lệ: " + STATUS_TONES.join(", "));
         }
     }
-    var PERMISSIONS = { allowBranchs: [], visibleConfig: { create: false, exportData: false } };
+
+    /* ---------------- SLA hậu kiểm (spec.md mục 6) ----------------
+       Chỉ tính cho trạng thái thuộc sla.activeStates (các trạng thái chưa hoàn thành; rỗng = mọi trạng thái).
+       days = ngày hạn (sla.dueField, mặc định paExpiryDate) - hôm nay, tính theo ngày lịch:
+         days < 0                     -> "overdue" (cờ đỏ, quá hạn)
+         0 <= days <= sla.yellowDays  -> "warning" (cờ vàng, gồm cả hạn là hôm nay)
+         days > sla.yellowDays        -> "ok"      (cờ xanh)
+       Trả { status, days, due } hoặc null (không tính SLA / thiếu hoặc sai ngày hạn). */
+    var SLA_DEFAULT_YELLOW_DAYS = 3;
+    function computeSla(row, cfg, today) {
+        if (!cfg || !row) { return null; }
+        var active = cfg.activeStates || [];
+        if (active.length && active.indexOf(row[cfg.statusField || "status"]) === -1) { return null; }
+        var due = DateUtil.startOfDay(row[cfg.dueField || "paExpiryDate"]);
+        if (!due) { return null; }
+        var days = Math.round(due.diff(today, "days", true));
+        var yellowDays = typeof cfg.yellowDays === "number" && cfg.yellowDays >= 0 ? cfg.yellowDays : SLA_DEFAULT_YELLOW_DAYS;
+        return { status: days < 0 ? "overdue" : days <= yellowDays ? "warning" : "ok", days: days, due: due };
+    }
+
+    var PERMISSIONS = { allowBranchs: [], visibleConfig: { exportData: false } };
     var table = null;
-    var tableContainer = document.getElementById("tableContainer");
+    var tableContainer = document.getElementById("tableContainer1");
 
     /* ============================================================
        Catalog: nạp danh mục bất đồng bộ, gọi API một lần.
@@ -526,15 +594,9 @@
             entry.waiters.push(callback);
         }
 
-        /* Lấy đồng bộ (dùng cho popup Khởi tạo); null nếu chưa tải xong */
-        function peek(key) {
-            return store[key] && store[key].done ? store[key].data : null;
-        }
-
-        return { load: load, get: get, peek: peek };
+        return { load: load, get: get };
     })();
 
-   
     Catalog.load("transactionTypes", transactionService.getTransactionTypes, "Lỗi tải loại giao dịch");
     Catalog.load("processStates", transactionService.getProcessStates, "Lỗi tải trạng thái");
 
@@ -549,26 +611,6 @@
                 setOptions(out);
             });
         };
-    }
-
-    /* Loại giao dịch cho popup Khởi tạo: danh sách từ API, icon/mô tả/url bổ sung từ config theo code.
-       API chưa trả về thì dùng tạm create.types trong config. */
-    function getCreateTypes() {
-        var cfgTypes = (PAGE_CONFIG.create && PAGE_CONFIG.create.types) || [];
-
-        var apiTypes = Catalog.peek("transactionTypes");
-        if (!apiTypes || !apiTypes.length) { return cfgTypes; }
-        var byCode = {}, out = [], i, k;
-        for (i = 0; i < cfgTypes.length; i++) { byCode[cfgTypes[i].value] = cfgTypes[i]; }
-        for (i = 0; i < apiTypes.length; i++) {
-            var extra = byCode[apiTypes[i].code] || {};
-            var item = {};
-            for (k in extra) { if (extra.hasOwnProperty(k)) { item[k] = extra[k]; } }
-            item.value = apiTypes[i].code;
-            item.label = apiTypes[i].name || extra.label || apiTypes[i].code;
-            out.push(item);
-        }
-        return out;
     }
 
     function toOptions(list, labelPrefix) {
@@ -613,21 +655,12 @@
             "<span class='disb-meta-value'>" + DisbUtil.escapeHtml(value) + "</span></div>";
     }
 
-    /* Chip nhỏ (lock, nhóm); title là tooltip */
-    function chip(kind, iconClass, text, title) {
-        if (isBlank(text)) { return ""; }
-        return "<div><span class='disb-chip disb-chip-" + kind + "'" +
-            (title ? " title='" + DisbUtil.escapeHtml(title) + "'" : "") + ">" +
-            (iconClass ? "<i class='fas " + iconClass + "' aria-hidden='true'></i>" : "") +
-            DisbUtil.escapeHtml(text) + "</span></div>";
-    }
-
     /* ---------------- Kiểm tra tên field SP trả về ----------------
        SP đặt sai alias (vd TRANSACTIONTYPE1NAME thay vì TRANSACTION_TYPE1_NAME) thì sau toCamel
        field bị thiếu và ô trên bảng trống. Cảnh báo một lần, kèm alias đúng cần trả. */
 
     /* Field dùng trong renderer nhưng không khai báo là "field" của cột */
-    var RENDERER_FIELDS = ["pdtdCode", "customerCode", "lockUser"];
+    var RENDERER_FIELDS = ["pdtdCode", "customerCode"];
 
     function collectExpectedFields(config) {
         var seen = {}, out = [], i, j, cols = config.columns || [];
@@ -640,15 +673,9 @@
         }
         if (config.sla) {
             add(config.sla.statusField || "status");
-            add(config.sla.yellowField || "yellowFlagDate");
-            add(config.sla.redField || "redFlagDate");
-            add(config.sla.startField);
+            add(config.sla.dueField || "paExpiryDate");
         }
         if (config.statusBadge) { add(config.statusBadge.codeField || "status"); }
-        if (config.amountDisplay) {
-            add(config.amountDisplay.currencyField || "currency");
-            add(config.amountDisplay.typeField || "transactionType1");
-        }
         for (i = 0; i < RENDERER_FIELDS.length; i++) { add(RENDERER_FIELDS[i]); }
         return out;
     }
@@ -695,12 +722,11 @@
 
         PAGE_CONFIG.sla = config.sla || null;
         PAGE_CONFIG.statusBadge = config.statusBadge || null;
-        PAGE_CONFIG.amountDisplay = config.amountDisplay || null;
         checkStatusTones(PAGE_CONFIG.statusBadge);
-        if (PAGE_CONFIG.sla && !(Array.isArray(PAGE_CONFIG.sla.weekDays) && PAGE_CONFIG.sla.weekDays.length === 7)) {
-            Toast.error("sla.weekDays phải có đủ 7 thứ, bắt đầu từ Chủ nhật. Cột SLA sẽ để trống.", "Lỗi cấu hình SLA");
+        if (PAGE_CONFIG.sla && !(typeof PAGE_CONFIG.sla.yellowDays === "number" && PAGE_CONFIG.sla.yellowDays >= 0)) {
+            log("sla.yellowDays phải là số ngày >= 0, đang dùng mặc định " + SLA_DEFAULT_YELLOW_DAYS);
         }
-        buildDataset(PAGE_CONFIG.sla);
+        buildDataset();
         PAGE_CONFIG.expectedFields = collectExpectedFields(config);
         if (config.detail) {
             if (typeof config.detail.url === "string") { PAGE_CONFIG.detail.url = config.detail.url; }
@@ -730,9 +756,9 @@
 
             try {
                 table = TableRenderer.fromConfig(config, {
-                    containerId: "tableContainer",
+                    containerId: "tableContainer1",
                     searchFunction: function (request, callback) {
-                        transactionService.getDisbursementQueue(request, PERMISSIONS, function (res) {
+                        transactionService.getHkTransactionPaging(request, PERMISSIONS, function (res) {
                             var mapped = mapResponse(request, res);
                             warnMissingFields(mapped.data);
                             if (mapped.error) {
@@ -748,33 +774,28 @@
                     },
                     optionsProviders: {
                         branchOptions: function () {
-                            return toOptions(PERMISSIONS.allowBranchs, "CN ");
+                            return toOptions(PERMISSIONS.allowBranchs, null);
                         },
-                        /* Async từ API danh mục; transactionTypes dùng chung với popup Khởi tạo */
+                        /* Async từ API danh mục */
                         transactionType1Options: catalogProvider("transactionTypes"),
-                        statusOptions: catalogProvider("processStates"),
+                        statusOptions: catalogProvider("processStates")
                     },
                     renderers: {
                         sttRenderer: function (value, row, index) {
                             var st = table && table.state ? table.state : { page: 1, pageSize: 0 };
                             return String((st.page - 1) * st.pageSize + index + 1);
                         },
+                        /* SLA theo hạn hậu kiểm (computeSla), style riêng trong hk-sla.css (.hk-sla-ok/warning/overdue).
+                           Không tính SLA thì trả "" (trả undefined thì js-table in chữ "undefined"). */
                         slaRenderer: function (value, row) {
-                            var r = DisbSla.compute(row, PAGE_CONFIG.sla, new Date());
+                            var r = computeSla(row, PAGE_CONFIG.sla, DateUtil.startOfDay(DateUtil.now()));
                             if (!r) { return ""; }
                             var icon = { ok: "fa-clock", warning: "fa-hourglass-half", overdue: "fa-exclamation-circle" }[r.status];
-                            var text = r.status === "overdue"
-                                ? "Quá " + slaDuration(r.overMinutes)
-                                : "Còn " + slaDuration(r.remainingMinutes);
-                            /* Thanh tiến độ: % giờ làm việc đã dùng (null nếu thiếu thời điểm bắt đầu) */
-                            var pct = r.progress === null ? (r.status === "overdue" ? 100 : 0) : r.progress;
-                            var tip = "Cảnh báo từ: " + DateUtil.format(r.warningAt) +
-                                "\nHạn xử lý: " + DateUtil.format(r.deadline) +
-                                (r.progress === null ? "" : "\nĐã dùng: " + r.progress + "%");
-                            return "<div class='disb-sla disb-sla-" + r.status + "' title='" + DisbUtil.escapeHtml(tip) + "'>" +
-                                "<span class='disb-sla-text'><i class='fas " + icon + "' aria-hidden='true'></i>" +
-                                DisbUtil.escapeHtml(text) + "</span>" +
-                                "<span class='disb-sla-bar'><span style='width:" + pct + "%'></span></span>" +
+                            var text = r.days < 0 ? "Quá " + (-r.days) + " ngày"
+                                : r.days === 0 ? "Hạn hôm nay" : "Còn " + r.days + " ngày";
+                            var tip = "Hạn hậu kiểm: " + r.due.format(DateUtil.FORMAT.DISPLAY_DATE);
+                            return "<div class='hk-sla hk-sla-" + r.status + "' title='" + DisbUtil.escapeHtml(tip) + "'>" +
+                                "<i class='fas " + icon + "' aria-hidden='true'></i>" + DisbUtil.escapeHtml(text) +
                                 "</div>";
                         },
                         /* Loại giao dịch cấp 1 / Mã PDTD */
@@ -784,10 +805,6 @@
                                 metaLine("PDTD", row.pdtdCode) +
                                 "</div>";
                         },
-                        /* Số tiền + loại tiền (config amountDisplay) */
-                        amountRenderer: function (value, row) {
-                            return amountHtml(row);
-                        },
                         /* Trạng thái: badge màu theo mã trạng thái (config statusBadge) */
                         statusRenderer: function (value, row) {
                             if (isBlank(value)) { return ""; }
@@ -796,10 +813,10 @@
                         },
                         /* Khách hàng: tên KH / [MÃ KH] mã */
                         customerRenderer: function (value, row) {
-                            return "<div class='disb-cell'>" +
-                                (isBlank(row.customerName) ? "" : "<div class='disb-cell-text'>" + DisbUtil.escapeHtml(row.customerName) + "</div>") +
-                                metaLine("Mã KH", row.customerCode) +
-                                "</div>";
+                            return "<div class='disb-cell'>"
+                                + "<div class='disb-cell-text disb-meta-value'>" + DisbUtil.escapeHtml(row.customerCode) + "</div>"
+                                + "<div class='disb-cell-text'>" + DisbUtil.escapeHtml(row.customerName) + "</div>"
+                                + "</div>";
                         },
                         /* Thời điểm: ngày / giờ hai dòng cho cột hẹp */
                         dateTimeRenderer: function (value) {
@@ -812,10 +829,6 @@
                         }
                     },
                     handlers: {
-                        viewProcessLog: function (row) {
-                            log("Log xử lý: " + row.gntdCode);
-                            Toast.info("Xem log xử lý giao dịch " + row.gntdCode, "Log xử lý");
-                        },
                         openTransactionDetail: function (row) { openDetail(row); },
                         exportExcel: function (tableInstance, menuItem) {
                             menuItem.disabled = true;
