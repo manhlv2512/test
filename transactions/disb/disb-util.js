@@ -79,6 +79,34 @@ var DisbUtil = (function () {
         return out;
     }
 
+    /* ---------------- Mảng -> object tra cứu theo key ----------------
+        arrayToMap([{ code: "TT", name: "Tập trung" }], "code", "name") -> { TT: "Tập trung" }
+        arrayToMap([{ code: "TT", name: "Tập trung" }])                 -> { TT: { code: "TT", name: "Tập trung" } }
+        - keyField mặc định "code". Không truyền valueField thì giá trị là cả phần tử (cùng tham chiếu, không copy).
+        - Bỏ qua phần tử không phải object và phần tử có key null/undefined/"". Trùng key thì phần tử sau ghi đè.
+        - Key của object luôn là chuỗi (ID 1 -> "1"). list không phải mảng -> {}.
+    */
+    function arrayToMap(list, keyField, valueField) {
+        var map = {}, i, item, key;
+        if (!Array.isArray(list)) {
+            return map;
+        }
+        keyField = keyField || "code";
+        // valueField = valueField || "name";
+        for (i = 0; i < list.length; i++) {
+            item = list[i];
+            if (!item || typeof item !== "object") {
+                continue;
+            }
+            key = item[keyField];
+            if (key === null || key === undefined || key === "") {
+                continue;
+            }
+            map[key] = valueField ? item[valueField] : item;
+        }
+        return map;
+    }
+
     /* Chỉ cho phép http/https (đường dẫn tương đối được resolve theo origin hiện tại). */
     function isSafeUrl(url) {
         try {
@@ -125,6 +153,7 @@ var DisbUtil = (function () {
         escapeHtml: escapeHtml,
         normalizeRow: normalizeRow,
         normalizeRows: normalizeRows,
+        arrayToMap: arrayToMap,
         toOracleKey: toOracleKey,
         findMissingFields: findMissingFields,
         isSafeUrl: isSafeUrl,

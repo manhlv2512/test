@@ -4,9 +4,13 @@
   "header": {
     "title": "Danh sách giao dịch hậu kiểm giải ngân"
   },
+  "detail": {
+    "url": "/teamworks/executecf?processApp=HKGNCN&serviceName=HKGNCN.Transaction&tw.local.gntdCode="
+  },
   "amountDisplay": {
     "amountField": "amount",
     "currencyField": "currency",
+    "showCcy": true,
     "typeField": "transactionType1",
     "types": [
       "Giaingankhoanvay",
@@ -31,7 +35,9 @@
   "sla": {
     "statusField": "status",
     "activeStates": [
-      "CHUA_HAU_KIEM", "CHO_XU_LY", "CHO_BO_SUNG"
+      "CHUA_HAU_KIEM",
+      "CHO_XU_LY",
+      "CHO_BO_SUNG"
     ],
     "dueField": "paExpiryDate",
     "yellowDays": 3
@@ -101,6 +107,13 @@
       "renderer": "transactionRenderer"
     },
     {
+      "field": "amount",
+      "title": "Số tiền (VND)",
+      "align": "right",
+      "className": "disb-col-fit",
+      "renderer": "amountRenderer"
+    },
+    {
       "field": "branchCode",
       "title": "ĐVKD",
       "align": "center",
@@ -121,7 +134,7 @@
     },
     {
       "field": "paExpiryDate",
-      "title": "Thời điểm hậu kiểm",
+      "title": "Ngày đến hạn hậu kiểm",
       "width": 110,
       "align": "center",
       "sortable": true
@@ -150,8 +163,8 @@
       "name": "keyword",
       "label": "Từ khoá",
       "type": "text",
-      "width": 400,
-      "placeholder": "GNTD, PDTD, mã/tên KH, user xử lý"
+      "width": 280,
+      "placeholder": "GNTD, PDTD, mã/tên KH"
     },
     {
       "name": "branch",
@@ -181,7 +194,7 @@
     },
     {
       "name": "date",
-      "label": "Thời điểm",
+      "label": "Ngày đến hạn hậu kiểm",
       "type": "daterange",
       "width": 400,
       "fromPlaceholder": "Từ ngày",

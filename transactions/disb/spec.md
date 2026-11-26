@@ -31,7 +31,7 @@ transactions/
     ├── date-util.js        # DateUtil: parse/format/tính ngày giờ, bọc moment.js
     ├── disb-sla.js         # DisbSla: tính SLA theo giờ làm việc
     ├── constants.js        # mã quyền, URL, trạng thái
-    ├── disb-util.js        # DisbUtil: chuẩn hoá key Oracle, dựng/mở link, escapeHtml
+    ├── disb-util.js        # DisbUtil: chuẩn hoá key Oracle, mảng -> map tra cứu (arrayToMap), dựng/mở link, escapeHtml
     ├── disb.css            # style màn hình (ô gộp, chip, badge trạng thái, SLA, form tìm kiếm, popup Khởi tạo)
     ├── build.sh            # minify date-util.js, disb.css, disb-*.js/css -> dist/*.min.*, đóng gói disb.zip
     ├── dist/               # kết quả build (không sửa tay)

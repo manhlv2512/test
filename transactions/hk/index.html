@@ -244,6 +244,7 @@
                 CUSTOMER_CODE: pad(i * 7919 % 100000000, 8),
                 CUSTOMER_NAME: mockName(),
                 AMOUNT: amountRange ? randInt(amountRange[0], amountRange[1]) * 1000000 : null,
+                CURRENCY: "VND",
                 PA_STATUS: status,
                 USER_PA: submitted ? user : null,
                 USER_ASSIGN: user.toLowerCase(),
@@ -392,6 +393,7 @@
                 CUSTOMER_CODE: r.CUSTOMER_CODE,
                 CUSTOMER_NAME: r.CUSTOMER_NAME,
                 AMOUNT: r.AMOUNT,
+                CURRENCY: r.CURRENCY,
                 PROCESS_USER: r.USER_PA,
                 ASSIGN_USER: r.USER_ASSIGN,
                 GROUP_PROCESS: r.GROUP_PROCESS,
@@ -714,6 +716,33 @@
         log("Export: " + data.length + " rows");
     }
 
+    /* Số tiền theo locale vi-VN (1.500.000.000); số chữ số thập phân theo amountDisplay.decimals[loại tiền].
+       Cache Intl.NumberFormat theo số chữ số thập phân để không tạo lại mỗi ô. */
+    var AMOUNT_FORMATS = {};
+    function formatAmount(amount, currency) {
+        var dec = (PAGE_CONFIG.amountDisplay && PAGE_CONFIG.amountDisplay.decimals) || {};
+        var digits = dec.hasOwnProperty(currency) ? dec[currency] : (dec.hasOwnProperty("default") ? dec["default"] : 0);
+        if (!AMOUNT_FORMATS[digits]) {
+            AMOUNT_FORMATS[digits] = new Intl.NumberFormat("vi-VN", {
+                minimumFractionDigits: digits,
+                maximumFractionDigits: digits
+            });
+        }
+        return AMOUNT_FORMATS[digits].format(amount);
+    }
+
+    /* Chỉ hiện số tiền cho loại giao dịch trong amountDisplay.types (không khai báo types = mọi loại) */
+    function amountHtml(row) {
+        var cfg = PAGE_CONFIG.amountDisplay || {};
+        var types = cfg.types;
+        if (types && types.length && types.indexOf(row[cfg.typeField || "transactionType1"]) === -1) { return ""; }
+        var amount = row[cfg.amountField || "amount"];
+        if (isBlank(amount) || isNaN(+amount)) { return ""; }
+        var currency = row[cfg.currencyField || "currency"] || "";
+        return "<div class='disb-amount'><span class='disb-amount-value'>" + formatAmount(+amount, currency) + "</span>" +
+            ((currency && cfg.showCcy) ? "<span class='disb-meta-key'>" + DisbUtil.escapeHtml(currency) + "</span>" : "") + "</div>";
+    }
+
     /* ============================================================
        Khởi động: phân quyền -> config -> table
     ============================================================ */
@@ -791,7 +820,7 @@
                             var r = computeSla(row, PAGE_CONFIG.sla, DateUtil.startOfDay(DateUtil.now()));
                             if (!r) { return ""; }
                             var icon = { ok: "fa-clock", warning: "fa-hourglass-half", overdue: "fa-exclamation-circle" }[r.status];
-                            var text = r.days < 0 ? "Quá " + (-r.days) + " ngày"
+                            var text = r.days < 0 ? (r.days >= -30 ? "Quá " + (-r.days) + " ngày" : "Quá hạn")
                                 : r.days === 0 ? "Hạn hôm nay" : "Còn " + r.days + " ngày";
                             var tip = "Hạn hậu kiểm: " + r.due.format(DateUtil.FORMAT.DISPLAY_DATE);
                             return "<div class='hk-sla hk-sla-" + r.status + "' title='" + DisbUtil.escapeHtml(tip) + "'>" +
@@ -817,6 +846,10 @@
                                 + "<div class='disb-cell-text disb-meta-value'>" + DisbUtil.escapeHtml(row.customerCode) + "</div>"
                                 + "<div class='disb-cell-text'>" + DisbUtil.escapeHtml(row.customerName) + "</div>"
                                 + "</div>";
+                        },
+                        /* Số tiền + loại tiền (config amountDisplay) */
+                        amountRenderer: function (value, row) {
+                            return amountHtml(row);
                         },
                         /* Thời điểm: ngày / giờ hai dòng cho cột hẹp */
                         dateTimeRenderer: function (value) {
