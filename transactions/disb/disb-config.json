@@ -4,6 +4,9 @@
   "header": {
     "title": "Danh sách giao dịch giải ngân"
   },
+  "detail": {
+    "url": "/teamworks/executecf?processApp=GN_KHCN&serviceName=GNCN.Detail&transactionCode="
+  },
   "create": {
     "title": "Chọn loại giao dịch",
     "url": "/teamworks/executecf?processApp=GN_KHCN&serviceName=",
@@ -45,6 +48,7 @@
   "amountDisplay": {
     "amountField": "amount",
     "currencyField": "currency",
+    "showCcy": true,
     "typeField": "transactionType1",
     "types": [
       "Giaingankhoanvay",
