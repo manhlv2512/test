@@ -179,7 +179,7 @@
       "className": "disb-col-fit"
     },
     {
-      "field": "processUser",
+      "field": "processingUser",
       "title": "User xử lý",
       "className": "disb-col-fit"
     },
@@ -198,7 +198,7 @@
       "label": "Từ khoá",
       "type": "text",
       "width": 220,
-      "placeholder": "GNTD, PDTD, mã/tên KH, user xử lý"
+      "placeholder": "GNTD, PDTD, mã/tên KH, User xử lý"
     },
     {
       "name": "branch",

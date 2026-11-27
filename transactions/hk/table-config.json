@@ -164,7 +164,7 @@
       "label": "Từ khoá",
       "type": "text",
       "width": 280,
-      "placeholder": "GNTD, PDTD, mã/tên KH"
+      "placeholder": "GNTD, PDTD, mã/tên KH, User phân công"
     },
     {
       "name": "branch",

@@ -15,7 +15,7 @@
   },
   {
     "key": "lockUser",
-    "value": "User Claimed",
+    "value": "User xử lý",
     "align": "center",
     "width": 18,
     "fillColor": null
@@ -78,7 +78,7 @@
   },
   {
     "key": "processUser",
-    "value": "User xử lý",
+    "value": "User đề xuất",
     "align": "center",
     "width": 18,
     "fillColor": null

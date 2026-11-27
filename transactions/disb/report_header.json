@@ -77,7 +77,7 @@
     "fillColor": null
   },
   {
-    "key": "processUser",
+    "key": "processingUser",
     "value": "User xử lý",
     "align": "center",
     "width": 14,
@@ -85,7 +85,7 @@
   },
   {
     "key": "lockUser",
-    "value": "User lock",
+    "value": "User Claimed",
     "align": "center",
     "width": 14,
     "fillColor": null

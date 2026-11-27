@@ -113,7 +113,7 @@
     },
     {
       "field": "lockUser",
-      "title": "User Claimed",
+      "title": "User xử lý",
       "renderer": "claimedRenderer",
       "minWidth": 120
     },
@@ -158,7 +158,7 @@
     },
     {
       "field": "processUser",
-      "title": "User xử lý"
+      "title": "User đề xuất"
     },
     {
       "field": "taskStartTime",
@@ -191,7 +191,7 @@
       "name": "keyword",
       "label": "Từ khoá tra cứu",
       "type": "text",
-      "placeholder": "Mã GNTD/PDTD hoặc mã/tên KH hoặc User lock",
+      "placeholder": "Mã GNTD/PDTD hoặc mã/tên KH hoặc User claimed",
       "width": 400
     },
     {
