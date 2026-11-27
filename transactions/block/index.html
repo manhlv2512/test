@@ -442,7 +442,7 @@
                         var cls = "badge badge-" + String(value).toLowerCase();
                         return "<span class='" + cls + "'>" + value + "</span>";
                     },
-                    processStateBadge: function (value) {
+                    stateBadge: function (value) {
                         var map = {
                             0: { label: "Chờ xử lý", cls: "badge-pending" },
                             1: { label: "Hoàn thành", cls: "badge-open" },
@@ -460,14 +460,11 @@
                     openTransactionDetail: function (row) {
                         openTransactionDetail(row);
                     },
-                    viewDocumentDetail: function (row) {
-                        openTransactionDetail(row);
-                    },
                     viewProcessLog: function (row) {
                         log("Log xử lý: " + row.gntdCode);
                         Toast.info("Xem log xử lý giao dịch " + row.gntdCode, "Log xử lý");
                     },
-                    releaseBlock: function (row) {
+                    releaseBlockAmt: function (row) {
                         log("Giải toả: " + row.gntdCode);
                         Toast.warning("Giải toả phong toả cho " + row.gntdCode, "Giải toả");
                     },

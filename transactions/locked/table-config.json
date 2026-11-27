@@ -1,0 +1,228 @@
+{
+  "schemaVersion": 1,
+  "key": "transactions-locked",
+  "header": {
+    "title": "Danh sách giao dịch chờ xử lý"
+  },
+  "detail": {
+    "url": "/teamworks/executecf?processApp=GN_KHCN&serviceName=GNCN.Detail&transactionCode="
+  },
+  "statusBadge": {
+    "codeField": "status",
+    "defaultTone": "default",
+    "tones": {
+      "GNCN_KHOI_TAO": "default",
+      "GNCN_HUY": "default",
+      "GNCN_CHO_XU_LY": "orange",
+      "GNCN_CHO_BO_SUNG": "orange",
+      "GNCN_DA_PHE_DUYET": "purple",
+      "GNCN_LOI_HACH_TOAN_HAN_MUC": "red",
+      "GNCN_LOI_HACH_TOAN_KHOAN_VAY": "red",
+      "GNCN_LOI_HACH_TOAN_THAU_CHI": "red",
+      "GNCN_LOI_CHUYEN_TIEN": "red",
+      "GNCN_HOAN_TAT_KHOAN_VAY": "purple",
+      "GNCN_HOAN_THANH": "green"
+    }
+  },
+  "selection": {
+    "types": [
+      {
+        "value": "Giaingankhoanvay",
+        "label": "Giải ngân khoản vay"
+      },
+      {
+        "value": "Giainganthauchi",
+        "label": "Giải ngân thấu chi"
+      },
+      {
+        "value": "Khoitaohanmuc",
+        "label": "Khởi tạo hạn mức"
+      },
+      {
+        "value": "NhapvaduyetFCC",
+        "label": "Nhập và duyệt bút toán FCC"
+      },
+      {
+        "value": "Khac",
+        "label": "Khác"
+      }
+    ],
+    "flows": [
+      {
+        "value": "TT",
+        "label": "Tập trung"
+      },
+      {
+        "value": "GD_DVKD",
+        "label": "GĐ ĐVKD"
+      },
+      {
+        "value": "DVKD",
+        "label": "VH ĐVKD"
+      }
+    ]
+  },
+  "sort": {
+    "field": "taskStartTime",
+    "type": "DESC"
+  },
+  "pageSize": 10,
+  "pageSizeOptions": [
+    10,
+    20,
+    50,
+    100
+  ],
+  "pageSizeSelect2Options": {
+    "width": "72px"
+  },
+  "select2Options": {
+    "minimumResultsForSearch": 6,
+    "width": "resolve",
+    "allowClear": true
+  },
+  "datepickerOptions": {
+    "dateFormat": "dd-mm-yy",
+    "showButtonPanel": true,
+    "changeMonth": true,
+    "changeYear": true
+  },
+  "columns": [
+    {
+      "field": "_stt",
+      "title": "STT",
+      "width": 50,
+      "align": "center",
+      "renderer": "sttRenderer"
+    },
+    {
+      "type": "actions",
+      "field": "gntdCode",
+      "title": "Mã GNTD",
+      "width": 135,
+      "align": "left",
+      "actions": [
+        {
+          "textField": "gntdCode",
+          "href": "#",
+          "title": "Open transaction detail",
+          "className": "tr-transaction-link",
+          "handler": "openTransactionDetail"
+        }
+      ]
+    },
+    {
+      "field": "lockUser",
+      "title": "User Claimed",
+      "renderer": "claimedRenderer",
+      "minWidth": 120
+    },
+    {
+      "field": "branchCode",
+      "title": "ĐVKD",
+      "width": 30,
+      "align": "center"
+    },
+    {
+      "field": "pdtdCode",
+      "title": "Mã PDTD",
+      "maxWidth": 190
+    },
+    {
+      "field": "transactionType1Name",
+      "title": "Loại giao dịch cấp 1"
+    },
+    {
+      "field": "customerCode",
+      "title": "Mã KH",
+      "align": "center"
+    },
+    {
+      "field": "customerName",
+      "title": "Tên KH",
+      "minWidth": 120
+    },
+    {
+      "field": "state",
+      "title": "Trạng thái",
+      "renderer": "stateBadge",
+      "className": "disb-col-fit"
+    },
+    {
+      "field": "transactionFlowName",
+      "title": "Phân luồng"
+    },
+    {
+      "field": "processGroup",
+      "title": "Nhóm xử lý"
+    },
+    {
+      "field": "processUser",
+      "title": "User xử lý"
+    },
+    {
+      "field": "taskStartTime",
+      "title": "Thời gian tiếp nhận",
+      "sortable": true,
+      "width": 135,
+      "align": "center"
+    },
+    {
+      "type": "actions",
+      "title": "Actions",
+      "width": 110,
+      "actions": [
+        {
+          "href": "#",
+          "variant": "warning",
+          "iconClass": "fas fa-unlock",
+          "title": "Unlock giao dịch",
+          "handler": "unlockTransaction",
+          "disabled": {
+            "field": "state",
+            "equals": 1
+          }
+        }
+      ]
+    }
+  ],
+  "searchFields": [
+    {
+      "name": "keyword",
+      "label": "Từ khoá tra cứu",
+      "type": "text",
+      "placeholder": "Mã GNTD/PDTD hoặc mã/tên KH hoặc User lock",
+      "width": 400
+    },
+    {
+      "name": "branchs",
+      "label": "ĐVKD",
+      "type": "select",
+      "placeholder": "Tất cả",
+      "optionsProvider": "branchOptions",
+      "valueFormatter": "formatBranch"
+    },
+    {
+      "name": "date",
+      "label": "Thời điểm",
+      "type": "daterange",
+      "width": 360,
+      "fromPlaceholder": "Từ ngày",
+      "toPlaceholder": "đến ngày"
+    }
+  ],
+  "buttons": [
+    {
+      "text": "Export Excel",
+      "title": "Tải xuống",
+      "iconClass": "fas fa-file-download",
+      "className": "tr-btn-default",
+      "handler": "exportExcel"
+    }
+  ],
+  "events": {
+    "onRowClick": "onRowClick",
+    "onDataLoaded": "onDataLoaded",
+    "onSearchChanged": "onSearchChanged"
+  }
+}

@@ -4,6 +4,9 @@
   "header": {
     "title": "Danh sách giao dịch phong toả tài khoản"
   },
+  "detail": {
+    "url": "/teamworks/executecf?processApp=GN_KHCN&serviceName=GNCN.Detail&transactionCode="
+  },
   "pageSize": 10,
   "pageSizeOptions": [
     10,
@@ -21,7 +24,6 @@
   },
   "datepickerOptions": {
     "dateFormat": "dd-mm-yy",
-    "searchDateFormat": "yy-mm-dd",
     "showButtonPanel": true,
     "changeMonth": true,
     "changeYear": true
@@ -29,123 +31,97 @@
   "columns": [
     {
       "type": "actions",
-      "title": "Số GD",
-      "minWidth": 160,
+      "field": "gntdCode",
+      "title": "Mã GNTD",
+      "width": 135,
       "align": "left",
-      "separator": false,
       "actions": [
         {
           "textField": "gntdCode",
           "href": "#",
-          "title": "Xem chi tiết giao dịch",
+          "title": "Open transaction detail",
           "className": "tr-transaction-link",
           "handler": "openTransactionDetail"
         }
       ]
     },
     {
+      "field": "branchCode",
+      "title": "ĐVKD",
+      "width": 30,
+      "align": "center"
+    },
+    {
       "field": "pdtdCode",
-      "title": "Số PDTD",
-      "minWidth": 110,
-      "sortable": true
+      "title": "Mã PDTD",
+      "maxWidth": 190
+    },
+    {
+      "field": "accBlockNo",
+      "title": "Mã BT phong tỏa"
     },
     {
       "field": "customerCode",
       "title": "Mã KH",
-      "minWidth": 110,
-      "sortable": true
+      "align": "center"
     },
     {
       "field": "customerName",
       "title": "Tên KH",
-      "minWidth": 160,
-      "sortable": true
-    },
-    {
-      "field": "accBlockNo",
-      "title": "Số tài khoản phong toả",
-      "minWidth": 140,
-      "sortable": true
-    },
-    {
-      "field": "branchCode",
-      "title": "Chi nhánh",
-      "width": 90,
-      "align": "center",
-      "sortable": true
-    },
-    {
-      "field": "transactionFlowName",
-      "title": "Luồng GD",
-      "minWidth": 110,
-      "sortable": true
-    },
-    {
-      "field": "transactionType1Name",
-      "title": "Loại GD",
-      "minWidth": 160,
-      "sortable": true
-    },
-    {
-      "field": "currency",
-      "title": "Loại tiền",
-      "width": 80,
-      "align": "center",
-      "sortable": true
+      "minWidth": 120
     },
     {
       "field": "gnApprovalBy",
-      "title": "Người PD",
-      "minWidth": 110,
-      "sortable": true
+      "title": "User PDGN"
     },
     {
       "field": "gnApprovalDate",
-      "title": "Ngày PD",
-      "minWidth": 100,
-      "align": "right",
-      "sortable": true
+      "title": "Ngày PDGN",
+      "sortable": true,
+      "align": "center"
     },
     {
-      "field": "processState",
+      "field": "approvalBy",
+      "title": "User xử lý"
+    },
+    {
+      "field": "approvalDate",
+      "title": "Thời gian xử lý",
+      "sortable": true,
+      "width": 135,
+      "align": "center"
+    },
+    {
+      "field": "state",
       "title": "Trạng thái",
-      "width": 120,
-      "align": "center",
-      "renderer": "processStateBadge"
+      "renderer": "stateBadge",
+      "minWidth": 120
     },
     {
       "type": "actions",
-      "title": "Thao tác",
-      "width": 170,
+      "title": "Actions",
+      "width": 110,
       "actions": [
-        {
-          "iconClass": "fas fa-eye",
-          "variant": "info",
-          "title": "Xem chi tiết",
-          "href": "#",
-          "handler": "viewDocumentDetail"
-        },
         {
           "iconClass": "fas fa-code",
           "title": "Log xử lý",
           "href": "#",
-          "handler": "viewProcessLog"
+          "handler": "viewProcessLog",
+          "disabled": {
+            "field": "state",
+            "equals": 0
+          }
         },
         {
-          "iconClass": "fas fa-unlock",
+          "href": "#",
           "variant": "warning",
-          "title": "Giải toả",
-          "href": "#",
-          "handler": "releaseBlock",
-          "disabled": { "field": "processState", "equals": 0 }
-        },
-        {
-          "iconClass": "fas fa-check",
-          "variant": "success",
-          "title": "Phê duyệt",
-          "href": "#",
-          "handler": "approveTransaction",
-          "disabled": { "field": "processState", "equals": 1 }
+          "iconClass": "fas fa-unlock",
+          "title": "Giải toả tài khoản",
+          "handler": "releaseBlockAmt",
+          "disabled": {
+            "field": "state",
+            "equals": 1
+          }
         }
       ]
     }
@@ -153,85 +129,54 @@
   "searchFields": [
     {
       "name": "keyword",
-      "label": "Từ khoá",
+      "label": "Từ khoá tra cứu",
       "type": "text",
-      "width": 300,
-      "placeholder": "Số GD, PDTD, mã/tên KH, TK phong toả"
+      "placeholder": "Mã GNTD hoặc Mã PDTD hoặc Mã KH hoặc Tên KH hoặc Mã BT phong tỏa",
+      "width": 500
     },
     {
-      "name": "flow",
-      "label": "Luồng GD",
+      "name": "branchs",
+      "label": "ĐVKD",
       "type": "select",
-      "width": 180,
       "placeholder": "Tất cả",
-      "options": [
-        {
-          "value": "TT",
-          "label": "Tập trung"
-        },
-        {
-          "value": "GD_DVKD",
-          "label": "GĐ ĐVKD"
-        },
-        {
-          "value": "DVKD",
-          "label": "VH ĐVKD"
-        }
-      ]
-    },
-    {
-      "name": "branch",
-      "label": "Chi nhánh",
-      "type": "select",
-      "width": 220,
-      "placeholder": "Tất cả chi nhánh",
       "optionsProvider": "branchOptions",
       "valueFormatter": "formatBranch"
     },
     {
-      "name": "user",
-      "label": "User PD",
-      "type": "select",
-      "width": 220,
-      "placeholder": "Chọn...",
-      "optionsProvider": "userOptions"
-    },
-    {
-      "name": "processState",
+      "name": "state",
       "label": "Trạng thái",
       "type": "select",
-      "width": 180,
       "placeholder": "Tất cả",
       "multiple": true,
+      "joinWith": ",",
       "options": [
+        {
+          "value": "0",
+          "label": "Chưa xử lý"
+        },
         {
           "value": "1",
           "label": "Hoàn thành"
         },
         {
-          "value": "0",
-          "label": "Chờ xử lý"
-        },
-        {
           "value": "2",
           "label": "Lỗi hạch toán"
         }
-      ],
-      "joinWith": ","
+      ]
     },
     {
-      "name": "gnApprovalDate",
-      "label": "Ngày PD",
+      "name": "date",
+      "label": "Ngày PD giải ngân",
       "type": "daterange",
       "width": 360,
       "fromPlaceholder": "Từ ngày",
-      "toPlaceholder": "Đến ngày"
+      "toPlaceholder": "đến ngày"
     }
   ],
   "buttons": [
     {
-      "text": "Tải xuống",
-      "title": "Export Excel",
+      "text": "Export Excel",
+      "title": "Tải xuống",
       "iconClass": "fas fa-file-download",
       "className": "tr-btn-default",
       "handler": "exportExcel"
